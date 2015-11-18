@@ -7,6 +7,7 @@ object Utils {
   private val PenultimateErrorMessage = "Input sequence needs to have at least 2 elements"
   private val NthErrorMessage = "Input sequence doesn't have enough elements"
   private val NthIllegalArgumentErrorMessage = "Index must be a non-negative integer"
+  private val DecodeIllegalArgumentErrorMessage = "Indices must be positive"
 
   /**
    *
@@ -211,5 +212,23 @@ object Utils {
         (subList.head, length(subList))
       }
     }
+  }
+
+  /**
+   *
+   * @param s
+   * @tparam T
+   * @return
+   * @throws IllegalArgumentException
+   */
+  @throws[IllegalArgumentException](DecodeIllegalArgumentErrorMessage)
+  def decode[T](s: Seq[(T, Int)]): Seq[T] = {
+    def expand(e: T, n: Int): Seq[T] = n match {
+      case 0 => Nil
+      case i if i < 0 => throw new IllegalArgumentException(DecodeIllegalArgumentErrorMessage)
+      case _ => e +: expand(e, n-1)
+    }
+
+    flatten(s.map{ case (e, i: Int) => expand(e, i)}).asInstanceOf[Seq[T]]
   }
 }
