@@ -2,6 +2,8 @@ package com.mlarocca.s99.lists
 
 import org.scalatest._
 
+import scala.util.Random
+
 class UtilsTest extends FunSpec with Matchers {
 
   describe("last") {
@@ -92,7 +94,6 @@ class UtilsTest extends FunSpec with Matchers {
         Utils.nth(0, Seq.empty[String])
       }
     }
-
 
     it ("should throw IllegalArgumentException if a negative index is passed") {
     a[IllegalArgumentException] should be thrownBy {
@@ -291,6 +292,118 @@ class UtilsTest extends FunSpec with Matchers {
       Utils.encodeModified(Seq("a", "a", "a")) should be(Seq(("a", 3)))
       Utils.encodeModified(Seq("a", "a", "b", "c", "c", "c", "d")) should be(Seq(("a", 2), "b", ("c", 3), "d"))
       Utils.encodeModified(Seq(1, 1, 2, 3, 3, 3, 4, 5, 5)) should be(Seq((1, 2), 2, (3, 3), 4, (5, 2)))
+    }
+  }
+
+
+  describe("decode") {
+    it ("should decode Empty sequences into Nil") {
+      Utils.decode(Nil) should be(Nil)
+    }
+
+    it ("should correctly decode by adding duplicates") {
+      Utils.decode(Seq(("a", 1), ("b", 2), ("c", 3))) should be(Seq("a", "b", "b", "c", "c", "c"))
+    }
+
+
+    it ("should correctly handle 0 repetitions") {
+      Utils.decode(Seq(("a", 1), ("b", 0), ("c", 3), ("a", 2))) should be(Seq("a", "c", "c", "c", "a", "a"))
+    }
+
+    it ("should throw IllegalArgumentException if a negative number is passed") {
+      a[IllegalArgumentException] should be thrownBy {
+        Utils.decode(Seq(("a", 1), ("b", -10), ("c", 3)))
+      }
+    }
+  }
+
+  describe("encodeDirect") {
+    it ("should encode Empty sequences into Nil") {
+      Utils.encodeDirect(Nil) should be(Nil)
+    }
+
+    it ("should encode correctly lists with no consecutive duplicate") {
+      Utils.encodeDirect(Seq("a", "b", "c")) should be(Seq("a", "b", "c").map{(_, 1)})
+      Utils.encodeDirect(Seq("a", "b", "a")) should be(Seq("a", "b", "a").map{(_, 1)})
+    }
+
+    it ("should encode correctly consecutive duplicates") {
+      Utils.encodeDirect(Seq("a", "b", "b")) should be(Seq(("a", 1), ("b", 2)))
+      Utils.encodeDirect(Seq("a", "a", "a")) should be(Seq(("a", 3)))
+      Utils.encodeDirect(Seq("a", "a", "b", "c", "c", "c", "d")) should be(Seq(("a", 2), ("b", 1), ("c", 3), ("d", 1)))
+      Utils.encodeDirect(Seq(1, 1, 2, 3, 3, 3, 4, 5, 5)) should be(Seq((1, 2), (2, 1), (3, 3), (4, 1), (5, 2)))
+    }
+  }
+
+  describe("duplicate") {
+    it ("should encode Empty sequences into Nil") {
+      Utils.duplicate(Nil) should be(Nil)
+    }
+
+    it ("should duplicate correctly lists") {
+      Utils.duplicate(Seq("a", "b", "c")) should be(Seq("a", "a", "b", "b", "c", "c"))
+      Utils.duplicate(Seq("a", "b", "a")) should be(Seq("a", "a", "b", "b", "a", "a"))
+    }
+
+    it ("should encode correctly lists with duplicates") {
+      Utils.duplicate(Seq("a", "b", "b")) should be(Seq("a", "a", "b", "b", "b", "b"))
+      Utils.duplicate(Seq("a", "a", "a")) should be(Seq.fill(6)("a"))
+      Utils.duplicate(Seq(1, 1, 2, 5)) should be(Seq(1, 1, 1, 1, 2, 2, 5, 5))
+    }
+  }
+
+  describe("duplicateDirect") {
+    it ("should encode Empty sequences into Nil") {
+      Utils.duplicateDirect(Nil) should be(Nil)
+    }
+
+    it ("should duplicate correctly lists") {
+      Utils.duplicateDirect(Seq("a", "b", "c")) should be(Seq("a", "a", "b", "b", "c", "c"))
+      Utils.duplicateDirect(Seq("a", "b", "a")) should be(Seq("a", "a", "b", "b", "a", "a"))
+    }
+
+    it ("should match duplicate on random lists") {
+      (1 to 100) foreach { _ =>
+        val s = (0 to Random.nextInt(10)).toList map (_ => Random.nextInt())
+        Utils.duplicate(s) should equal(Utils.duplicateDirect(s))
+      }
+    }
+  }
+
+  describe("duplicateN") {
+    it ("should throw IllegalArgumentException if a negative multiplier is passed") {
+      a[IllegalArgumentException] should be thrownBy {
+        Utils.duplicateN(Seq(1, 2, 3), -1)
+        Utils.duplicateN(Nil, -10)
+      }
+    }
+
+    it ("should return Nil for Empty sequences and valid values for `n`") {
+      Utils.duplicateN(Nil, 3) should be(Nil)
+      Utils.duplicateN(Nil, 0) should be(Nil)
+    }
+
+    it ("should return Nil if n == 0, independently on the list") {
+      Utils.duplicateN(Seq("a"), 0) should be(Nil)
+      Utils.duplicateN(Nil, 0) should be(Nil)
+    }
+
+    it ("should duplicate correctly lists when n == 2") {
+      (1 to 100) foreach { _ =>
+        val s = (0 to Random.nextInt(10)).toList map (_ => Random.nextInt())
+        Utils.duplicate(s) should equal(Utils.duplicateN(s, 2))
+      }
+    }
+
+    it ("should duplicate correctly lists without duplicates") {
+      Utils.duplicateN(Seq("a", "b"), 3) should be(Seq("a", "a", "a", "b", "b", "b"))
+      Utils.duplicateN(Seq("a"), 5) should be(Seq.fill(5)("a"))
+      Utils.duplicateN(Seq(1, 2, 3), 4) should be((Seq(1, 2, 3)).flatMap(Seq.fill(4)(_)))
+    }
+
+    it ("should duplicate correctly lists with duplicates") {
+      Utils.duplicateN(Seq("a", "b", "b"), 3) should be(Seq("a", "a", "a", "b", "b", "b", "b", "b", "b"))
+      Utils.duplicateN(Seq("a", "a"), 15) should be(Seq.fill(30)("a"))
     }
   }
 }

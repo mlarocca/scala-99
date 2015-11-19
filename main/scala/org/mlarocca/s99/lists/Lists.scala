@@ -7,6 +7,7 @@ object Utils {
   private val PenultimateErrorMessage = "Input sequence needs to have at least 2 elements"
   private val NthErrorMessage = "Input sequence doesn't have enough elements"
   private val NthIllegalArgumentErrorMessage = "Index must be a non-negative integer"
+  private val DuplicateNIllegalArgumentErrorMessage = "The multiplier factor must be a non-negative integer"
   private val DecodeIllegalArgumentErrorMessage = "Indices must be positive"
 
   /**
@@ -230,5 +231,63 @@ object Utils {
     }
 
     flatten(s.map{ case (e, i: Int) => expand(e, i)}).asInstanceOf[Seq[T]]
+  }
+
+  /**
+   *
+   * @param s
+   * @tparam T
+   * @return
+   */
+  def encodeDirect[T](s: Seq[T]): Seq[(T, Int)] = {
+    def encodecursive[T](list: Seq[T], e: T, n: Int): Seq[(T, Int)] = {
+      list match {
+        case Nil => Seq((e, n))
+        case x :: xs if x == e => encodecursive(xs, x, n + 1)
+        case x :: xs => (e, n) +: encodecursive(xs, x, 1)
+      }
+    }
+
+    s match {
+      case Nil => Nil
+      case x::xs => encodecursive(xs, x, 1)
+    }
+  }
+
+  /**
+   *
+   * @param s
+   * @tparam T
+   * @return
+   */
+  def duplicate[T](s: Seq[T]): Seq[T] = {
+    decode(s.map((_, 2)))
+  }
+
+  /**
+   *
+   * @param s
+   * @tparam T
+   * @return
+   */
+  def duplicateDirect[T](s: Seq[T]): Seq[T] = {
+    s.foldRight(Seq.empty[T]) { case (x, xs) =>
+      x +: x +: xs
+    }
+  }
+
+  /**
+   *
+   * @param s
+   * @param n
+   * @tparam T
+   * @throws IllegalArgumentException
+   * @return
+   */
+  @throws[IllegalArgumentException](DuplicateNIllegalArgumentErrorMessage)
+  def duplicateN[T](s: Seq[T], n: Int): Seq[T] = n match {
+    case 0 => Nil
+    case _ if n < 0 => throw new IllegalArgumentException(DuplicateNIllegalArgumentErrorMessage)
+    case _ => decode(s.map((_, n)))
   }
 }
