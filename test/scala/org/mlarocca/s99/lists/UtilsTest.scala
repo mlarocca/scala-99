@@ -373,37 +373,61 @@ class UtilsTest extends FunSpec with Matchers {
   describe("duplicateN") {
     it ("should throw IllegalArgumentException if a negative multiplier is passed") {
       a[IllegalArgumentException] should be thrownBy {
-        Utils.duplicateN(Seq(1, 2, 3), -1)
-        Utils.duplicateN(Nil, -10)
+        Utils.duplicateN(-1, Seq(1, 2, 3))
+        Utils.duplicateN(-10, Nil)
       }
     }
 
     it ("should return Nil for Empty sequences and valid values for `n`") {
-      Utils.duplicateN(Nil, 3) should be(Nil)
-      Utils.duplicateN(Nil, 0) should be(Nil)
+      Utils.duplicateN(3, Nil) should be(Nil)
+      Utils.duplicateN(0, Nil) should be(Nil)
     }
 
     it ("should return Nil if n == 0, independently on the list") {
-      Utils.duplicateN(Seq("a"), 0) should be(Nil)
-      Utils.duplicateN(Nil, 0) should be(Nil)
+      Utils.duplicateN(0, Seq("a")) should be(Nil)
+      Utils.duplicateN(0, Nil) should be(Nil)
     }
 
     it ("should duplicate correctly lists when n == 2") {
       (1 to 100) foreach { _ =>
         val s = (0 to Random.nextInt(10)).toList map (_ => Random.nextInt())
-        Utils.duplicate(s) should equal(Utils.duplicateN(s, 2))
+        Utils.duplicate(s) should equal(Utils.duplicateN(2, s))
       }
     }
 
     it ("should duplicate correctly lists without duplicates") {
-      Utils.duplicateN(Seq("a", "b"), 3) should be(Seq("a", "a", "a", "b", "b", "b"))
-      Utils.duplicateN(Seq("a"), 5) should be(Seq.fill(5)("a"))
-      Utils.duplicateN(Seq(1, 2, 3), 4) should be((Seq(1, 2, 3)).flatMap(Seq.fill(4)(_)))
+      Utils.duplicateN(3, Seq("a", "b")) should be(Seq("a", "a", "a", "b", "b", "b"))
+      Utils.duplicateN(5, Seq("a")) should be(Seq.fill(5)("a"))
+      Utils.duplicateN(4, Seq(1, 2, 3)) should be((Seq(1, 2, 3)).flatMap(Seq.fill(4)(_)))
     }
 
     it ("should duplicate correctly lists with duplicates") {
-      Utils.duplicateN(Seq("a", "b", "b"), 3) should be(Seq("a", "a", "a", "b", "b", "b", "b", "b", "b"))
-      Utils.duplicateN(Seq("a", "a"), 15) should be(Seq.fill(30)("a"))
+      Utils.duplicateN(3, Seq("a", "b", "b")) should be(Seq("a", "a", "a", "b", "b", "b", "b", "b", "b"))
+      Utils.duplicateN(15, Seq("a", "a")) should be(Seq.fill(30)("a"))
+    }
+  }
+
+  describe("dropN") {
+    it ("should throw IllegalArgumentException if a non-positive index is passed") {
+      a[IllegalArgumentException] should be thrownBy {
+        Utils.dropN(-1, Seq(1, 2, 3))
+        Utils.dropN(0, Nil)
+      }
+    }
+
+    it ("should return Nil for Empty sequences and valid values for `n`") {
+      Utils.dropN(3, Nil) should be(Nil)
+      Utils.dropN(1, Nil) should be(Nil)
+    }
+
+    it ("should drop the right elements") {
+      Utils.dropN(1, Seq(1, 2, 3, 4, 5, 6)) should be(Nil)
+      Utils.dropN(2, Seq(1, 2, 3, 4, 5, 6)) should be(Seq(1, 3, 5))
+      Utils.dropN(3, Seq(1, 2, 3, 4, 5, 6)) should be(Seq(1, 2, 4, 5))
+      Utils.dropN(4, Seq(1, 2, 3, 4, 5, 6)) should be(Seq(1, 2, 3, 5, 6))
+      Utils.dropN(5, Seq(1, 2, 3, 4, 5, 6)) should be(Seq(1, 2, 3, 4, 6))
+      Utils.dropN(6, Seq(1, 2, 3, 4, 5, 6)) should be(Seq(1, 2, 3, 4, 5))
+      Utils.dropN(7, Seq(1, 2, 3, 4, 5, 6)) should be(Seq(1, 2, 3, 4, 5, 6))
     }
   }
 }

@@ -3,12 +3,13 @@ package com.mlarocca.s99.lists
 import java.util.NoSuchElementException
 
 object Utils {
-  private val TailErrorMessage = "Input sequence can't be empty"
-  private val PenultimateErrorMessage = "Input sequence needs to have at least 2 elements"
-  private val NthErrorMessage = "Input sequence doesn't have enough elements"
-  private val NthIllegalArgumentErrorMessage = "Index must be a non-negative integer"
-  private val DuplicateNIllegalArgumentErrorMessage = "The multiplier factor must be a non-negative integer"
-  private val DecodeIllegalArgumentErrorMessage = "Indices must be positive"
+  private[s99] val TailErrorMessage = "Input sequence can't be empty"
+  private[s99] val PenultimateErrorMessage = "Input sequence needs to have at least 2 elements"
+  private[s99] val NthErrorMessage = "Input sequence doesn't have enough elements"
+  private[s99] val NthIllegalArgumentErrorMessage = "Index must be a non-negative integer"
+  private[s99] val DuplicateNIllegalArgumentErrorMessage = "The multiplier factor must be a non-negative integer"
+  private[s99] val DecodeIllegalArgumentErrorMessage = "Indices must be positive"
+  private[s99] val DropNIllegalArgumentErrorMessage = "N must be positive"
 
   /**
    *
@@ -278,16 +279,41 @@ object Utils {
 
   /**
    *
-   * @param s
    * @param n
+   * @param s
    * @tparam T
    * @throws IllegalArgumentException
    * @return
    */
   @throws[IllegalArgumentException](DuplicateNIllegalArgumentErrorMessage)
-  def duplicateN[T](s: Seq[T], n: Int): Seq[T] = n match {
+  def duplicateN[T](n: Int, s: Seq[T]): Seq[T] = n match {
     case 0 => Nil
     case _ if n < 0 => throw new IllegalArgumentException(DuplicateNIllegalArgumentErrorMessage)
     case _ => decode(s.map((_, n)))
+  }
+
+  /**
+   *
+   * @param n
+   * @param s
+   * @tparam T
+   * @throws IllegalArgumentException
+   * @return
+   */
+  @throws[IllegalArgumentException](DropNIllegalArgumentErrorMessage)
+  def dropN[T](n: Int, s: Seq[T]): Seq[T] = {
+    val m = length(s)
+    def doDropN(i: Int, s: Seq[T]): Seq[T] = (i, s) match {
+      case (_, Nil) => Nil
+      //INVARIANT: `i` can't be non positive
+      case (1, x::xs) => doDropN(n, xs)
+      case (_, _) if i > m => s
+      case (_, x::xs) => x +: doDropN(i - 1, xs)
+    }
+    if (n <= 0) {
+      throw new IllegalArgumentException(DropNIllegalArgumentErrorMessage)
+    } else {
+      doDropN(n, s)
+    }
   }
 }
