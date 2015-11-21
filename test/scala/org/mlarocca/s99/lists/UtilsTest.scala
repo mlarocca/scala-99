@@ -430,4 +430,136 @@ class UtilsTest extends FunSpec with Matchers {
       Utils.dropN(7, Seq(1, 2, 3, 4, 5, 6)) should be(Seq(1, 2, 3, 4, 5, 6))
     }
   }
+
+  describe("split") {
+    it ("should throw IllegalArgumentException if a negative index is passed") {
+      a[IndexOutOfBoundsException] should be thrownBy {
+        Utils.split(-1, Seq(1, 2, 3))
+        Utils.split(-10, Nil)
+      }
+    }
+
+    it ("should throw IllegalArgumentException if n is bigger than s.length") {
+      a[IndexOutOfBoundsException] should be thrownBy {
+        Utils.split(4, Seq(1, 2, 3))
+        Utils.split(1, Nil)
+      }
+    }
+
+    it ("should return the full list as second argument for n == 0") {
+      Utils.split(0, Nil) should be((Nil, Nil))
+      Utils.split(0, Seq(1, 2)) should be((Nil, Seq(1, 2)))
+    }
+
+    it ("should return the full list as first argument for n == s.length") {
+      Utils.split(2, Seq(1, 2)) should be((Seq(1, 2), Nil))
+    }
+
+    it ("should correclty split the list") {
+      Utils.split(1, Seq(1, 2, 3, 4, 5, 6)) should be((Seq(1), Seq(2, 3, 4, 5, 6)))
+      Utils.split(2, Seq(1, 2, 3, 4, 5, 6)) should be((Seq(1, 2), Seq(3, 4, 5, 6)))
+      Utils.split(3, Seq(1, 2, 3, 4, 5, 6)) should be((Seq(1, 2, 3), Seq(4, 5, 6)))
+      Utils.split(4, Seq(1, 2, 3, 4, 5, 6)) should be((Seq(1, 2, 3, 4), Seq(5, 6)))
+      Utils.split(5, Seq(1, 2, 3, 4, 5, 6)) should be((Seq(1, 2, 3, 4, 5), Seq(6)))
+    }
+  }
+
+  describe("slice") {
+    it ("should throw IllegalArgumentException if a negative index is passed") {
+      a[IndexOutOfBoundsException] should be thrownBy {
+        Utils.slice(-1, 0, Seq(1, 2, 3))
+        Utils.slice(-10, -5,  Nil)
+      }
+    }
+
+    it ("should throw IllegalArgumentException if j < i") {
+      a[IndexOutOfBoundsException] should be thrownBy {
+        Utils.slice(1, 0, Seq(1, 2, 3))
+        Utils.slice(0, -5,  Nil)
+      }
+    }
+
+    it ("should throw IllegalArgumentException if i >= s.length or j > s.length") {
+      a[IndexOutOfBoundsException] should be thrownBy {
+        Utils.slice(0, 4, Seq(1, 2, 3))
+        Utils.slice(3, 3, Seq(1, 2, 3))
+        Utils.slice(1, 1, Nil)
+      }
+    }
+
+    it ("should return return Nil if i == j (== 0)") {
+      Utils.slice(0, 0, Seq(1, 2)) should be(Nil)
+      Utils.slice(1, 1, Seq(1, 2)) should be(Nil)
+      Utils.slice(2, 2, Seq(1, 2, 3)) should be(Nil)
+    }
+
+    it ("should return the full list if i == 0 and j == s.length") {
+      Utils.slice(0, 2, Seq(1, 2)) should be(Seq(1, 2))
+      Utils.slice(0, 4, Seq("a", "b", "c", "d")) should be(Seq("a", "b", "c", "d"))
+    }
+
+    it ("should correclty slice the list") {
+      Utils.slice(0, 2, Seq(0, 1, 2, 3, 4, 5, 6)) should be(Seq(0, 1))
+      Utils.slice(0, 3, Seq(0, 1, 2, 3, 4, 5, 6)) should be(Seq(0, 1, 2))
+      Utils.slice(1, 3, Seq(0, 1, 2, 3, 4, 5, 6)) should be(Seq(1, 2))
+      Utils.slice(3, 5, Seq(0, 1, 2, 3, 4, 5, 6)) should be(Seq(3, 4))
+      Utils.slice(3, 6, Seq(0, 1, 2, 3, 4, 5, 6)) should be(Seq(3, 4, 5))
+      Utils.slice(3, 7, Seq(0, 1, 2, 3, 4, 5, 6)) should be(Seq(3, 4, 5, 6))
+    }
+  }
+
+  describe("sliceDirect") {
+    it ("should throw IllegalArgumentException if a negative index is passed") {
+      a[IndexOutOfBoundsException] should be thrownBy {
+        Utils.sliceDirect(-1, 0, Seq(1, 2, 3))
+        Utils.sliceDirect(-10, -5,  Nil)
+      }
+    }
+
+    it ("should throw IllegalArgumentException if j < i") {
+      a[IndexOutOfBoundsException] should be thrownBy {
+        Utils.sliceDirect(1, 0, Seq(1, 2, 3))
+        Utils.sliceDirect(0, -5,  Nil)
+      }
+    }
+
+    it ("should throw IllegalArgumentException if i >= s.length or j > s.length") {
+      a[IndexOutOfBoundsException] should be thrownBy {
+        Utils.sliceDirect(0, 4, Seq(1, 2, 3))
+        Utils.sliceDirect(3, 3, Seq(1, 2, 3))
+        Utils.sliceDirect(1, 1, Nil)
+      }
+    }
+
+    it ("should return return Nil if i == j (== 0)") {
+      Utils.sliceDirect(0, 0, Seq(1, 2)) should be(Nil)
+      Utils.sliceDirect(1, 1, Seq(1, 2)) should be(Nil)
+      Utils.sliceDirect(2, 2, Seq(1, 2, 3)) should be(Nil)
+    }
+
+    it ("should return the full list if i == 0 and j == s.length") {
+      Utils.sliceDirect(0, 2, Seq(1, 2)) should be(Seq(1, 2))
+      Utils.sliceDirect(0, 4, Seq("a", "b", "c", "d")) should be(Seq("a", "b", "c", "d"))
+    }
+
+    it ("should correclty slice the list") {
+      Utils.sliceDirect(0, 2, Seq(0, 1, 2, 3, 4, 5, 6)) should be(Seq(0, 1))
+      Utils.sliceDirect(0, 3, Seq(0, 1, 2, 3, 4, 5, 6)) should be(Seq(0, 1, 2))
+      Utils.sliceDirect(1, 3, Seq(0, 1, 2, 3, 4, 5, 6)) should be(Seq(1, 2))
+      Utils.sliceDirect(3, 5, Seq(0, 1, 2, 3, 4, 5, 6)) should be(Seq(3, 4))
+      Utils.sliceDirect(3, 6, Seq(0, 1, 2, 3, 4, 5, 6)) should be(Seq(3, 4, 5))
+      Utils.sliceDirect(3, 7, Seq(0, 1, 2, 3, 4, 5, 6)) should be(Seq(3, 4, 5, 6))
+    }
+
+
+    it ("should match slice") {
+      (1 to 100) foreach { _ =>
+        val s = (0 to Random.nextInt(10)).toList map (_ => Random.nextInt())
+        val i = Random.nextInt(s.size)
+        val j = i + Random.nextInt(s.size - i + 1)
+
+        Utils.slice(i, j, s) should equal(Utils.sliceDirect(i, j, s))
+      }
+    }
+  }
 }

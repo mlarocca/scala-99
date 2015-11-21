@@ -8,8 +8,9 @@ object Utils {
   private[s99] val NthErrorMessage = "Input sequence doesn't have enough elements"
   private[s99] val NthIllegalArgumentErrorMessage = "Index must be a non-negative integer"
   private[s99] val DuplicateNIllegalArgumentErrorMessage = "The multiplier factor must be a non-negative integer"
-  private[s99] val DecodeIllegalArgumentErrorMessage = "Indices must be positive"
-  private[s99] val DropNIllegalArgumentErrorMessage = "N must be positive"
+  private[s99] val NegativeMultiplierFactorIllegalArgumentErrorMessage = "Multipliers must be non-negative"
+  private[s99] val NegativeSizellegalArgumentErrorMessage = "n must be positive"
+  private[s99] val IndexOutOfBoundsIllegalArgumentErrorMessage = "Valid indices are 0 <= i <= s.length"
 
   /**
    *
@@ -116,8 +117,8 @@ object Utils {
    * @param s
    * @return
    */
-  def reverse(s: Seq[_]): Seq[_] = {
-    def reverseCarryOver(s1: Seq[_], s2: Seq[_]): Seq[_] = s1 match {
+  def reverse[T](s: Seq[T]): Seq[T] = {
+    def reverseCarryOver(s1: Seq[T], s2: Seq[T]): Seq[T] = s1 match {
       case Nil => s2
       case x::xs => reverseCarryOver(xs, x +: s2)
     }
@@ -223,11 +224,11 @@ object Utils {
    * @return
    * @throws IllegalArgumentException
    */
-  @throws[IllegalArgumentException](DecodeIllegalArgumentErrorMessage)
+  @throws[IllegalArgumentException](NegativeMultiplierFactorIllegalArgumentErrorMessage)
   def decode[T](s: Seq[(T, Int)]): Seq[T] = {
     def expand(e: T, n: Int): Seq[T] = n match {
       case 0 => Nil
-      case i if i < 0 => throw new IllegalArgumentException(DecodeIllegalArgumentErrorMessage)
+      case i if i < 0 => throw new IllegalArgumentException(NegativeMultiplierFactorIllegalArgumentErrorMessage)
       case _ => e +: expand(e, n-1)
     }
 
@@ -300,10 +301,10 @@ object Utils {
    * @throws IllegalArgumentException
    * @return
    */
-  @throws[IllegalArgumentException](DropNIllegalArgumentErrorMessage)
+  @throws[IllegalArgumentException](NegativeSizellegalArgumentErrorMessage)
   def dropN[T](n: Int, s: Seq[T]): Seq[T] = {
     val m = length(s)
-    def doDropN(i: Int, s: Seq[T]): Seq[T] = (i, s) match {
+    def doDropN(i: Int, left: Seq[T]): Seq[T] = (i, left) match {
       case (_, Nil) => Nil
       //INVARIANT: `i` can't be non positive
       case (1, x::xs) => doDropN(n, xs)
@@ -311,9 +312,78 @@ object Utils {
       case (_, x::xs) => x +: doDropN(i - 1, xs)
     }
     if (n <= 0) {
-      throw new IllegalArgumentException(DropNIllegalArgumentErrorMessage)
+      throw new IllegalArgumentException(NegativeSizellegalArgumentErrorMessage)
     } else {
       doDropN(n, s)
     }
+  }
+
+  /**
+   *
+   * @param n
+   * @param s
+   * @tparam T
+   * @throws IllegalArgumentException
+   * @return
+   */
+  @throws[IndexOutOfBoundsException](NegativeSizellegalArgumentErrorMessage)
+  def split[T](n: Int, s: Seq[T]): (Seq[T], Seq[T]) = {
+    val m = length(s)
+
+    def doSplit(size: Int, left: Seq[T], right: Seq[T]): (Seq[T], Seq[T]) = (size, left, right) match {
+      //INVARIANT: `size` can't be non positive nor bigger than s' size, so right can't be Nil unless size == 0
+      case (0, _, _) => (reverse(left), right)
+      case (_, _, x::xs) => doSplit(size - 1, x+:left, xs)
+    }
+
+    if (n < 0 || n > length(s)) {
+      throw new IndexOutOfBoundsException(IndexOutOfBoundsIllegalArgumentErrorMessage)
+    } else {
+      doSplit(n, Nil, s)
+    }
+  }
+
+  /**
+   *
+   * @param i
+   * @param j
+   * @param s
+   * @tparam T
+   * @throws IllegalArgumentException
+   * @return
+   */
+  @throws[IndexOutOfBoundsException](NthIllegalArgumentErrorMessage)
+  def slice[T](i: Int, j: Int, s: Seq[T]): Seq[T] = {
+    val splitAtI = split(i, s)
+    split(j - i, splitAtI._2)._1
+  }
+
+  /**
+   *
+   * @param i
+   * @param j
+   * @param s
+   * @tparam T
+   * @throws IllegalArgumentException
+   * @return
+   */
+  @throws[IndexOutOfBoundsException](NthIllegalArgumentErrorMessage)
+  def sliceDirect[T](i: Int, j: Int, s: Seq[T]): Seq[T] = {
+    def doDrop(size: Int, left: Seq[T]): Seq[T] = (size, left) match {
+      case (0, _) => left
+      //INVARIANT: `size` can't be non positive nor bigger than s' size, so right can't be Nil unless size == 0
+      case (_, x::xs) => doDrop(size - 1, xs)
+    }
+
+    def doTake(size: Int, left: Seq[T]): Seq[T] = (size, left) match {
+      //INVARIANT: `i` can't be non positive nor bigger than s' size, so right can't be Nil unless size == 0
+      case (0, _) => Nil
+      case (_, x::xs) => x +: doTake(size - 1, xs)
+    }
+    if (i < 0 || j > length(s) || i > j) {
+      throw new IndexOutOfBoundsException(IndexOutOfBoundsIllegalArgumentErrorMessage)
+    }
+
+    doTake(j - i, doDrop(i, s))
   }
 }
