@@ -562,4 +562,63 @@ class UtilsTest extends FunSpec with Matchers {
       }
     }
   }
+
+  describe("rotate") {
+    it ("should throw IllegalArgumentException if a negative index is passed") {
+      a[IndexOutOfBoundsException] should be thrownBy {
+        Utils.rotate(-1, Seq(1, 2, 3))
+        Utils.rotate(-10, Nil)
+      }
+    }
+
+    it ("should throw IllegalArgumentException if n is bigger than s.length") {
+      a[IndexOutOfBoundsException] should be thrownBy {
+        Utils.rotate(4, Seq(1, 2, 3))
+        Utils.rotate(1, Nil)
+      }
+    }
+
+    it ("should return the original list for n == 0") {
+      Utils.rotate(0, Nil) should be(Nil)
+      Utils.rotate(0, Seq(1, 2)) should be(Seq(1, 2))
+    }
+
+    it ("should return the original list for n == s.length") {
+      Utils.rotate(2, Seq(1, 2)) should be(Seq(1, 2))
+    }
+
+    it ("should correclty rotate the list") {
+      Utils.rotate(1, Seq(1, 2, 3, 4, 5, 6)) should be(Seq(2, 3, 4, 5, 6, 1))
+      Utils.rotate(2, Seq(1, 2, 3, 4, 5, 6)) should be(Seq(3, 4, 5, 6, 1, 2))
+      Utils.rotate(3, Seq(1, 2, 3, 4, 5, 6)) should be(Seq(4, 5, 6, 1, 2, 3))
+      Utils.rotate(4, Seq(1, 2, 3, 4, 5, 6)) should be(Seq(5, 6, 1, 2, 3, 4))
+      Utils.rotate(5, Seq(1, 2, 3, 4, 5, 6)) should be(Seq(6, 1, 2, 3, 4, 5))
+    }
+  }
+
+  describe("removeAt") {
+    it ("should throw IllegalArgumentException if a negative index is passed") {
+      a[IndexOutOfBoundsException] should be thrownBy {
+        Utils.removeAt(-1, Seq(1, 2, 3))
+        Utils.removeAt(-10, Nil)
+      }
+    }
+
+    it ("should throw IllegalArgumentException if i is bigger than s.length") {
+      a[IndexOutOfBoundsException] should be thrownBy {
+        Utils.removeAt(4, Seq(1, 2, 3))
+        Utils.removeAt(1, Nil)
+      }
+    }
+
+    it ("should correclty split the list") {
+      Utils.removeAt(0, Seq(1, 2, 3, 4, 5, 6)) should be((Seq(2, 3, 4, 5, 6), 1))
+      Utils.removeAt(1, Seq(1, 2, 3, 4, 5, 6)) should be((Seq(1, 3, 4, 5, 6), 2))
+      Utils.removeAt(2, Seq(1, 2, 3, 4, 5, 6)) should be((Seq(1, 2, 4, 5, 6), 3))
+      Utils.removeAt(3, Seq(1, 2, 3, 4, 5, 6)) should be((Seq(1, 2, 3, 5, 6), 4))
+      Utils.removeAt(4, Seq(1, 2, 3, 4, 5, 6)) should be((Seq(1, 2, 3, 4, 6), 5))
+      Utils.removeAt(5, Seq(1, 2, 3, 4, 5, 6)) should be((Seq(1, 2, 3, 4, 5), 6))
+    }
+  }
+
 }

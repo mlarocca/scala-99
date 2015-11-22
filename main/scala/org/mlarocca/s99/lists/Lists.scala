@@ -14,8 +14,8 @@ object Utils {
 
   /**
    *
-   * @param s
-   * @tparam T
+   * @param s The input sequence
+   * @tparam T The generic type of elements in the input sequence
    * @throws NoSuchElementException
    * @return
    */
@@ -28,8 +28,8 @@ object Utils {
 
   /**
    *
-   * @param s
-   * @tparam T
+   * @param s The input sequence
+   * @tparam T The generic type of elements in the input sequence
    * @return
    */
   def lastOption[T](s: Seq[T]): Option[T] = {
@@ -42,8 +42,8 @@ object Utils {
 
   /**
    *
-   * @param s
-   * @tparam T
+   * @param s The input sequence
+   * @tparam T The generic type of elements in the input sequence
    * @throws NoSuchElementException
    * @return
    */
@@ -56,8 +56,8 @@ object Utils {
 
   /**
    *
-   * @param s
-   * @tparam T
+   * @param s The input sequence
+   * @tparam T The generic type of elements in the input sequence
    * @return
    */
   def penultimateOption[T](s: Seq[T]): Option[T] = {
@@ -71,8 +71,8 @@ object Utils {
   /**
    *
    * @param n Position of the element in the sequence - 0-based.
-   * @param s
-   * @tparam T
+   * @param s The input sequence
+   * @tparam T The generic type of elements in the input sequence
    * @throws NoSuchElementException
    * @return
    */
@@ -88,8 +88,8 @@ object Utils {
   /**
    *
    * @param n Position of the element in the sequence - 0-based.
-   * @param s
-   * @tparam T
+   * @param s The input sequence
+   * @tparam T The generic type of elements in the input sequence
    * @throws IllegalArgumentException
    * @return
    */
@@ -104,7 +104,7 @@ object Utils {
 
   /**
    *
-   * @param s
+   * @param s The input sequence
    * @return
    */
   def length(s: Seq[_]): Int = s match {
@@ -114,7 +114,7 @@ object Utils {
 
   /**
    *
-   * @param s
+   * @param s The input sequence
    * @return
    */
   def reverse[T](s: Seq[T]): Seq[T] = {
@@ -128,7 +128,7 @@ object Utils {
 
   /**
    *
-   * @param s
+   * @param s The input sequence
    * @return
    */
   def isPalindrome(s: Seq[_]): Boolean = {
@@ -142,8 +142,8 @@ object Utils {
 
   /**
    *
-   * @param s
-   * @tparam T
+   * @param s The input sequence
+   * @tparam T The generic type of elements in the input sequence
    * @return
    */
   def flatten[T](s: Seq[_]): Seq[_] = s match {
@@ -156,8 +156,8 @@ object Utils {
 
   /**
    *
-   * @param s
-   * @tparam T
+   * @param s The input sequence
+   * @tparam T The generic type of elements in the input sequence
    * @return
    */
   def compress[T](s: Seq[T]): Seq[T] = s match {
@@ -169,8 +169,8 @@ object Utils {
 
   /**
    *
-   * @param s
-   * @tparam T
+   * @param s The input sequence
+   * @tparam T The generic type of elements in the input sequence
    * @return
    */
   def pack[T](s: Seq[T]): Seq[Seq[T]] = {
@@ -191,8 +191,8 @@ object Utils {
 
   /**
    *
-   * @param s
-   * @tparam T
+   * @param s The input sequence
+   * @tparam T The generic type of elements in the input sequence
    * @return
    */
   def encode[T](s: Seq[T]): Seq[(T, Int)] = {
@@ -203,8 +203,8 @@ object Utils {
 
   /**
    *
-   * @param s
-   * @tparam T
+   * @param s The input sequence
+   * @tparam T The generic type of elements in the input sequence
    * @return
    */
   def encodeModified[T](s: Seq[T]) = {
@@ -219,8 +219,8 @@ object Utils {
 
   /**
    *
-   * @param s
-   * @tparam T
+   * @param s The input sequence
+   * @tparam T The generic type of elements in the input sequence
    * @return
    * @throws IllegalArgumentException
    */
@@ -237,8 +237,8 @@ object Utils {
 
   /**
    *
-   * @param s
-   * @tparam T
+   * @param s The input sequence
+   * @tparam T The generic type of elements in the input sequence
    * @return
    */
   def encodeDirect[T](s: Seq[T]): Seq[(T, Int)] = {
@@ -258,8 +258,8 @@ object Utils {
 
   /**
    *
-   * @param s
-   * @tparam T
+   * @param s The input sequence
+   * @tparam T The generic type of elements in the input sequence
    * @return
    */
   def duplicate[T](s: Seq[T]): Seq[T] = {
@@ -268,8 +268,8 @@ object Utils {
 
   /**
    *
-   * @param s
-   * @tparam T
+   * @param s The input sequence
+   * @tparam T The generic type of elements in the input sequence
    * @return
    */
   def duplicateDirect[T](s: Seq[T]): Seq[T] = {
@@ -281,8 +281,8 @@ object Utils {
   /**
    *
    * @param n
-   * @param s
-   * @tparam T
+   * @param s The input sequence
+   * @tparam T The generic type of elements in the input sequence
    * @throws IllegalArgumentException
    * @return
    */
@@ -296,8 +296,8 @@ object Utils {
   /**
    *
    * @param n
-   * @param s
-   * @tparam T
+   * @param s The input sequence
+   * @tparam T The generic type of elements in the input sequence
    * @throws IllegalArgumentException
    * @return
    */
@@ -321,8 +321,8 @@ object Utils {
   /**
    *
    * @param n
-   * @param s
-   * @tparam T
+   * @param s The input sequence
+   * @tparam T The generic type of elements in the input sequence
    * @throws IllegalArgumentException
    * @return
    */
@@ -337,7 +337,7 @@ object Utils {
     }
 
     if (n < 0 || n > length(s)) {
-      throw new IndexOutOfBoundsException(IndexOutOfBoundsIllegalArgumentErrorMessage)
+      throw new IndexOutOfBoundsException(NegativeSizellegalArgumentErrorMessage)
     } else {
       doSplit(n, Nil, s)
     }
@@ -347,8 +347,8 @@ object Utils {
    *
    * @param i
    * @param j
-   * @param s
-   * @tparam T
+   * @param s The input sequence
+   * @tparam T The generic type of elements in the input sequence
    * @throws IllegalArgumentException
    * @return
    */
@@ -362,8 +362,8 @@ object Utils {
    *
    * @param i
    * @param j
-   * @param s
-   * @tparam T
+   * @param s The input sequence
+   * @tparam T The generic type of elements in the input sequence
    * @throws IllegalArgumentException
    * @return
    */
@@ -385,5 +385,47 @@ object Utils {
     }
 
     doTake(j - i, doDrop(i, s))
+  }
+
+  /**
+   *
+   * @param n
+   * @param s The input sequence
+   * @tparam T The generic type of elements in the input sequence
+   * @throws IllegalArgumentException
+   * @return
+   */
+  @throws[IndexOutOfBoundsException](NegativeSizellegalArgumentErrorMessage)
+  def rotate[T](n: Int, s: Seq[T]): Seq[T] = {
+    val (left, right) = split(n, s)
+    right ++ left
+  }
+
+  /**
+   *
+   * @param i The element to remove from the list
+   * @param s The input sequence
+   * @tparam T The generic type of elements in the input sequence
+   * @throws IllegalArgumentException
+   * @return
+   */
+  @throws[IndexOutOfBoundsException](IndexOutOfBoundsIllegalArgumentErrorMessage)
+  def removeAt[T](i: Int, s: Seq[T]): (Seq[T], T) = {
+    def doRemove(j: Int, left: Seq[T]): (Seq[T], T) = {
+      //Invariant: left can't be empty
+      val x::xs = left
+      if (j == 0) {
+        (xs, x)
+      } else {
+        val (restoOfList, removedEl) = doRemove(j - 1, xs)
+        (x +: restoOfList, removedEl)
+      }
+    }
+    
+    if (i < 0 || i >= length(s)) {
+      throw new IndexOutOfBoundsException(IndexOutOfBoundsIllegalArgumentErrorMessage)
+    } else {
+      doRemove(i, s)
+    }
   }
 }
