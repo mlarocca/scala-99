@@ -432,14 +432,14 @@ class UtilsTest extends FunSpec with Matchers {
   }
 
   describe("split") {
-    it ("should throw IllegalArgumentException if a negative index is passed") {
+    it ("should throw IndexOutOfBoundsException if a negative index is passed") {
       a[IndexOutOfBoundsException] should be thrownBy {
         Utils.split(-1, Seq(1, 2, 3))
         Utils.split(-10, Nil)
       }
     }
 
-    it ("should throw IllegalArgumentException if n is bigger than s.length") {
+    it ("should throw IndexOutOfBoundsException if n is bigger than s.length") {
       a[IndexOutOfBoundsException] should be thrownBy {
         Utils.split(4, Seq(1, 2, 3))
         Utils.split(1, Nil)
@@ -465,21 +465,21 @@ class UtilsTest extends FunSpec with Matchers {
   }
 
   describe("slice") {
-    it ("should throw IllegalArgumentException if a negative index is passed") {
+    it ("should throw IndexOutOfBoundsException if a negative index is passed") {
       a[IndexOutOfBoundsException] should be thrownBy {
         Utils.slice(-1, 0, Seq(1, 2, 3))
         Utils.slice(-10, -5,  Nil)
       }
     }
 
-    it ("should throw IllegalArgumentException if j < i") {
+    it ("should throw IndexOutOfBoundsException if j < i") {
       a[IndexOutOfBoundsException] should be thrownBy {
         Utils.slice(1, 0, Seq(1, 2, 3))
         Utils.slice(0, -5,  Nil)
       }
     }
 
-    it ("should throw IllegalArgumentException if i >= s.length or j > s.length") {
+    it ("should throw IndexOutOfBoundsException if i >= s.length or j > s.length") {
       a[IndexOutOfBoundsException] should be thrownBy {
         Utils.slice(0, 4, Seq(1, 2, 3))
         Utils.slice(3, 3, Seq(1, 2, 3))
@@ -509,21 +509,21 @@ class UtilsTest extends FunSpec with Matchers {
   }
 
   describe("sliceDirect") {
-    it ("should throw IllegalArgumentException if a negative index is passed") {
+    it ("should throw IndexOutOfBoundsException if a negative index is passed") {
       a[IndexOutOfBoundsException] should be thrownBy {
         Utils.sliceDirect(-1, 0, Seq(1, 2, 3))
         Utils.sliceDirect(-10, -5,  Nil)
       }
     }
 
-    it ("should throw IllegalArgumentException if j < i") {
+    it ("should throw IndexOutOfBoundsException if j < i") {
       a[IndexOutOfBoundsException] should be thrownBy {
         Utils.sliceDirect(1, 0, Seq(1, 2, 3))
         Utils.sliceDirect(0, -5,  Nil)
       }
     }
 
-    it ("should throw IllegalArgumentException if i >= s.length or j > s.length") {
+    it ("should throw IndexOutOfBoundsException if i >= s.length or j > s.length") {
       a[IndexOutOfBoundsException] should be thrownBy {
         Utils.sliceDirect(0, 4, Seq(1, 2, 3))
         Utils.sliceDirect(3, 3, Seq(1, 2, 3))
@@ -564,14 +564,14 @@ class UtilsTest extends FunSpec with Matchers {
   }
 
   describe("rotate") {
-    it ("should throw IllegalArgumentException if a negative index is passed") {
+    it ("should throw IndexOutOfBoundsException if a negative index is passed") {
       a[IndexOutOfBoundsException] should be thrownBy {
         Utils.rotate(-1, Seq(1, 2, 3))
         Utils.rotate(-10, Nil)
       }
     }
 
-    it ("should throw IllegalArgumentException if n is bigger than s.length") {
+    it ("should throw IndexOutOfBoundsException if n is bigger than s.length") {
       a[IndexOutOfBoundsException] should be thrownBy {
         Utils.rotate(4, Seq(1, 2, 3))
         Utils.rotate(1, Nil)
@@ -597,21 +597,21 @@ class UtilsTest extends FunSpec with Matchers {
   }
 
   describe("removeAt") {
-    it ("should throw IllegalArgumentException if a negative index is passed") {
+    it ("should throw IndexOutOfBoundsException if a negative index is passed") {
       a[IndexOutOfBoundsException] should be thrownBy {
         Utils.removeAt(-1, Seq(1, 2, 3))
         Utils.removeAt(-10, Nil)
       }
     }
 
-    it ("should throw IllegalArgumentException if i is bigger than s.length") {
+    it ("should throw IndexOutOfBoundsException if i is bigger than s.length") {
       a[IndexOutOfBoundsException] should be thrownBy {
         Utils.removeAt(4, Seq(1, 2, 3))
         Utils.removeAt(1, Nil)
       }
     }
 
-    it ("should correclty split the list") {
+    it ("should remove the correct from the list") {
       Utils.removeAt(0, Seq(1, 2, 3, 4, 5, 6)) should be((Seq(2, 3, 4, 5, 6), 1))
       Utils.removeAt(1, Seq(1, 2, 3, 4, 5, 6)) should be((Seq(1, 3, 4, 5, 6), 2))
       Utils.removeAt(2, Seq(1, 2, 3, 4, 5, 6)) should be((Seq(1, 2, 4, 5, 6), 3))
@@ -621,4 +621,73 @@ class UtilsTest extends FunSpec with Matchers {
     }
   }
 
+  describe("insertAt") {
+    it ("should throw IndexOutOfBoundsException if a negative index is passed") {
+      a[IndexOutOfBoundsException] should be thrownBy {
+        Utils.insertAt("el", -1, Seq(1, 2, 3))
+        Utils.insertAt("el", -10, Nil)
+      }
+    }
+
+    it ("should throw IndexOutOfBoundsException if i is bigger than s.length") {
+      a[IndexOutOfBoundsException] should be thrownBy {
+        Utils.insertAt(0, 4, Seq(1, 2, 3))
+        Utils.insertAt(1, 1, Nil)
+      }
+    }
+
+    it ("should insert an element as head of an empty list") {
+      Utils.insertAt("el", 0, Nil) should be (Seq("el"))
+    }
+
+    it ("should insert the new element in the right position inside the list") {
+      Utils.insertAt("a", 0, Seq(1, 2, 3, 4, 5, 6)) should be(Seq("a", 1, 2, 3, 4, 5, 6))
+      Utils.insertAt(7 ,1, Seq(1, 2, 3, 4, 5, 6)) should be(Seq(1, 7, 2, 3, 4, 5, 6))
+      Utils.insertAt(false, 2, Seq(1, 2, 3, 4, 5, 6)) should be(Seq(1, 2, false, 3, 4, 5, 6))
+      Utils.insertAt(0, 3, Seq(1, 2, 3, 4, 5, 6)) should be(Seq(1, 2, 3, 0, 4, 5, 6))
+      Utils.insertAt(0, 4, Seq(1, 2, 3, 4, 5, 6)) should be(Seq(1, 2, 3, 4, 0, 5, 6))
+      Utils.insertAt(0, 5, Seq(1, 2, 3, 4, 5, 6)) should be(Seq(1, 2, 3, 4, 5, 0, 6))
+      Utils.insertAt(0, 6, Seq(1, 2, 3, 4, 5, 6)) should be(Seq(1, 2, 3, 4, 5, 6, 0))
+    }
+  }
+
+  describe("insertAtDirect") {
+    it ("should throw IndexOutOfBoundsException if a negative index is passed") {
+      a[IndexOutOfBoundsException] should be thrownBy {
+        Utils.insertAtDirect("el", -1, Seq(1, 2, 3))
+        Utils.insertAtDirect("el", -10, Nil)
+      }
+    }
+
+    it ("should throw IndexOutOfBoundsException if i is bigger than s.length") {
+      a[IndexOutOfBoundsException] should be thrownBy {
+        Utils.insertAtDirect(0, 4, Seq(1, 2, 3))
+        Utils.insertAtDirect(1, 1, Nil)
+      }
+    }
+
+    it ("should insert an element as head of an empty list") {
+      Utils.insertAtDirect("el", 0, Nil) should be (Seq("el"))
+    }
+
+    it ("should insert the new element in the right position inside the list") {
+      Utils.insertAtDirect("a", 0, Seq(1, 2, 3, 4, 5, 6)) should be(Seq("a", 1, 2, 3, 4, 5, 6))
+      Utils.insertAtDirect(7 ,1, Seq(1, 2, 3, 4, 5, 6)) should be(Seq(1, 7, 2, 3, 4, 5, 6))
+      Utils.insertAtDirect(false, 2, Seq(1, 2, 3, 4, 5, 6)) should be(Seq(1, 2, false, 3, 4, 5, 6))
+      Utils.insertAtDirect(0, 3, Seq(1, 2, 3, 4, 5, 6)) should be(Seq(1, 2, 3, 0, 4, 5, 6))
+      Utils.insertAtDirect(0, 4, Seq(1, 2, 3, 4, 5, 6)) should be(Seq(1, 2, 3, 4, 0, 5, 6))
+      Utils.insertAtDirect(0, 5, Seq(1, 2, 3, 4, 5, 6)) should be(Seq(1, 2, 3, 4, 5, 0, 6))
+      Utils.insertAtDirect(0, 6, Seq(1, 2, 3, 4, 5, 6)) should be(Seq(1, 2, 3, 4, 5, 6, 0))
+    }
+
+    it ("should match insertAt") {
+      (1 to 100) foreach { _ =>
+        val s = (0 to Random.nextInt(10)).toList map (_ => Random.nextString(Random.nextInt(10)))
+        val i = Random.nextInt(s.size + 1)
+        val el = Random.nextString(Random.nextInt(10))
+
+        Utils.insertAt(el, i, s) should equal(Utils.insertAtDirect(el, i, s))
+      }
+    }
+  }
 }

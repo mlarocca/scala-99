@@ -403,7 +403,7 @@ object Utils {
 
   /**
    *
-   * @param i The element to remove from the list
+   * @param i The index of element to remove from the list
    * @param s The input sequence
    * @tparam T The generic type of elements in the input sequence
    * @throws IllegalArgumentException
@@ -426,6 +426,52 @@ object Utils {
       throw new IndexOutOfBoundsException(IndexOutOfBoundsIllegalArgumentErrorMessage)
     } else {
       doRemove(i, s)
+    }
+  }
+
+  /**
+   *
+   * @param elem The new element to add to the list
+   * @param i The element to remove from the list
+   * @param s The input sequence
+   * @tparam T The generic type of elements in the input sequence
+   * @throws IllegalArgumentException
+   * @return
+   */
+  @throws[IndexOutOfBoundsException](IndexOutOfBoundsIllegalArgumentErrorMessage)
+  def insertAt[T](elem: T, i: Int, s: Seq[T]): Seq[T] = {
+    try {
+      val (left, right) = split(i, s)
+      left ++ (elem +: right)
+    } catch {
+      case e: IndexOutOfBoundsException if e.getMessage == NegativeSizellegalArgumentErrorMessage =>
+        throw new IndexOutOfBoundsException(IndexOutOfBoundsIllegalArgumentErrorMessage)
+    }
+  }
+
+  /**
+   *
+   * @param elem The new element to add to the list
+   * @param i The element to remove from the list
+   * @param s The input sequence
+   * @tparam T The generic type of elements in the input sequence
+   * @throws IllegalArgumentException
+   * @return
+   */
+  @throws[IndexOutOfBoundsException](IndexOutOfBoundsIllegalArgumentErrorMessage)
+  def insertAtDirect[T](elem: T, i: Int, s: Seq[T]): Seq[T] = {
+    def doInsertAt(j: Int, left: Seq[T]): Seq[T] = j match {
+      case 0 => elem +: left
+      case _ =>
+        //INVARIANT: left can't be empty unless j == 0
+        val x::xs = left
+        x +: doInsertAt(j - 1, xs)
+    }
+
+    if (i < 0 || i > length(s)) {
+      throw new IndexOutOfBoundsException(IndexOutOfBoundsIllegalArgumentErrorMessage)
+    } else {
+      doInsertAt(i, s)
     }
   }
 }
