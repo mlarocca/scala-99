@@ -1,6 +1,7 @@
 package com.mlarocca.s99.lists
 
 import java.util.NoSuchElementException
+import scala.util.Random
 
 object Utils {
   private[s99] val TailErrorMessage = "Input sequence can't be empty"
@@ -10,7 +11,9 @@ object Utils {
   private[s99] val DuplicateNIllegalArgumentErrorMessage = "The multiplier factor must be a non-negative integer"
   private[s99] val NegativeMultiplierFactorIllegalArgumentErrorMessage = "Multipliers must be non-negative"
   private[s99] val NegativeSizellegalArgumentErrorMessage = "n must be positive"
+  private[s99] val InvalidCounterllegalArgumentErrorMessage = "n must be non-negative and not greather than the size of the sequence"
   private[s99] val IndexOutOfBoundsIllegalArgumentErrorMessage = "Valid indices are 0 <= i <= s.length"
+  private[s99] val NonDecreasingIndicesIllegalArgumentErrorMessage = "Indices must be in non-decreasing order"
 
   /**
    *
@@ -472,6 +475,63 @@ object Utils {
       throw new IndexOutOfBoundsException(IndexOutOfBoundsIllegalArgumentErrorMessage)
     } else {
       doInsertAt(i, s)
+    }
+  }
+
+  /**
+   * Return the range from i included to j excluded
+   *
+   * @param i First index
+   * @param j Second index
+   * @throws IllegalArgumentException if j < i
+   * @return
+   */
+  @throws[IllegalArgumentException](NonDecreasingIndicesIllegalArgumentErrorMessage)
+  def range(i: Int, j: Int): Seq[Int] = {
+    def rangeR(k: Int, s: Seq[Int]): Seq[Int] = k match {
+      case _ if k == i => s
+      case _ if i < k =>
+        val z = k - 1
+        rangeR(z, z +: s)
+    }
+
+    if (j < i) {
+      throw new IllegalArgumentException(NonDecreasingIndicesIllegalArgumentErrorMessage)
+    } else {
+      rangeR(j, Nil)
+    }
+  }
+
+  /**
+   *
+   * @param n The number of elements to be extracted from the list
+   * @param s The input sequence
+   * @tparam T The generic type of elements in the input sequence
+   * @throws IllegalArgumentException
+   * @return
+   */
+  @throws[IllegalArgumentException](InvalidCounterllegalArgumentErrorMessage)
+  def randomSelect[T](n: Int, s: Seq[T]): Seq[T] = {
+    /**
+     * Tail recursive version
+     *
+     * @param m How many elements we still need to extract
+     * @param left What's left of s after extracting n - m elements
+     * @param selected The elements randomly sected so far
+     * @return
+     */
+    def randomSelectR(m: Int, left: Seq[T], selected: Seq[T]): Seq[T] = m match {
+      //Invariant m >= 0
+      case 0 => selected
+      case _ =>
+        val (rest, el) = removeAt(Random.nextInt(length(left)), left)
+        randomSelectR(m - 1, rest, el +: selected)
+    }
+
+    if (n < 0) {
+      throw new IllegalArgumentException(InvalidCounterllegalArgumentErrorMessage)
+    } else {
+      randomSelectR(n, s, Nil)
     }
   }
 }
