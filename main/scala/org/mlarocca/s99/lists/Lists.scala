@@ -534,4 +534,28 @@ object Utils {
       randomSelectR(n, s, Nil)
     }
   }
+
+  /**
+   *
+   * @param extracted The number of elements to be extracted from the list
+   * @param maxValue The upper bound for the range
+   * @throws IllegalArgumentException
+   * @return
+   */
+  @throws[IllegalArgumentException](InvalidCounterllegalArgumentErrorMessage)
+  @throws[IllegalArgumentException](NonDecreasingIndicesIllegalArgumentErrorMessage)
+  def lotto(extracted: Int, maxValue: Int): Seq[Int] = {
+    randomSelect(extracted, range(1, maxValue + 1))
+  }
+
+  /**
+   *
+   * @param s The input sequence
+   * @tparam T The generic type of elements in the input sequence
+   * @throws IllegalArgumentException
+   * @return
+   */
+  def randomPermute[T](s: Seq[T]): Seq[T] = {
+    randomSelect(length(s), s)
+  }
 }

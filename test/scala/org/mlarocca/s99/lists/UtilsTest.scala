@@ -737,7 +737,7 @@ class UtilsTest extends FunSpec with Matchers {
       }
     }
 
-    it ("should throw IllegalArgumentException if n is greather that the size of the list") {
+    it ("should throw IllegalArgumentException if n is greather than the size of the list") {
       a[IllegalArgumentException] should be thrownBy {
         Utils.randomSelect(1, Nil)
         Utils.randomSelect(10, Seq(1))
@@ -770,7 +770,7 @@ class UtilsTest extends FunSpec with Matchers {
     it("should extract the elements randomly (the std deviation for the counters for each element should be low enough)") {
       val s = Utils.range(0, 100)
 
-      val results = (0 to Iterations * 10).toList.map { i =>
+      val results = (0 to Iterations).toList.map { i =>
         val n = Random.nextInt(s.size + 1)
         val xs = Utils.randomSelect(n, s)
 
@@ -779,7 +779,108 @@ class UtilsTest extends FunSpec with Matchers {
         s.map{ x => (x, xs.count(_ == x).toDouble) }
       }.flatten
 
-      val counters = results.groupBy{case (key, counter) => key}.map { case (key, values) => values.map(_._2).sum }
+      val counters = results.groupBy{case (key, _) => key}.map { case (_, values) => values.map(_._2).sum }
+      val (mean, stdDev) = calcAvgAndStddev(counters)
+
+      //Should be less than 1% for 10000 Iterations
+      (stdDev <= (mean * 0.01)) should be(true)
+    }
+  }
+
+  describe("lotto") {
+    it ("should throw IllegalArgumentException if a negative size is passed") {
+      a[IllegalArgumentException] should be thrownBy {
+        Utils.lotto(-1, 0)
+        Utils.lotto(-1, 1)
+      }
+    }
+
+    it ("should throw IllegalArgumentException if extracted is greather than maxValue") {
+      a[IllegalArgumentException] should be thrownBy {
+        Utils.lotto(1, 0)
+        Utils.lotto(10, 4)
+        Utils.lotto(2, 1)
+      }
+    }
+
+    it("should return Nil if extracted == 0") {
+      Utils.lotto(0, 0) should be(Nil)
+      Utils.lotto(0, 44) should be(Nil)
+    }
+
+    it("should return `maxValue` elements if extracted == maxValue") {
+      Utils.lotto(1, 1).length should be(1)
+      Utils.lotto(44, 44).length should be(44)
+    }
+
+    it("should return the correct number of elements, all of them within the range, and at most once") {
+      (1 to 100) foreach { _ =>
+        val m = 10 + Random.nextInt(90)
+        val n = Random.nextInt(m + 1)
+        val xs = Utils.lotto(n, m)
+
+        xs.size should be (n)
+
+        xs.groupBy(x => x).toSeq.map{
+          case (key, values) =>
+            values.size should be(1)
+            key >= 1 && key <= m should be(true)
+        }
+      }
+    }
+
+    it("should extract the elements randomly (the std deviation for the counters for each element should be low enough)") {
+      val m = 100
+
+      val results = (0 to Iterations).toList.map { i =>
+        val n = Random.nextInt(m + 1)
+        val xs = Utils.lotto(n, m)
+
+        xs.size should be (n)
+
+        xs
+      }.flatten
+
+      val counters = Utils.range(1, m + 1).map { x =>
+        results.count(y => y == x).toDouble
+      }
+      val (mean, stdDev) = calcAvgAndStddev(counters)
+
+      //Should be less than 1% for 10000 Iterations
+      (stdDev <= (mean * 0.01)) should be(true)
+    }
+  }
+
+
+  describe("randomPermute") {
+
+    it("should return Nil for empty sequences") {
+      Utils.randomPermute(Nil) should be(Nil)
+    }
+
+    it("should return the correct number of elements, all of them in the list") {
+      (1 to 100) foreach { _ =>
+        val s = (0 to (10 + Random.nextInt(90))).toList map (_ => Random.nextInt(1000))
+        val xs = Utils.randomPermute(s)
+
+        xs.size should be (s.size)
+        xs.sorted should equal(s.sorted)
+      }
+    }
+
+    it("should order the elements randomly (the std deviation for the sum of the positions in the permutation for each element should be low enough)") {
+      val n = 100
+      val s = Utils.range(0, n)
+
+      val results = (0 to Iterations).toList.map { i =>
+        val xs = Utils.randomPermute(s)
+
+        xs.size should be (n)
+
+        s.map{ x => (x, xs.indexOf(x).toDouble) }
+      }.flatten
+
+      val counters = results.groupBy{case (key, _) => key}.map { case (_, values) => values.map(_._2).sum }
       val (mean, stdDev) = calcAvgAndStddev(counters)
 
       //Should be less than 1% for 10000 Iterations
