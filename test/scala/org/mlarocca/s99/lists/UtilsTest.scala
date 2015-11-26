@@ -851,7 +851,6 @@ class UtilsTest extends FunSpec with Matchers {
     }
   }
 
-
   describe("randomPermute") {
 
     it("should return Nil for empty sequences") {
@@ -885,6 +884,30 @@ class UtilsTest extends FunSpec with Matchers {
 
       //Should be less than 1% for 10000 Iterations
       (stdDev <= (mean * 0.01)) should be(true)
+    }
+  }
+
+  describe("lsort") {
+
+    it("should sort sublists of any type and length") {
+      Utils.lsort(Nil) should be(Nil)
+      Utils.lsort(Seq(Seq(1, "a"), Seq(false))) should equal(Seq(Seq(false), Seq(1, "a")))
+      Utils.lsort(Seq(Seq(1), Seq(2.0, 1))) should equal(Seq(Seq(1), Seq(2.0, 1)))
+    }
+
+    it("should sort sublists by their length") {
+      (1 to 100) foreach { _ =>
+        val s = (0 to (1 + Random.nextInt(10))).map { _ =>
+          (0 to (10 + Random.nextInt(90))).toList map (_ => Random.nextInt(1000))
+        }
+
+        val sortedS = Utils.lsort(s).map(_.length)
+        sortedS should equal(sortedS.sorted)
+      }
+    }
+
+    it("should correctly handle empty sublists") {
+      Utils.lsort(Seq(Nil, Seq(1, 2), Nil, Seq(1))) should equal(Seq(Nil, Nil,  Seq(1), Seq(1, 2)))
     }
   }
 
