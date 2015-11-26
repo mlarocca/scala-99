@@ -375,7 +375,7 @@ class UtilsTest extends FunSpec with Matchers {
       Utils.duplicateDirect(Seq("a", "b", "a")) should be(Seq("a", "a", "b", "b", "a", "a"))
     }
 
-    it("should match duplicate on random lists") {
+    it("should match duplicate on random lists [random test]") {
       (1 to 100) foreach { _ =>
         val s = (0 to Random.nextInt(10)).toList map (_ => Random.nextInt())
         Utils.duplicate(s) should equal(Utils.duplicateDirect(s))
@@ -401,7 +401,7 @@ class UtilsTest extends FunSpec with Matchers {
       Utils.duplicateN(0, Nil) should be(Nil)
     }
 
-    it("should duplicate correctly lists when n == 2") {
+    it("should duplicate correctly lists when n == 2  [random test]") {
       (1 to 100) foreach { _ =>
         val s = (0 to Random.nextInt(10)).toList map (_ => Random.nextInt())
         Utils.duplicate(s) should equal(Utils.duplicateN(2, s))
@@ -565,7 +565,7 @@ class UtilsTest extends FunSpec with Matchers {
     }
 
 
-    it("should match slice") {
+    it("should match slice [random test]") {
       (1 to 100) foreach { _ =>
         val s = (0 to Random.nextInt(10)).toList map (_ => Random.nextInt())
         val i = Random.nextInt(s.size)
@@ -693,7 +693,7 @@ class UtilsTest extends FunSpec with Matchers {
       Utils.insertAtDirect(0, 6, Seq(1, 2, 3, 4, 5, 6)) should be(Seq(1, 2, 3, 4, 5, 6, 0))
     }
 
-    it("should match insertAt") {
+    it("should match insertAt [random test]") {
       (1 to 100) foreach { _ =>
         val s = (0 to Random.nextInt(10)).toList map (_ => Random.nextString(Random.nextInt(10)))
         val i = Random.nextInt(s.size + 1)
@@ -750,7 +750,7 @@ class UtilsTest extends FunSpec with Matchers {
       Utils.randomSelect(0, Nil) should be(Nil)
     }
 
-    it("should return the correct number of elements, all of them in the list") {
+    it("should return the correct number of elements, all of them in the list [random test]") {
       (1 to 100) foreach { _ =>
         val s = (0 to (10 + Random.nextInt(90))).toList map (_ => Random.nextInt(1000))
         val n = Random.nextInt(s.size + 1)
@@ -813,7 +813,7 @@ class UtilsTest extends FunSpec with Matchers {
       Utils.lotto(44, 44).length should be(44)
     }
 
-    it("should return the correct number of elements, all of them within the range, and at most once") {
+    it("should return the correct number of elements, all of them within the range, and at most once [random test]") {
       (1 to 100) foreach { _ =>
         val m = 10 + Random.nextInt(90)
         val n = Random.nextInt(m + 1)
@@ -857,7 +857,7 @@ class UtilsTest extends FunSpec with Matchers {
       Utils.randomPermute(Nil) should be(Nil)
     }
 
-    it("should return the correct number of elements, all of them in the list") {
+    it("should return the correct number of elements, all of them in the list [random test]") {
       (1 to 100) foreach { _ =>
         val s = (0 to (10 + Random.nextInt(90))).toList map (_ => Random.nextInt(1000))
         val xs = Utils.randomPermute(s)
@@ -895,19 +895,45 @@ class UtilsTest extends FunSpec with Matchers {
       Utils.lsort(Seq(Seq(1), Seq(2.0, 1))) should equal(Seq(Seq(1), Seq(2.0, 1)))
     }
 
-    it("should sort sublists by their length") {
+    it("should sort sublists by their length [random test]") {
       (1 to 100) foreach { _ =>
-        val s = (0 to (1 + Random.nextInt(10))).map { _ =>
+        val s = (0 to (1 + Random.nextInt(10))).toList.map { _ =>
           (0 to (10 + Random.nextInt(90))).toList map (_ => Random.nextInt(1000))
         }
 
-        val sortedS = Utils.lsort(s).map(_.length)
-        sortedS should equal(sortedS.sorted)
+        val sublistsLengths = Utils.lsort(s).map(_.length)
+        sublistsLengths should equal(sublistsLengths.sorted)
       }
     }
 
     it("should correctly handle empty sublists") {
       Utils.lsort(Seq(Nil, Seq(1, 2), Nil, Seq(1))) should equal(Seq(Nil, Nil,  Seq(1), Seq(1, 2)))
+    }
+  }
+
+  describe("lsortFreq") {
+
+    it("should sort sublists of any type and length") {
+      Utils.lsortFreq(Nil) should be(Nil)
+      Utils.lsortFreq(Seq(Seq(1.0), Seq(1, "a"), Seq(false))) should equal(Seq(Seq(1, "a"), Seq(1.0), Seq(false)))
+      Utils.lsortFreq(Seq(Seq(1), Seq(2.0, 1))) should equal(Seq(Seq(1), Seq(2.0, 1)))
+    }
+
+    it("should sort sublists by their length [random test]") {
+      (1 to 100) foreach { _ =>
+        val s = (0 to (1 + Random.nextInt(10))).toList.map { _ =>
+          (0 to (10 + Random.nextInt(90))).toList map (_ => Random.nextInt(1000))
+        }
+
+        var sortedS = Utils.lsortFreq(s)
+        val sublistsLengths = sortedS.map(_.length)
+        val sublistsFrequencies = sortedS.map(xs => sublistsLengths.count(_ == xs.length))
+        sublistsFrequencies should equal(sublistsFrequencies.sorted)
+      }
+    }
+
+    it("should correctly handle empty sublists") {
+      Utils.lsortFreq(Seq(Nil, Seq(1, 2), Nil, Seq(1))) should equal(Seq(Seq(1, 2), Seq(1), Nil, Nil))
     }
   }
 

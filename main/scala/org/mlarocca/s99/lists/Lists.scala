@@ -561,12 +561,30 @@ object Utils {
 
   /**
    *
+   * Sort a list of the second order according to the sublists' length.
+   *
    * @param s The input sequence (a sequence of sequences)
    * @tparam T The generic type of elements in the input sequence
    * @throws IllegalArgumentException
    * @return
    */
   def lsort[T](s: Seq[Seq[T]]): Seq[Seq[T]] = s.sorted(new Ordering[Seq[T]]() {
-    override def compare(xs: Seq[T], ys: Seq[T]): Int = length(xs) - length(ys)
+    override def compare(xs: Seq[T], ys: Seq[T]): Int = xs.size - ys.size
   })
+
+
+  /**
+   * Sort a list of the second order according to the frequency of the length of each sublist.
+   *
+   * @param s The input sequence (a sequence of sequences)
+   * @tparam T The generic type of elements in the input sequence
+   * @throws IllegalArgumentException
+   * @return
+   */
+  def lsortFreq[T](s: Seq[Seq[T]]): Seq[Seq[T]] = {
+    val lFreq = s.groupBy(xs => length(xs)).map{ case (size, xss) => size -> length(xss)}
+    s.sorted(new Ordering[Seq[T]]() {
+      override def compare(xs: Seq[T], ys: Seq[T]): Int = lFreq(xs.size) - lFreq(ys.size)
+    })
+  }
 }
