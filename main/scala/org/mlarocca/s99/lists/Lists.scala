@@ -558,4 +558,15 @@ object Utils {
   def randomPermute[T](s: Seq[T]): Seq[T] = {
     randomSelect(length(s), s)
   }
+
+  /**
+   *
+   * @param s The input sequence (a sequence of sequences)
+   * @tparam T The generic type of elements in the input sequence
+   * @throws IllegalArgumentException
+   * @return
+   */
+  def lsort[T](s: Seq[Seq[T]]): Seq[Seq[T]] = s.sorted(new Ordering[Seq[T]]() {
+    override def compare(xs: Seq[T], ys: Seq[T]): Int = length(xs) - length(ys)
+  })
 }
