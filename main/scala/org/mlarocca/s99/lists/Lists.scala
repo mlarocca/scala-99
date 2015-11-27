@@ -550,6 +550,34 @@ object Utils {
 
   /**
    *
+   * @param k The size of the subgroups
+   * @throws IllegalArgumentException
+   * @return
+   */
+  @throws[IllegalArgumentException](InvalidCounterllegalArgumentErrorMessage)
+  def combinations[T](k: Int, s: Seq[T]): Seq[Seq[T]] = {
+
+    def goThroughList(s: Seq[T]): Seq[Seq[T]] = s match {
+      case Nil => Nil
+      case x :: xs =>
+        val xCombinations = combinations(k - 1, xs).map {
+          x +: _
+        }
+        val recursive = goThroughList(xs)
+        xCombinations ++ recursive
+    }
+
+    k match {
+      case _ if k < 0 => throw new IllegalArgumentException(InvalidCounterllegalArgumentErrorMessage)
+      case _ if k == 0 || k > length(s) => Nil
+      case 1 => s.map(Seq(_))
+      case _ => goThroughList(s)
+    }
+
+  }
+
+  /**
+   *
    * @param s The input sequence
    * @tparam T The generic type of elements in the input sequence
    * @throws IllegalArgumentException
@@ -571,7 +599,6 @@ object Utils {
   def lsort[T](s: Seq[Seq[T]]): Seq[Seq[T]] = s.sorted(new Ordering[Seq[T]]() {
     override def compare(xs: Seq[T], ys: Seq[T]): Int = xs.size - ys.size
   })
-
 
   /**
    * Sort a list of the second order according to the frequency of the length of each sublist.

@@ -851,6 +851,44 @@ class UtilsTest extends FunSpec with Matchers {
     }
   }
 
+  describe("combinations") {
+    it ("should throw IllegalArgumentException if a negative counter is passed") {
+      a[IllegalArgumentException] should be thrownBy {
+        Utils.combinations(-1, Nil)
+        Utils.combinations(-1, Seq(1))
+      }
+    }
+
+    it ("should return Nil if k is greather than s.size") {
+      Utils.combinations(1, Nil) should be(Nil)
+      Utils.combinations(10, Seq(1, 2, 0)) should be(Nil)
+      Utils.combinations(2, Seq(1)) should be(Nil)
+    }
+
+    it("should return Nil if k == 0") {
+      Utils.combinations(0, Nil) should be(Nil)
+      Utils.combinations(0, Seq(44)) should be(Nil)
+    }
+
+    it("should return the full list if k == s.size") {
+      Utils.combinations(1, Seq(44)) should be(Seq(Seq(44)))
+      Utils.combinations(2, Seq(22, 44)) should be(Seq(Seq(22, 44)))
+    }
+
+    it("should return the sequence of singletons if k == 1") {
+      Utils.combinations(1, Seq(44)) should be(Seq(Seq(44)))
+      Utils.combinations(1, Seq(1, 2, 3)) should be(Seq(Seq(1), Seq(2), Seq(3)))
+    }
+
+    it("should return all the combinations for if k == 2") {
+      Utils.combinations(2, Seq(1, 2, 3)) should be(Seq(Seq(1, 2), Seq(1, 3), Seq(2, 3)))
+    }
+
+    it("should return all the combinations for if k == 3") {
+      Utils.combinations(2, Seq(1, 2, 3, 4)) should be(Seq(Seq(1, 2, 3), Seq(1, 2, 4), Seq(1, 3, 4), Seq(2, 3, 4)))
+    }
+  }
+
   describe("randomPermute") {
 
     it("should return Nil for empty sequences") {
