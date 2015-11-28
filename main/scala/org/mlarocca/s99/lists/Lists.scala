@@ -14,6 +14,7 @@ object Utils {
   private[s99] val InvalidCounterllegalArgumentErrorMessage = "n must be non-negative and not greather than the size of the sequence"
   private[s99] val IndexOutOfBoundsIllegalArgumentErrorMessage = "Valid indices are 0 <= i <= s.length"
   private[s99] val NonDecreasingIndicesIllegalArgumentErrorMessage = "Indices must be in non-decreasing order"
+  private[s99] val GroupSizezIllegalArgumentErrorMessage = "The sum of the groups sizes must be equal to the list size"
 
   /**
    *
@@ -537,6 +538,38 @@ object Utils {
 
   /**
    *
+   * @param s The input sequence
+   * @tparam T The generic type of elements in the input sequence
+   * @throws IllegalArgumentException
+   * @return
+   */
+  def randomPermute[T](s: Seq[T]): Seq[T] = {
+    randomSelect(length(s), s)
+  }
+
+  def group[T](sizes: Seq[Int], s: Seq[T]): Seq[Seq[Seq[T]]] = {
+    def takeNextChunks(sizes: Seq[Int], xs: Seq[T]): Seq[Seq[Seq[T]]] = sizes match {
+      case Nil => Seq(Nil)
+      case n::ns =>
+        combinations(n, xs).flatMap { combination =>
+          takeNextChunks(ns, xs.filter(!combination.contains(_))).map(combination +: _)
+        }
+    }
+
+    if (sizes.exists(_ <= 0)) {
+      throw new IllegalArgumentException(NegativeSizellegalArgumentErrorMessage)
+    }
+
+    if (sizes.sum != length(s)) {
+      throw new IllegalArgumentException(GroupSizezIllegalArgumentErrorMessage)
+    }
+
+    takeNextChunks(sizes, s)
+  }
+
+
+  /**
+   *
    * @param extracted The number of elements to be extracted from the list
    * @param maxValue The upper bound for the range
    * @throws IllegalArgumentException
@@ -574,17 +607,6 @@ object Utils {
       case _ => goThroughList(s)
     }
 
-  }
-
-  /**
-   *
-   * @param s The input sequence
-   * @tparam T The generic type of elements in the input sequence
-   * @throws IllegalArgumentException
-   * @return
-   */
-  def randomPermute[T](s: Seq[T]): Seq[T] = {
-    randomSelect(length(s), s)
   }
 
   /**

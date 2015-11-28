@@ -851,6 +851,42 @@ class UtilsTest extends FunSpec with Matchers {
     }
   }
 
+  describe("randomPermute") {
+
+    it("should return Nil for empty sequences") {
+      Utils.randomPermute(Nil) should be(Nil)
+    }
+
+    it("should return the correct number of elements, all of them in the list [random test]") {
+      (1 to 100) foreach { _ =>
+        val s = (0 to (10 + Random.nextInt(90))).toList map (_ => Random.nextInt(1000))
+        val xs = Utils.randomPermute(s)
+
+        xs.size should be (s.size)
+        xs.sorted should equal(s.sorted)
+      }
+    }
+
+    it("should order the elements randomly (the std deviation for the sum of the positions in the permutation for each element should be low enough)") {
+      val n = 100
+      val s = Utils.range(0, n)
+
+      val results = (0 to Iterations).toList.map { i =>
+        val xs = Utils.randomPermute(s)
+
+        xs.size should be (n)
+
+        s.map{ x => (x, xs.indexOf(x).toDouble) }
+      }.flatten
+
+      val counters = results.groupBy{case (key, _) => key}.map { case (_, values) => values.map(_._2).sum }
+      val (mean, stdDev) = calcAvgAndStddev(counters)
+
+      //Should be less than 1% for 10000 Iterations
+      (stdDev <= (mean * 0.01)) should be(true)
+    }
+  }
+
   describe("combinations") {
     it ("should throw IllegalArgumentException if a negative counter is passed") {
       a[IllegalArgumentException] should be thrownBy {
@@ -885,43 +921,44 @@ class UtilsTest extends FunSpec with Matchers {
     }
 
     it("should return all the combinations for if k == 3") {
-      Utils.combinations(2, Seq(1, 2, 3, 4)) should be(Seq(Seq(1, 2, 3), Seq(1, 2, 4), Seq(1, 3, 4), Seq(2, 3, 4)))
+      Utils.combinations(3, Seq(1, 2, 3, 4)) should be(Seq(Seq(1, 2, 3), Seq(1, 2, 4), Seq(1, 3, 4), Seq(2, 3, 4)))
     }
   }
 
-  describe("randomPermute") {
-
-    it("should return Nil for empty sequences") {
-      Utils.randomPermute(Nil) should be(Nil)
-    }
-
-    it("should return the correct number of elements, all of them in the list [random test]") {
-      (1 to 100) foreach { _ =>
-        val s = (0 to (10 + Random.nextInt(90))).toList map (_ => Random.nextInt(1000))
-        val xs = Utils.randomPermute(s)
-
-        xs.size should be (s.size)
-        xs.sorted should equal(s.sorted)
+  describe("group") {
+    it ("should throw IllegalArgumentException if any of the sizes is non positive") {
+      a[IllegalArgumentException] should be thrownBy {
+        Utils.group(Seq(-1, 3), Nil)
+        Utils.group(Seq(1, 0), Seq(1))
       }
     }
 
-    it("should order the elements randomly (the std deviation for the sum of the positions in the permutation for each element should be low enough)") {
-      val n = 100
-      val s = Utils.range(0, n)
+    it ("should throw IllegalArgumentException if the sum of the sizes is not equal to the size of the list") {
+      a[IllegalArgumentException] should be thrownBy {
+        Utils.group(Seq(1, 3), Nil)
+        Utils.group(Seq(1, 2, 3), Seq(2, 3, 6, 1))
+      }
+    }
 
-      val results = (0 to Iterations).toList.map { i =>
-        val xs = Utils.randomPermute(s)
+    it ("should return the full list is sizes == Seq(s.size)") {
+      Utils.group(Seq(1), Seq(1)) should be(Seq(Seq(Seq(1))))
+      Utils.group(Seq(2), Seq(1, 0)) should be(Seq(Seq(Seq(1, 0))))
+    }
 
-        xs.size should be (n)
+    it("should return the correct breakdown of s") {
 
-        s.map{ x => (x, xs.indexOf(x).toDouble) }
-      }.flatten
+      Utils.group(Seq(2, 1), Seq(1, 2, 3)) should equal(Seq(Seq(Seq(1, 2), Seq(3)), Seq(Seq(1, 3), Seq(2)), Seq(Seq(2, 3), Seq(1))))
+      Utils.group(Seq(1, 1, 1), Seq(1, 2, 3)) should equal(Seq(Seq(Seq(1), Seq(2), Seq(3)), Seq(Seq(1), Seq(3), Seq(2)), Seq(Seq(2), Seq(1), Seq(3)), Seq(Seq(2), Seq(3), Seq(1)), Seq(Seq(3), Seq(1), Seq(2)), Seq(Seq(3), Seq(2), Seq(1))))
+      
+      val s1 = Seq(1, 2, 3, 4, 5)
 
-      val counters = results.groupBy{case (key, _) => key}.map { case (_, values) => values.map(_._2).sum }
-      val (mean, stdDev) = calcAvgAndStddev(counters)
+      val r1 = Seq(Seq(Seq(1, 2), Seq(3, 4, 5)), Seq(Seq(1, 3), Seq(2, 4, 5)), Seq(Seq(1, 4), Seq(2, 3, 5)), Seq(Seq(1, 5), Seq(2, 3, 4)), Seq(Seq(2, 3), Seq(1, 4, 5)), Seq(Seq(2, 4), Seq(1, 3, 5)), Seq(Seq(2, 5), Seq(1, 3, 4)), Seq(Seq(3, 4), Seq(1, 2, 5)), Seq(Seq(3, 5), Seq(1, 2, 4)), Seq(Seq(4, 5), Seq(1, 2, 3)))
+      val r2 = Seq(Seq(Seq(1, 2), Seq(3), Seq(4, 5)), Seq(Seq(1, 2), Seq(4), Seq(3, 5)), Seq(Seq(1, 2), Seq(5), Seq(3, 4)), Seq(Seq(1, 3), Seq(2), Seq(4, 5)), Seq(Seq(1, 3), Seq(4), Seq(2, 5)), Seq(Seq(1, 3), Seq(5), Seq(2, 4)), Seq(Seq(1, 4), Seq(2), Seq(3, 5)), Seq(Seq(1, 4), Seq(3), Seq(2, 5)), Seq(Seq(1, 4), Seq(5), Seq(2, 3)), Seq(Seq(1, 5), Seq(2), Seq(3, 4)), Seq(Seq(1, 5), Seq(3), Seq(2, 4)), Seq(Seq(1, 5), Seq(4), Seq(2, 3)), Seq(Seq(2, 3), Seq(1), Seq(4, 5)), Seq(Seq(2, 3), Seq(4), Seq(1, 5)), Seq(Seq(2, 3), Seq(5), Seq(1, 4)), Seq(Seq(2, 4), Seq(1), Seq(3, 5)), Seq(Seq(2, 4), Seq(3), Seq(1, 5)), Seq(Seq(2, 4), Seq(5), Seq(1, 3)), Seq(Seq(2, 5), Seq(1), Seq(3, 4)), Seq(Seq(2, 5), Seq(3), Seq(1, 4)), Seq(Seq(2, 5), Seq(4), Seq(1, 3)), Seq(Seq(3, 4), Seq(1), Seq(2, 5)), Seq(Seq(3, 4), Seq(2), Seq(1, 5)), Seq(Seq(3, 4), Seq(5), Seq(1, 2)), Seq(Seq(3, 5), Seq(1), Seq(2, 4)), Seq(Seq(3, 5), Seq(2), Seq(1, 4)), Seq(Seq(3, 5), Seq(4), Seq(1, 2)), Seq(Seq(4, 5), Seq(1), Seq(2, 3)), Seq(Seq(4, 5), Seq(2), Seq(1, 3)), Seq(Seq(4, 5), Seq(3), Seq(1, 2)))
+      val r3 = Seq(Seq(Seq(1), Seq(2, 3), Seq(4), Seq(5)), Seq(Seq(1), Seq(2, 3), Seq(5), Seq(4)), Seq(Seq(1), Seq(2, 4), Seq(3), Seq(5)), Seq(Seq(1), Seq(2, 4), Seq(5), Seq(3)), Seq(Seq(1), Seq(2, 5), Seq(3), Seq(4)), Seq(Seq(1), Seq(2, 5), Seq(4), Seq(3)), Seq(Seq(1), Seq(3, 4), Seq(2), Seq(5)), Seq(Seq(1), Seq(3, 4), Seq(5), Seq(2)), Seq(Seq(1), Seq(3, 5), Seq(2), Seq(4)), Seq(Seq(1), Seq(3, 5), Seq(4), Seq(2)), Seq(Seq(1), Seq(4, 5), Seq(2), Seq(3)), Seq(Seq(1), Seq(4, 5), Seq(3), Seq(2)), Seq(Seq(2), Seq(1, 3), Seq(4), Seq(5)), Seq(Seq(2), Seq(1, 3), Seq(5), Seq(4)), Seq(Seq(2), Seq(1, 4), Seq(3), Seq(5)), Seq(Seq(2), Seq(1, 4), Seq(5), Seq(3)), Seq(Seq(2), Seq(1, 5), Seq(3), Seq(4)), Seq(Seq(2), Seq(1, 5), Seq(4), Seq(3)), Seq(Seq(2), Seq(3, 4), Seq(1), Seq(5)), Seq(Seq(2), Seq(3, 4), Seq(5), Seq(1)), Seq(Seq(2), Seq(3, 5), Seq(1), Seq(4)), Seq(Seq(2), Seq(3, 5), Seq(4), Seq(1)), Seq(Seq(2), Seq(4, 5), Seq(1), Seq(3)), Seq(Seq(2), Seq(4, 5), Seq(3), Seq(1)), Seq(Seq(3), Seq(1, 2), Seq(4), Seq(5)), Seq(Seq(3), Seq(1, 2), Seq(5), Seq(4)), Seq(Seq(3), Seq(1, 4), Seq(2), Seq(5)), Seq(Seq(3), Seq(1, 4), Seq(5), Seq(2)), Seq(Seq(3), Seq(1, 5), Seq(2), Seq(4)), Seq(Seq(3), Seq(1, 5), Seq(4), Seq(2)), Seq(Seq(3), Seq(2, 4), Seq(1), Seq(5)), Seq(Seq(3), Seq(2, 4), Seq(5), Seq(1)), Seq(Seq(3), Seq(2, 5), Seq(1), Seq(4)), Seq(Seq(3), Seq(2, 5), Seq(4), Seq(1)), Seq(Seq(3), Seq(4, 5), Seq(1), Seq(2)), Seq(Seq(3), Seq(4, 5), Seq(2), Seq(1)), Seq(Seq(4), Seq(1, 2), Seq(3), Seq(5)), Seq(Seq(4), Seq(1, 2), Seq(5), Seq(3)), Seq(Seq(4), Seq(1, 3), Seq(2), Seq(5)), Seq(Seq(4), Seq(1, 3), Seq(5), Seq(2)), Seq(Seq(4), Seq(1, 5), Seq(2), Seq(3)), Seq(Seq(4), Seq(1, 5), Seq(3), Seq(2)), Seq(Seq(4), Seq(2, 3), Seq(1), Seq(5)), Seq(Seq(4), Seq(2, 3), Seq(5), Seq(1)), Seq(Seq(4), Seq(2, 5), Seq(1), Seq(3)), Seq(Seq(4), Seq(2, 5), Seq(3), Seq(1)), Seq(Seq(4), Seq(3, 5), Seq(1), Seq(2)), Seq(Seq(4), Seq(3, 5), Seq(2), Seq(1)), Seq(Seq(5), Seq(1, 2), Seq(3), Seq(4)), Seq(Seq(5), Seq(1, 2), Seq(4), Seq(3)), Seq(Seq(5), Seq(1, 3), Seq(2), Seq(4)), Seq(Seq(5), Seq(1, 3), Seq(4), Seq(2)), Seq(Seq(5), Seq(1, 4), Seq(2), Seq(3)), Seq(Seq(5), Seq(1, 4), Seq(3), Seq(2)), Seq(Seq(5), Seq(2, 3), Seq(1), Seq(4)), Seq(Seq(5), Seq(2, 3), Seq(4), Seq(1)), Seq(Seq(5), Seq(2, 4), Seq(1), Seq(3)), Seq(Seq(5), Seq(2, 4), Seq(3), Seq(1)), Seq(Seq(5), Seq(3, 4), Seq(1), Seq(2)), Seq(Seq(5), Seq(3, 4), Seq(2), Seq(1)))
 
-      //Should be less than 1% for 10000 Iterations
-      (stdDev <= (mean * 0.01)) should be(true)
+      Utils.group(Seq(2, 3), s1) should equal(r1)
+      Utils.group(Seq(2, 1, 2), s1) should equal(r2)
+      Utils.group(Seq(1, 2, 1, 1), s1)  should equal(r3)
     }
   }
 
