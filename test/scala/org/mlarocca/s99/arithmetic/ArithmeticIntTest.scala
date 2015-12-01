@@ -58,12 +58,55 @@ class ArithmeticIntTest extends FunSpec with Matchers {
     }
 
 
-    it ("should return the same result as isPrime [random]") {
+    it ("should return the same result as isPrime [randomTest]") {
 
       (1 to IterationNumber).foreach{ _ =>
         val n = 1 + Random.nextInt(Int.MaxValue)
         n.isProbablyPrime() should be(n.isPrime())
       }
     }
-  }  
+  }
+
+  describe("gcd") {
+    it ("should return a when b == 0") {
+      1.gcd(0).value should be(1)
+      2.gcd(0).value should be(2)
+      3.gcd(0).value should be(3)
+      0.gcd(0).value should be(0)
+    }
+
+    it ("should return b when a == 0") {
+      0.gcd(1).value should be(1)
+      0.gcd(3).value should be(3)
+    }
+
+    it ("should return the correct result for positive values") {
+      1.gcd(3).value should be(1)
+      2.gcd(3).value should be(1)
+      2.gcd(6).value should be(2)
+      3.gcd(9).value should be(3)
+      42.gcd(63).value should be(21)
+      63.gcd(42).value should be(21)
+      36.gcd(63).value should be(9)
+    }
+
+    it ("should return the correct result if one or both arguments are negative Ints") {
+      -1.gcd(3).value should be(-1)
+      2.gcd(-3).value should be(-1)
+      -2.gcd(6).value should be(-2)
+      -3.gcd(-9).value should be(-3)
+      42.gcd(-63).value should be(-21)
+      -63.gcd(42).value should be(-21)
+      -36.gcd(-63).value should be(-9)
+    }
+
+    it ("should be simmetric [randomTest]") {
+
+      (1 to IterationNumber).foreach{ _ =>
+        val a = Random.nextInt()
+        val b = Random.nextInt()
+        a.gcd(b) should be(b.gcd(a))
+      }
+    }
+  }
 }

@@ -77,6 +77,23 @@ case class ArithmeticInt(value: Int) {
   }
 
   /**
+   * Euclide method for greatest common divisor.
+   *
+   * @param other
+   * @return
+   */
+  def gcd(other: ArithmeticInt): ArithmeticInt = other match {
+    case ArithmeticInt(0) => value
+    case ArithmeticInt(v) => v.gcd(value % v)
+  }
+
+
+  ////////////////////////////////////////////
+  //              Utilities
+  ////////////////////////////////////////////
+
+
+  /**
    * Represent an int as the product 2^r * d
    * @param n
    * @return
