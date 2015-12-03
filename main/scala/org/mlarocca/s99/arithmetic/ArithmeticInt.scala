@@ -123,6 +123,15 @@ case class ArithmeticInt(value: Int) {
       }.sum
   }
 
+  def primeFactors(): Seq[ArithmeticInt] = value match {
+    case 0|1 => Nil
+    case i if i < 0  => Math.abs(i).primeFactors()
+    case _ if this.isPrime() => Seq(this)
+    case _ =>
+      (2 to (value / 2)).view.map(IntToArithmeticInt).filter(n => n.isPrime && !this.isCoprime(n)).toSeq
+  }
+
+
   ////////////////////////////////////////////
   //              Utilities
   ////////////////////////////////////////////

@@ -157,6 +157,10 @@ class ArithmeticIntTest extends FunSpec with Matchers {
   }
 
   describe("totient") {
+    it("should return 0 if value == 0") {
+      0.totient() should be(0)
+    }
+
     it("should return the correct result for positive values") {
       1.totient() should be(1)
       2.totient() should be(1)
@@ -168,7 +172,7 @@ class ArithmeticIntTest extends FunSpec with Matchers {
       42.totient() should be(12)
     }
 
-    it("should return the correct result if one or both arguments are negative Ints") {
+    it("should return the correct result if for negative Ints") {
       -1.totient() should be(1)
       -2.totient() should be(1)
       -3.totient() should be(2)
@@ -179,5 +183,41 @@ class ArithmeticIntTest extends FunSpec with Matchers {
       -42.totient() should be(12)
     }
   }
-  
+
+  describe("primeFactors") {
+    it("should return Nil if value == 0") {
+      0.primeFactors() should be(Nil)
+    }
+
+    it("should return Nil if value == 1") {
+      1.primeFactors() should be(Nil)
+    }
+
+    it("should return the correct result for positive values") {
+      2.primeFactors() should equal(Seq(2))
+      3.primeFactors() should equal(Seq(3))
+      4.primeFactors() should equal(Seq(2))
+      5.primeFactors() should equal(Seq(5))
+      6.primeFactors() should equal(Seq(2, 3))
+      7.primeFactors() should equal(Seq(7))
+      8.primeFactors() should equal(Seq(2))
+      9.primeFactors() should equal(Seq(3))
+      10.primeFactors() should equal(Seq(2, 5))
+      42.primeFactors() should equal(Seq(2, 3, 7))
+    }
+
+    it("should return the correct result if for negative Ints") {
+      -1.primeFactors() should equal(Nil)
+      -2.primeFactors() should equal(Seq(2))
+      -3.primeFactors() should equal(Seq(3))
+      -4.primeFactors() should equal(Seq(2))
+      -5.primeFactors() should equal(Seq(5))
+      -6.primeFactors() should equal(Seq(2, 3))
+      -7.primeFactors() should equal(Seq(7))
+      -8.primeFactors() should equal(Seq(2))
+      -9.primeFactors() should equal(Seq(3))
+      -10.primeFactors() should equal(Seq(2, 5))
+      -42.primeFactors() should equal(Seq(2, 3, 7))
+    }
+  }
 }
