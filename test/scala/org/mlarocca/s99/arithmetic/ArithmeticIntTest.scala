@@ -207,17 +207,50 @@ class ArithmeticIntTest extends FunSpec with Matchers {
     }
 
     it("should return the correct result if for negative Ints") {
-      -1.primeFactors() should equal(Nil)
-      -2.primeFactors() should equal(Seq(2))
-      -3.primeFactors() should equal(Seq(3))
-      -4.primeFactors() should equal(Seq(2))
-      -5.primeFactors() should equal(Seq(5))
-      -6.primeFactors() should equal(Seq(2, 3))
-      -7.primeFactors() should equal(Seq(7))
-      -8.primeFactors() should equal(Seq(2))
-      -9.primeFactors() should equal(Seq(3))
-      -10.primeFactors() should equal(Seq(2, 5))
-      -42.primeFactors() should equal(Seq(2, 3, 7))
+      (-1).primeFactors() should equal(Nil)
+      (-2).primeFactors() should equal(Seq(2))
+      (-3).primeFactors() should equal(Seq(3))
+      (-4).primeFactors() should equal(Seq(2))
+      (-5).primeFactors() should equal(Seq(5))
+      (-6).primeFactors() should equal(Seq(2, 3))
+      (-7).primeFactors() should equal(Seq(7))
+      (-8).primeFactors() should equal(Seq(2))
+      (-9).primeFactors() should equal(Seq(3))
+      (-10).primeFactors() should equal(Seq(2, 5))
+      (-42).primeFactors() should equal(Seq(2, 3, 7))
     }
   }
+
+  describe("primeFactorsMultiplicity") {
+    it("should return Nil if value == 0") {
+      0.primeFactorsMultiplicity() should be(Map.empty)
+    }
+
+    it("should return Nil if value == 1") {
+      1.primeFactorsMultiplicity() should be(Map.empty)
+    }
+
+    it("should return the correct result for positive values") {
+      2.primeFactorsMultiplicity() should equal(Map(2 -> 1))
+      3.primeFactorsMultiplicity() should equal(Map(3 -> 1))
+      4.primeFactorsMultiplicity() should equal(Map(2 -> 2))
+      5.primeFactorsMultiplicity() should equal(Map(5 -> 1))
+      6.primeFactorsMultiplicity() should equal(Map(2 -> 1, 3-> 1))
+      7.primeFactorsMultiplicity() should equal(Map(7 -> 1))
+      8.primeFactorsMultiplicity() should equal(Map(2 -> 3))
+      9.primeFactorsMultiplicity() should equal(Map(3 -> 2))
+      10.primeFactorsMultiplicity() should equal(Map(2 -> 1, 5 -> 1))
+      42.primeFactorsMultiplicity() should equal(Map(2 -> 1, 7 -> 1, 3 -> 1))
+      126.primeFactorsMultiplicity() should equal(Map(2 -> 1, 7 -> 1, 3 -> 2))
+    }
+
+    it("should return the correct result if for negative Ints") {
+      (-2).primeFactorsMultiplicity() should equal(Map(2 -> 1))
+      (-3).primeFactorsMultiplicity() should equal(Map(3 -> 1))
+      (-4).primeFactorsMultiplicity() should equal(Map(2 -> 2))
+      (-5).primeFactorsMultiplicity() should equal(Map(5 -> 1))
+      (-6).primeFactorsMultiplicity() should equal(Map(2 -> 1, 3-> 1))
+    }
+  }
+  
 }

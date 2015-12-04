@@ -131,10 +131,46 @@ case class ArithmeticInt(value: Int) {
       (2 to (value / 2)).view.map(IntToArithmeticInt).filter(n => n.isPrime && !this.isCoprime(n)).toSeq
   }
 
+  /**
+   * Returns prime factors for any Int, with their respective multiplicty.
+   * @return
+   */
+  def primeFactorsMultiplicity(): Map[ArithmeticInt, ArithmeticInt] = {
+    val largestPossibleFactor = value / 2
+    def factorR(number: ArithmeticInt, nextFactor: ArithmeticInt): Map[ArithmeticInt, ArithmeticInt] = {
+      if (nextFactor > largestPossibleFactor) {
+        Map.empty
+      } else if (nextFactor.isPrime && !number.isCoprime(nextFactor)) {
+        val MultiplicityResult(recMultiplier, recDivisionResult) = multiplicity(number / nextFactor, nextFactor)
+        factorR(recDivisionResult, nextFactor + 1) + ((nextFactor, recMultiplier + 1))
+      } else {
+        factorR(number, nextFactor + 1)
+      }
+    }
+
+    value match {
+      case 0|1 => Map.empty
+      case i if i < 0  => Math.abs(i).primeFactorsMultiplicity()
+      case _ if this.isPrime() => Map(this -> 1)
+      case _ =>
+        factorR(this, 2)
+    }
+  }
+
 
   ////////////////////////////////////////////
   //              Utilities
   ////////////////////////////////////////////
+
+  case class MultiplicityResult(multiplicity: Int, divisionResult: Int)
+  
+  def multiplicity(dividend: Int, divisor: Int): MultiplicityResult = (dividend, divisor) match {
+    case (_, 0) => MultiplicityResult(0, dividend)
+    case _ if dividend % divisor != 0 => MultiplicityResult(0, dividend)
+    case _ =>
+      val MultiplicityResult(recMultiplier, recDivisionResult) = multiplicity(dividend / divisor, divisor)
+      MultiplicityResult(1 + recMultiplier, recDivisionResult)
+  }
 
 
   /**
