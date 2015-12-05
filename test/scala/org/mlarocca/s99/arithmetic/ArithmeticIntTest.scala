@@ -6,7 +6,8 @@ import ArithmeticInt._
 import scala.util.Random
 
 class ArithmeticIntTest extends FunSpec with Matchers {
-  private val IterationNumber = 1000
+  private val RandomTestIterations = 1000
+  private val ProfileIterations = 100
 
   describe("equality") {
     it ("should compare correctly Ints, Bytes, Longs etc... ") {
@@ -78,7 +79,7 @@ class ArithmeticIntTest extends FunSpec with Matchers {
 
     it ("should return the same result as isPrime [randomTest]") {
 
-      (1 to IterationNumber).foreach{ _ =>
+      (1 to RandomTestIterations).foreach{ _ =>
         val n = 1 + Random.nextInt(Int.MaxValue)
         n.isProbablyPrime() should be(n.isPrime())
       }
@@ -119,7 +120,7 @@ class ArithmeticIntTest extends FunSpec with Matchers {
     }
 
     it ("should be simmetric [randomTest]") {
-      (1 to IterationNumber).foreach{ _ =>
+      (1 to RandomTestIterations).foreach{ _ =>
         val a = Random.nextInt()
         val b = Random.nextInt()
         a.gcd(b) should be(b.gcd(a))
@@ -148,7 +149,7 @@ class ArithmeticIntTest extends FunSpec with Matchers {
 
     it("should be true iff gcd is 1 [randomTest]") {
 
-      (1 to IterationNumber).foreach { _ =>
+      (1 to RandomTestIterations).foreach { _ =>
         val a = Random.nextInt()
         val b = Random.nextInt()
         a.isCoprime(b) should be(Math.abs(b.gcd(a)) == 1)
@@ -252,5 +253,80 @@ class ArithmeticIntTest extends FunSpec with Matchers {
       (-6).primeFactorsMultiplicity() should equal(Map(2 -> 1, 3-> 1))
     }
   }
-  
+
+  describe("totientFast") {
+    it("should return 0 if value == 0") {
+      0.totientFast() should be(0)
+    }
+
+    it("should return the correct result for positive values") {
+      1.totientFast() should be(1)
+      2.totientFast() should be(1)
+      3.totientFast() should be(2)
+      7.totientFast() should be(6)
+      8.totientFast() should be(4)
+      9.totientFast() should be(6)
+      10.totientFast() should be(4)
+      42.totientFast() should be(12)
+    }
+
+    it("should return the correct result if for negative Ints") {
+      -1.totientFast() should be(1)
+      -2.totientFast() should be(1)
+      -3.totientFast() should be(2)
+      -7.totientFast() should be(6)
+      -8.totientFast() should be(4)
+      -9.totientFast() should be(6)
+      -10.totientFast() should be(4)
+      -42.totientFast() should be(12)
+    }
+
+    it("should match the result of .totient() [randomTest]") {
+      (1 to RandomTestIterations).foreach { _ =>
+        val a = Random.nextInt(1000)
+        a.totient() should be(a.totientFast())
+      }
+    }
+
+    it("should be sensibly faster than .totient() on large Ints") {
+      val testValue = 10090
+      val ProfileResult(r1, t1) = profile {testValue.totient()}
+      val ProfileResult(r2, t2) = profile {testValue.totientFast()}
+
+      println(s"value: $testValue | Time `.totient()`: $t1 | time ns`.totientFast()`: $t2 ns")
+
+      r1 should equal(r2)
+      t2 < t1 should be(true)
+    }
+
+    it("profile comparison to totient [randomProfiler]") {
+      (1 to ProfileIterations).foreach { _ =>
+        val a = Random.nextInt(1000)
+        val ProfileResult(_, t1) = profile {a.totient()}
+        val ProfileResult(_, t2) = profile {a.totientFast()}
+        println(s"value: $a | Time `.totient()`: $t1 | time ns`.totientFast()`: $t2 ns")
+      }
+    }
+  }
+
+  ////////////////////////////////////////////
+  //              Utilities
+  ////////////////////////////////////////////
+
+  private case class ProfileResult[R](result: R, time: Long)
+
+  /**
+   *
+   * Profiler
+   *
+   * @param block Block of code to be run
+   * @tparam R Parameter placeholder for the return type of the code
+   * @return A pair with the result of the computation and its runtime, in nanoseconds.
+   */
+  private def profile[R](block: => R): ProfileResult[R] = {
+    val t0 = System.nanoTime()
+    val result = block    // call-by-name
+    val t1 = System.nanoTime()
+    ProfileResult[R](result, (t1 - t0))
+  }
 }

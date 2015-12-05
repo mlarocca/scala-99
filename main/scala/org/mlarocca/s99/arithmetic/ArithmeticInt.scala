@@ -157,6 +157,21 @@ case class ArithmeticInt(value: Int) {
     }
   }
 
+  /**
+   * Compute Euler's totient function using a list of prime factors (with their multiplicity)
+   * https://en.wikipedia.org/wiki/Euler's_totient_function
+   *
+   * @return
+   */
+  def totientFast(): Int = value match {
+    case 0 => 0
+    case i if i < 0  => Math.abs(i).totientFast()
+    case _ =>
+      this.primeFactorsMultiplicity().foldLeft(1){ case (accum, (factor, multiplicity)) =>
+        accum * (factor - 1) * Math.pow(factor.toInt, multiplicity - 1).toInt
+      }
+  }
+
 
   ////////////////////////////////////////////
   //              Utilities
@@ -191,5 +206,4 @@ case class ArithmeticInt(value: Int) {
     val r = p2(n)
     (r, n / (1 << r))
   }
-
 }
