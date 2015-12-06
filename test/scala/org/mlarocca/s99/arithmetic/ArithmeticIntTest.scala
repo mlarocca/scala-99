@@ -309,6 +309,35 @@ class ArithmeticIntTest extends FunSpec with Matchers {
     }
   }
 
+  describe("primesTo") {
+    it ("should throw IllegalArgumentException if the second index is smaller than the first one") {
+      a[IllegalArgumentException] should be thrownBy {
+       0.primesTo(-1)
+       10.primesTo(8)
+        (-1).primesTo(-2)
+      }
+    }
+
+    it("should return Nil if i == j and i is not prime") {
+      0.primesTo(0) should be(Nil)
+      1.primesTo(1) should be(Nil)
+      10.primesTo(10) should be(Nil)
+    }
+
+    it("should return Seq(i) if i == j and i is prime") {
+      2.primesTo(2) should be(Seq(2))
+      5.primesTo(5) should be(Seq(5))
+      13.primesTo(13) should be(Seq(13))
+    }
+
+    it("should return the correct set of primes if i < j") {
+      0.primesTo(1) should be(Nil)
+      0.primesTo(3) should be(Seq(2, 3))
+      (-1).primesTo(2) should be(Seq(2))
+      5.primesTo(13) should be(Seq(5, 7, 11, 13))
+    }
+  }
+
   ////////////////////////////////////////////
   //              Utilities
   ////////////////////////////////////////////

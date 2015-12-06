@@ -1,9 +1,9 @@
 package org.mlarocca.s99.arithmetic
 
-import javax.print.attribute.standard.MediaSize.Other
+import javax.swing.plaf.BorderUIResource.EmptyBorderUIResource
 
 import scala.annotation.tailrec
-import scala.util.Random
+import scala.util.{Try, Random}
 
 
 object ArithmeticInt {
@@ -11,6 +11,7 @@ object ArithmeticInt {
   implicit def ArithmeticIntToInt(ai: ArithmeticInt): Int = ai.value
 
   private[s99] val NegativeValueErrorMessage = "Value must be positive"
+  private[s99] val NonDecreasingIndicesIllegalArgumentErrorMessage = "Indices must be in non-decreasing order"
 }
 
 case class ArithmeticInt(value: Int) {
@@ -172,21 +173,37 @@ case class ArithmeticInt(value: Int) {
       }
   }
 
+  @throws[IllegalArgumentException](NonDecreasingIndicesIllegalArgumentErrorMessage)
+  def primesTo(j: Int): Seq[ArithmeticInt] = {
+    def EulerCrivel(primes: Set[Int]): Set[Int] = {
+      val current = Try(primes.min).getOrElse(j + 1)
+      if (current > j) {
+        primes
+      } else {
+        val remainingPrimes = primes -- current.to(j, current).toSet
+        EulerCrivel(remainingPrimes) + current
+      }
+    }
 
+    if (j < value) {
+      throw new IllegalArgumentException(NonDecreasingIndicesIllegalArgumentErrorMessage)
+    } else {
+      EulerCrivel((2 to j).toSet).filter(_ >= value).toSeq.sorted.map(IntToArithmeticInt)
+    }
+  }
   ////////////////////////////////////////////
   //              Utilities
   ////////////////////////////////////////////
 
   case class MultiplicityResult(multiplicity: Int, divisionResult: Int)
   
-  def multiplicity(dividend: Int, divisor: Int): MultiplicityResult = (dividend, divisor) match {
+  private def multiplicity(dividend: Int, divisor: Int): MultiplicityResult = (dividend, divisor) match {
     case (_, 0) => MultiplicityResult(0, dividend)
     case _ if dividend % divisor != 0 => MultiplicityResult(0, dividend)
     case _ =>
       val MultiplicityResult(recMultiplier, recDivisionResult) = multiplicity(dividend / divisor, divisor)
       MultiplicityResult(1 + recMultiplier, recDivisionResult)
   }
-
 
   /**
    * Represent an int as the product 2**r * d
