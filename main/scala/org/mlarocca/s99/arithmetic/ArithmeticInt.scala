@@ -12,6 +12,8 @@ object ArithmeticInt {
 
   private[s99] val NegativeValueErrorMessage = "Value must be positive"
   private[s99] val NonDecreasingIndicesIllegalArgumentErrorMessage = "Indices must be in non-decreasing order"
+  private[s99] val GoldbachIllegalArgumentException = "Only even number greater than 2 can be decomposed following Goldbach 's conjecture"
+
 }
 
 case class ArithmeticInt(value: Int) {
@@ -191,6 +193,28 @@ case class ArithmeticInt(value: Int) {
       EulerCrivel((2 to j).toSet).filter(_ >= value).toSeq.sorted.map(IntToArithmeticInt)
     }
   }
+
+  /**
+   * Compute a pair of prime numbers that sum up to any even number greater than 2.
+   * https://en.wikipedia.org/wiki/Goldbach's_conjecture
+   *
+   * @throws IllegalArgumentException
+   * @return
+   */
+  @throws[IllegalArgumentException](GoldbachIllegalArgumentException)
+  def goldbachDecomposition(): (ArithmeticInt, ArithmeticInt) = value match {
+    case i if i < 4 || i % 2 != 0 =>
+      throw new IllegalArgumentException(GoldbachIllegalArgumentException)
+    case _ =>
+      val lowPrimes = 2.primesTo(value / 2)
+      val highPrimes = (value / 2).primesTo(value).toSet
+      val factor = lowPrimes.filter { i =>
+        highPrimes.contains(value - i)
+      }.head
+
+      (factor, value - factor)
+  }
+
   ////////////////////////////////////////////
   //              Utilities
   ////////////////////////////////////////////

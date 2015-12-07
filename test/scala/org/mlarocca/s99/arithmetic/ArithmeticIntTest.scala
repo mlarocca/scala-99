@@ -337,7 +337,26 @@ class ArithmeticIntTest extends FunSpec with Matchers {
       5.primesTo(13) should be(Seq(5, 7, 11, 13))
     }
   }
+  
+  describe("goldbachDecomposition") {
+    it ("should throw IllegalArgumentException if not called on an even number greater than 2") {
+      a[IllegalArgumentException] should be thrownBy {
+        0.goldbachDecomposition()
+        1.goldbachDecomposition()
+        (-1).goldbachDecomposition()
+        2.goldbachDecomposition()
+        3.goldbachDecomposition()
+        7.goldbachDecomposition()
+      }
+    }
 
+    it("should return the first any valid pair for each Int") {
+      4.goldbachDecomposition() should equal((2, 2))
+      6.goldbachDecomposition() should equal((3, 3))
+      10.goldbachDecomposition() should equal((3, 7))
+      28.goldbachDecomposition() should equal((5, 23))
+    }
+  }
   ////////////////////////////////////////////
   //              Utilities
   ////////////////////////////////////////////
