@@ -10,10 +10,27 @@ object ArithmeticInt {
   implicit def IntToArithmeticInt(i: Int): ArithmeticInt = ArithmeticInt(i)
   implicit def ArithmeticIntToInt(ai: ArithmeticInt): Int = ai.value
 
+  /**
+   *
+   * @param i
+   * @param j
+   * @throws IllegalArgumentException
+   * @return
+   */
+  @throws[IllegalArgumentException](NonDecreasingPositiveIndicesIllegalArgumentErrorMessage)
+  def goldbachList(i: Int, j: Int): Seq[(ArithmeticInt, ArithmeticInt)] = {
+    if (j < i || i < 0) {
+      throw new IllegalArgumentException(NonDecreasingPositiveIndicesIllegalArgumentErrorMessage)
+    } else {
+      //i + i % 2 == smallest even number greather than or equal to `i`
+      (Math.max(4, (i + i % 2)).to(j, 2)).toSeq.map(_.goldbachDecomposition())
+    }
+  }
+
+  private[s99] val NonDecreasingPositiveIndicesIllegalArgumentErrorMessage = "Indices must be positive and in non-decreasing order"
   private[s99] val NegativeValueErrorMessage = "Value must be positive"
   private[s99] val NonDecreasingIndicesIllegalArgumentErrorMessage = "Indices must be in non-decreasing order"
-  private[s99] val GoldbachIllegalArgumentException = "Only even number greater than 2 can be decomposed following Goldbach 's conjecture"
-
+  private[s99] val GoldbachIllegalArgumentException = "Only even numbers greater than 2 can be decomposed following Goldbach 's conjecture"
 }
 
 case class ArithmeticInt(value: Int) {

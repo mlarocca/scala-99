@@ -357,6 +357,39 @@ class ArithmeticIntTest extends FunSpec with Matchers {
       28.goldbachDecomposition() should equal((5, 23))
     }
   }
+
+  describe("ArithmeticInt.goldbachList") {
+    it ("should throw IllegalArgumentException if either index or negative or they are inverted") {
+      a[IllegalArgumentException] should be thrownBy {
+        ArithmeticInt.goldbachList(-1, 2)
+        ArithmeticInt.goldbachList(-4, -1)
+        ArithmeticInt.goldbachList(-1, -2)
+        ArithmeticInt.goldbachList(4, 2)
+        ArithmeticInt.goldbachList(10, 0)
+      }
+    }
+
+    it("should return Nil for ranges with no even number greater than 2") {
+      ArithmeticInt.goldbachList(0, 0) should be(Nil)
+      ArithmeticInt.goldbachList(0, 2) should be(Nil)
+      ArithmeticInt.goldbachList(1, 3) should be(Nil)
+      ArithmeticInt.goldbachList(5, 5) should be(Nil)
+    }
+
+    it("should return correct sequence") {
+      ArithmeticInt.goldbachList(0, 4) should be(Seq(4.goldbachDecomposition()))
+      ArithmeticInt.goldbachList(0, 6) should be(Seq(4.goldbachDecomposition(), 6.goldbachDecomposition()))
+      ArithmeticInt.goldbachList(9, 20) should be(Seq(
+        10.goldbachDecomposition(),
+        12.goldbachDecomposition(),
+        14.goldbachDecomposition(),
+        16.goldbachDecomposition(),
+        18.goldbachDecomposition(),
+        20.goldbachDecomposition()
+      ))
+    }
+  }
+
   ////////////////////////////////////////////
   //              Utilities
   ////////////////////////////////////////////
