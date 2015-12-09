@@ -50,8 +50,8 @@ case class LogicTable(value:  Boolean) {
   }
 
   override def equals(other: Any) = other match {
+    case thatValue: Boolean => this.value == thatValue
     case that: LogicTable => (that canEqual this) && this.hashCode == that.hashCode
-    case thatValue: Int => this.value == thatValue
     case _ => false
   }
 
