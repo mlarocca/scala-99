@@ -1,5 +1,5 @@
 # scala-99 Problems
 
-http://aperiodic.net/phil/scala/s-99/
+Scala 99 [problems](http://aperiodic.net/phil/scala/s-99/) done right, with proper testing.
 
-**With Testing**
+TDD-developed.
