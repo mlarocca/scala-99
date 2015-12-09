@@ -1,7 +1,5 @@
 package org.mlarocca.s99.arithmetic
 
-import javax.swing.plaf.BorderUIResource.EmptyBorderUIResource
-
 import scala.annotation.tailrec
 import scala.util.{Try, Random}
 

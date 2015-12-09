@@ -35,8 +35,39 @@ object LogicTable {
   def impl(a: Boolean, b: Boolean): Boolean = {
     or(not(a), b)
   }
+
+  implicit def LogicTableToBoolean(a: LogicTable): Boolean = a.value
+  implicit def BooleanToLogicTable(a: Boolean): LogicTable = LogicTable(a)
+
 }
 
-class LogicTable {
+case class LogicTable(value:  Boolean) {
 
+  override def hashCode = if (value) 1 else 0
+
+  override def canEqual(other: Any): Boolean = {
+    other.isInstanceOf[LogicTable]
+  }
+
+  override def equals(other: Any) = other match {
+    case that: LogicTable => (that canEqual this) && this.hashCode == that.hashCode
+    case thatValue: Int => this.value == thatValue
+    case _ => false
+  }
+
+  def and(b: LogicTable):LogicTable = LogicTable.and(this, b)
+
+  def or(b: LogicTable):LogicTable = LogicTable.or(this, b)
+
+  def equ(b: LogicTable):LogicTable = LogicTable.equ(this, b)
+
+  def xor(b: LogicTable):LogicTable = LogicTable.xor(this, b)
+
+  def nor(b: LogicTable):LogicTable = LogicTable.nor(this, b)
+
+  def nand(b: LogicTable):LogicTable = LogicTable.nand(this, b)
+
+  def impl(b: LogicTable):LogicTable = LogicTable.impl(this, b)
+
+  def not():LogicTable = LogicTable.not(this)
 }
