@@ -91,4 +91,21 @@ class LogicTableTest {
       LogicTable(true).impl(LogicTable(true)) should equal(true)
     }
   }
+
+  describe("grayClosure") {
+    it ("should throw IllegalArgumentException for non positive Int") {
+      a[IllegalArgumentException] should be thrownBy {
+        LogicTable.gray(-1)
+      }
+      a[IllegalArgumentException] should be thrownBy {
+        LogicTable.gray(0)
+      }
+    }
+
+    it("should correctly compute gray sequence for any length") {
+      LogicTable.gray(1) should equal( Seq("0", "1"))
+      LogicTable.gray(2) should equal( Seq("00", "01", "11", "10"))
+      LogicTable.gray(3) should equal( Seq("000", "001", "011", "010", "110", "111", "101", "100"))
+    }
+  }
 }

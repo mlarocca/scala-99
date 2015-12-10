@@ -1,6 +1,10 @@
 package org.mlarocca.s99.logic
 
+import scala.collection.mutable.{Map => MutableMap}
+
 object LogicTable {
+  private[s99] val NegativeValueErrorMessage = "Value must be positive"
+
   def and(a: Boolean, b: Boolean): Boolean = (a,b) match {
     case (true, true) => true
     case _ => false
@@ -36,9 +40,34 @@ object LogicTable {
     or(not(a), b)
   }
 
+  private def memoizer(
+    f: Int => Seq[String],
+    cache: MutableMap[Int, Seq[String]] = MutableMap.empty
+  ): Int => Seq[String] = {
+
+    (i: Int) => {
+      if (!cache.contains(i)) {
+        cache.+=((i, f(i)))
+        println(cache)
+      }
+      cache(i)
+    }
+  }
+
+  @throws[IllegalArgumentException]
+  val gray: (Int) => Seq[String] = memoizer({
+      case n: Int if (n <= 0) =>
+          throw new IllegalArgumentException(NegativeValueErrorMessage)
+      case n: Int =>
+        println(s"computing grayR($n)")
+        val base = gray(n - 1)
+        base.map("0" + _) ++ base.reverse.map("1" + _)
+    },
+    MutableMap(1 -> Seq("0", "1"))
+  )
+
   implicit def LogicTableToBoolean(a: LogicTable): Boolean = a.value
   implicit def BooleanToLogicTable(a: Boolean): LogicTable = LogicTable(a)
-
 }
 
 case class LogicTable(value:  Boolean) {
