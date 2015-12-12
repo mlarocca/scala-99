@@ -1,5 +1,6 @@
 package org.mlarocca.s99.logic
 
+import scala.collection.mutable
 import scala.collection.mutable.{Map => MutableMap}
 
 object LogicTable {
@@ -65,6 +66,40 @@ object LogicTable {
     },
     MutableMap(1 -> Seq("0", "1"))
   )
+
+  private case class QueueElement(value: Seq[String], priority: Int)
+
+  def huffman(frequencies: Seq[(String, Int)]): Seq[(String, String)] = {
+    def huffmanR(frequenciesQueue: mutable.PriorityQueue[QueueElement]): Map[String, String] = frequenciesQueue.size match {
+      case 0 => Map.empty
+      case 1 => frequenciesQueue.head.value.map{ (_ -> "") }.toMap.withDefaultValue("")
+      case _ =>
+        val e1 = frequenciesQueue.dequeue()
+        val e2 = frequenciesQueue.dequeue()
+        val newEl = QueueElement(e1.value ++ e2.value, e1.priority + e2.priority)
+        frequenciesQueue.+=(newEl)
+        val lMap = e2.value.foldLeft(huffmanR(frequenciesQueue)) {
+          case (hMap, s) =>
+            val prevString = hMap(s)
+            hMap + ((s, prevString + "1"))
+        }
+        e1.value.foldLeft(lMap) {
+          case (hMap, s) =>
+            val prevString = hMap(s)
+            hMap + ((s, prevString + "0"))
+        }
+
+    }
+
+    val pq = new mutable.PriorityQueue[QueueElement]()(Ordering.by((_: QueueElement).priority).reverse)
+    val symbolsTable = huffmanR(frequencies.foldLeft(pq){ (queue, f) =>
+      pq.+=(QueueElement(Seq(f._1), f._2))
+    })
+
+    frequencies.map {
+      case (s, _) => (s, symbolsTable(s))
+    }
+  }
 
   implicit def LogicTableToBoolean(a: LogicTable): Boolean = a.value
   implicit def BooleanToLogicTable(a: Boolean): LogicTable = LogicTable(a)

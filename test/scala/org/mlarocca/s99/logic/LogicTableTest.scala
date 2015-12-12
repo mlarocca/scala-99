@@ -92,7 +92,7 @@ class LogicTableTest {
     }
   }
 
-  describe("grayClosure") {
+  describe("gray + closure") {
     it ("should throw IllegalArgumentException for non positive Int") {
       a[IllegalArgumentException] should be thrownBy {
         LogicTable.gray(-1)
@@ -106,6 +106,15 @@ class LogicTableTest {
       LogicTable.gray(1) should equal( Seq("0", "1"))
       LogicTable.gray(2) should equal( Seq("00", "01", "11", "10"))
       LogicTable.gray(3) should equal( Seq("000", "001", "011", "010", "110", "111", "101", "100"))
+    }
+  }
+
+  describe("huffman") {
+    it("should correctly compute gray sequence for any length") {
+      LogicTable.huffman(List(("a", 45), ("b", 13), ("c", 12), ("d", 16), ("e", 9), ("f", 5))) should
+        equal(Seq(("a","0"), ("b","101"), ("c","100"), ("d","111"), ("e","1101"), ("f","1100")))
+      LogicTable.huffman(List(("1", 5), ("2", 7), ("3", 10), ("4", 15), ("5", 20), ("6", 45))) should
+        equal(Seq(("1","1010"), ("2","1011"), ("3","100"), ("4","110"), ("5","111"), ("6","0")))
     }
   }
 }
