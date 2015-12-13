@@ -41,5 +41,36 @@ class BinaryTreeTest extends FunSpec with Matchers {
     }
   }
 
+  describe("cBalanced") {
+    it ("should throw IllegalArgumentException for negative Int") {
+      a[IllegalArgumentException] should be thrownBy {
+        BinaryTree.cBalanced(-1, "x")
+      }
+    }
 
+    it ("should return a leaf for n == 0") {
+      BinaryTree.cBalanced(0, "x") should be(Seq(Leaf))
+    }
+
+    it ("should return a single node for n == 1") {
+      BinaryTree.cBalanced(1, "x") should be(Seq(BinaryNode("x")))
+    }
+
+    it ("should return two possible solutions for n == 2") {
+      BinaryTree.cBalanced(2, "x") should be(Seq(new BinaryNode("x", BinaryNode("x"), Leaf), new BinaryNode("x", Leaf, BinaryNode("x"))))
+    }
+
+    it ("should return a single possible solutions for n == 3") {
+      BinaryTree.cBalanced(3, "x") should be(Seq(new BinaryNode("x", BinaryNode("x"), BinaryNode("x"))))
+    }
+
+    it ("should return all possible solutions for n == 4") {
+      BinaryTree.cBalanced(4, "x") should equal(Seq(
+        new BinaryNode("x", new BinaryNode("x", BinaryNode("x"), Leaf), BinaryNode("x")),
+        new BinaryNode("x", new BinaryNode("x", Leaf, BinaryNode("x")), BinaryNode("x")),
+        new BinaryNode("x", BinaryNode("x"), new BinaryNode("x", BinaryNode("x"), Leaf)),
+        new BinaryNode("x", BinaryNode("x"), new BinaryNode("x", Leaf, BinaryNode("x")))
+      ))
+    }
+  }
 }
