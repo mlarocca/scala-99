@@ -137,7 +137,7 @@ case class ArithmeticInt(value: Int) {
     case i if i < 0  => Math.abs(i).totient()
     case _ =>
       1 + (2 to (value - 1)).map { i =>
-       if (this.gcd(i) == 1) 1 else 0
+        if (this.gcd(i) == 1) 1 else 0
       }.sum
   }
 
@@ -235,7 +235,7 @@ case class ArithmeticInt(value: Int) {
   ////////////////////////////////////////////
 
   case class MultiplicityResult(multiplicity: Int, divisionResult: Int)
-  
+
   private def multiplicity(dividend: Int, divisor: Int): MultiplicityResult = (dividend, divisor) match {
     case (_, 0) => MultiplicityResult(0, dividend)
     case _ if dividend % divisor != 0 => MultiplicityResult(0, dividend)

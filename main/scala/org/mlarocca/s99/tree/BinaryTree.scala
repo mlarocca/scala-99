@@ -42,8 +42,14 @@ object BinaryTree {
 }
 
 sealed abstract class BinaryTree[+K, +V] {
-  def inOrder(): Seq[K] = Nil
-  def preOrder(): Seq[K] = Nil
+  def inOrder(): Seq[K]
+  def preOrder(): Seq[K]
+  def preOrderMirror(): Seq[K]
+  def postOrder(): Seq[K]
+  def hasSymmetricStructure(): Boolean
+  def isSymmetric(): Boolean
+  def toPreorderOptionList(): Seq[Option[K]]
+  def toPreorderMirrorOptionList(): Seq[Option[K]]
 }
 
 case class BinaryNode[+K, +V](key:K, left: BinaryTree[K, V], right: BinaryTree[K, V], value: Option[V] = None) extends BinaryTree[K, V] {
@@ -61,14 +67,40 @@ case class BinaryNode[+K, +V](key:K, left: BinaryTree[K, V], right: BinaryTree[K
     case _ => false
   }
 
+
   override def preOrder(): Seq[K] = {
-    key +: (left.inOrder() ++ right.inOrder())
+    key +: (left.preOrder() ++ right.preOrder())
+  }
+
+  override def preOrderMirror(): Seq[K] = {
+    key +: (right.preOrder() ++ left.preOrder())
   }
 
   override def inOrder(): Seq[K] = {
     left.inOrder() ++ (key +: right.inOrder())
   }
+
+  override def postOrder(): Seq[K] = {
+    left.postOrder() ++ right.postOrder() ++ Seq(key)
+  }
+
+  override def toPreorderOptionList(): Seq[Option[K]] = {
+    Some(key) +: (left.toPreorderOptionList() ++ right.toPreorderOptionList())
+  }
+
+  override def toPreorderMirrorOptionList(): Seq[Option[K]] = {
+    Some(key) +: (right.toPreorderMirrorOptionList() ++ left.toPreorderMirrorOptionList())
+  }
+
+  override def hasSymmetricStructure(): Boolean = {
+    false
+  }
+
+  override def isSymmetric(): Boolean = {
+    toPreorderOptionList() == toPreorderMirrorOptionList()
+  }
 }
+
 case object Leaf extends BinaryTree[Nothing, Nothing] {
   override def toString = "."
 
@@ -79,6 +111,18 @@ case object Leaf extends BinaryTree[Nothing, Nothing] {
     case Leaf => true
     case _ => false
   }
+
+  override def inOrder() = Nil
+  override def preOrder() = Nil
+  override def preOrderMirror() = Nil
+  override def postOrder() = Nil
+
+  override def toPreorderOptionList() = Seq(None)
+  override def toPreorderMirrorOptionList() = Seq(None)
+
+  override def hasSymmetricStructure(): Boolean = true
+
+  override def isSymmetric(): Boolean = true
 }
 
 object BinaryNode {

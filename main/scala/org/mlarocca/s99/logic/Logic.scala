@@ -45,21 +45,21 @@ object LogicTable {
 }
 
 private object Codes {
-  
+
   @throws[IllegalArgumentException]
   val gray: (Int) => Seq[String] = memoizer({
-      case n: Int if (n <= 0) =>
-          throw new IllegalArgumentException(NegativeValueErrorMessage)
-      case n: Int =>
-        val base = gray(n - 1)
-        base.map("0" + _) ++ base.reverse.map("1" + _)
-    },
-    MutableMap(1 -> Seq("0", "1"))
+    case n: Int if (n <= 0) =>
+      throw new IllegalArgumentException(NegativeValueErrorMessage)
+    case n: Int =>
+      val base = gray(n - 1)
+      base.map("0" + _) ++ base.reverse.map("1" + _)
+  },
+  MutableMap(1 -> Seq("0", "1"))
   )
 
   /**
    * Computes the Huffman code of a sequence of symbols, based on their frequencies.
-   * 
+   *
    * @param symbolsFrequencies A sequence of Tuples: each symbol paired with its frequency.
    * @tparam V The type of the input symbols.
    * @return A list,of the symbols, in the same order as they appear in the input, paired with their Huffman encoding,
@@ -107,15 +107,15 @@ private object Codes {
 
   /**
    * Turn a function f into a memoized function, checking local cache before computing its value.
-   * 
+   *
    * @param f
    * @param cache
    * @return
    */
   private def memoizer(
-    f: Int => Seq[String],
-    cache: MutableMap[Int, Seq[String]] = MutableMap.empty
-  ): Int => Seq[String] = {
+      f: Int => Seq[String],
+      cache: MutableMap[Int, Seq[String]] = MutableMap.empty
+      ): Int => Seq[String] = {
 
     (i: Int) => {
       if (!cache.contains(i)) {
@@ -123,7 +123,7 @@ private object Codes {
       }
       cache(i)
     }
-  }  
+  }
 }
 
 case class LogicTable(value:  Boolean) {

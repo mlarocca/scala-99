@@ -312,8 +312,8 @@ class ArithmeticIntTest extends FunSpec with Matchers {
   describe("primesTo") {
     it ("should throw IllegalArgumentException if the second index is smaller than the first one") {
       a[IllegalArgumentException] should be thrownBy {
-       0.primesTo(-1)
-       10.primesTo(8)
+        0.primesTo(-1)
+        10.primesTo(8)
         (-1).primesTo(-2)
       }
     }
@@ -337,7 +337,7 @@ class ArithmeticIntTest extends FunSpec with Matchers {
       5.primesTo(13) should be(Seq(5, 7, 11, 13))
     }
   }
-  
+
   describe("goldbachDecomposition") {
     it ("should throw IllegalArgumentException if not called on an even number greater than 2") {
       a[IllegalArgumentException] should be thrownBy {

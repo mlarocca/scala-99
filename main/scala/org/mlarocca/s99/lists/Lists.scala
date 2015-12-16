@@ -425,7 +425,7 @@ object Utils {
         (x +: restoOfList, removedEl)
       }
     }
-    
+
     if (i < 0 || i >= length(s)) {
       throw new IndexOutOfBoundsException(IndexOutOfBoundsIllegalArgumentErrorMessage)
     } else {

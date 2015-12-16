@@ -949,7 +949,7 @@ class UtilsTest extends FunSpec with Matchers {
 
       Utils.group(Seq(2, 1), Seq(1, 2, 3)) should equal(Seq(Seq(Seq(1, 2), Seq(3)), Seq(Seq(1, 3), Seq(2)), Seq(Seq(2, 3), Seq(1))))
       Utils.group(Seq(1, 1, 1), Seq(1, 2, 3)) should equal(Seq(Seq(Seq(1), Seq(2), Seq(3)), Seq(Seq(1), Seq(3), Seq(2)), Seq(Seq(2), Seq(1), Seq(3)), Seq(Seq(2), Seq(3), Seq(1)), Seq(Seq(3), Seq(1), Seq(2)), Seq(Seq(3), Seq(2), Seq(1))))
-      
+
       val s1 = Seq(1, 2, 3, 4, 5)
 
       val r1 = Seq(Seq(Seq(1, 2), Seq(3, 4, 5)), Seq(Seq(1, 3), Seq(2, 4, 5)), Seq(Seq(1, 4), Seq(2, 3, 5)), Seq(Seq(1, 5), Seq(2, 3, 4)), Seq(Seq(2, 3), Seq(1, 4, 5)), Seq(Seq(2, 4), Seq(1, 3, 5)), Seq(Seq(2, 5), Seq(1, 3, 4)), Seq(Seq(3, 4), Seq(1, 2, 5)), Seq(Seq(3, 5), Seq(1, 2, 4)), Seq(Seq(4, 5), Seq(1, 2, 3)))
@@ -1030,7 +1030,7 @@ class UtilsTest extends FunSpec with Matchers {
       Math.sqrt(num.toDouble(
         ts.foldLeft(num.zero)((b, a) =>
           num.plus(b, num.times(num.minus(a, mean), num.minus(a, mean))))) /
-        ts.size)
+          ts.size)
     (mean, stdDev)
   }
 }
