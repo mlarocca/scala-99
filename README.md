@@ -12,6 +12,6 @@ Logic (X)
 
 Codes (X)
 
-Binary Trees (-)
+Binary Trees (X)
 
 Binary Search Trees ( )
