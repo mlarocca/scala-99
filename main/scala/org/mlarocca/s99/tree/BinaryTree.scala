@@ -41,18 +41,18 @@ object BinaryTree {
   private[s99] val NegativeValueErrorMessage = "n can't be negative"
 }
 
-sealed abstract class BinaryTree[+K, +V] {
+abstract class BinaryTree[+K, +V] {
   def inOrder(): Seq[K]
   def preOrder(): Seq[K]
   def preOrderMirror(): Seq[K]
   def postOrder(): Seq[K]
   def hasSymmetricStructure(): Boolean
   def isSymmetric(): Boolean
-  def toPreorderOptionList(): Seq[Option[K]]
-  def toPreorderMirrorOptionList(): Seq[Option[K]]
+  private[tree] def toPreOrderOptionList(): Seq[Option[K]]
+  private[tree] def toPreOrderMirrorOptionList(): Seq[Option[K]]
 }
 
-case class BinaryNode[+K, +V](key:K, left: BinaryTree[K, V], right: BinaryTree[K, V], value: Option[V] = None) extends BinaryTree[K, V] {
+case class BinaryNode[+K, +V](key: K, left: BinaryTree[K, V], right: BinaryTree[K, V], value: Option[V] = None) extends BinaryTree[K, V] {
   override def toString = "T(" + key.toString + " " + left.toString + " " + right.toString + ")"
 
   //Combination of preorder + inorder is unique for each tree (trees with the same keys set could have the same inorder or preorder)
@@ -84,26 +84,45 @@ case class BinaryNode[+K, +V](key:K, left: BinaryTree[K, V], right: BinaryTree[K
     left.postOrder() ++ right.postOrder() ++ Seq(key)
   }
 
-  override def toPreorderOptionList(): Seq[Option[K]] = {
-    Some(key) +: (left.toPreorderOptionList() ++ right.toPreorderOptionList())
+  override private[tree] def toPreOrderOptionList(): Seq[Option[K]] = {
+    Some(key) +: (left.toPreOrderOptionList() ++ right.toPreOrderOptionList())
   }
 
-  override def toPreorderMirrorOptionList(): Seq[Option[K]] = {
-    Some(key) +: (right.toPreorderMirrorOptionList() ++ left.toPreorderMirrorOptionList())
+  override private[tree] def toPreOrderMirrorOptionList(): Seq[Option[K]] = {
+    Some(key) +: (right.toPreOrderMirrorOptionList() ++ left.toPreOrderMirrorOptionList())
   }
 
   override def hasSymmetricStructure(): Boolean = {
-    false
+    val optionToBoolean: Option[K] => Boolean = {
+      case Some(_)  => true
+      case None => false
+    }
+
+    toPreOrderOptionList().map(optionToBoolean) == toPreOrderMirrorOptionList().map(optionToBoolean)
   }
 
   override def isSymmetric(): Boolean = {
-    toPreorderOptionList() == toPreorderMirrorOptionList()
+    toPreOrderOptionList() == toPreOrderMirrorOptionList()
   }
 }
 
-case object Leaf extends BinaryTree[Nothing, Nothing] {
+trait Leaf extends BinaryTree[Nothing, Nothing] {
   override def toString = "."
 
+  override def inOrder() = Nil
+  override def preOrder() = Nil
+  override def preOrderMirror() = Nil
+  override def postOrder() = Nil
+
+  override private[tree] def toPreOrderOptionList() = Seq(None)
+  override private[tree] def toPreOrderMirrorOptionList() = Seq(None)
+
+  override def hasSymmetricStructure(): Boolean = true
+
+  override def isSymmetric(): Boolean = true
+}
+
+case object Leaf extends Leaf {
   //0 == "".hashCode()
   override def hashCode = 0
 
@@ -111,18 +130,6 @@ case object Leaf extends BinaryTree[Nothing, Nothing] {
     case Leaf => true
     case _ => false
   }
-
-  override def inOrder() = Nil
-  override def preOrder() = Nil
-  override def preOrderMirror() = Nil
-  override def postOrder() = Nil
-
-  override def toPreorderOptionList() = Seq(None)
-  override def toPreorderMirrorOptionList() = Seq(None)
-
-  override def hasSymmetricStructure(): Boolean = true
-
-  override def isSymmetric(): Boolean = true
 }
 
 object BinaryNode {

@@ -92,4 +92,25 @@ class BinaryTreeTest extends FunSpec with Matchers {
       BinaryNode(1, BinaryNode(2, BinaryNode(4), BinaryNode(2, BinaryNode(4), Leaf)), BinaryNode(2, BinaryNode(2, BinaryNode(4), Leaf), BinaryNode(3))).isSymmetric() should be(false)
     }
   }
+
+  describe("hasSymmetricStructure") {
+    it("should be true for leaves") {
+      Leaf.hasSymmetricStructure() should be(true)
+    }
+
+    it ("should return true for symmetric trees") {
+      BinaryNode(1).hasSymmetricStructure() should be(true)
+      BinaryNode(1, BinaryNode(2), BinaryNode(2)).hasSymmetricStructure() should be(true)
+      BinaryNode(1, BinaryNode(2, BinaryNode(3), Leaf), BinaryNode(2, Leaf, BinaryNode(3))).hasSymmetricStructure() should be(true)
+      BinaryNode(1, BinaryNode(2, BinaryNode(3), BinaryNode(4, BinaryNode(5), Leaf)), BinaryNode(2, BinaryNode(4, Leaf, BinaryNode(5)), BinaryNode(3))).hasSymmetricStructure() should be(true)
+    }
+    it ("should return true for trees with a symmetric structure, despite asymmetric values") {
+      BinaryNode(44, BinaryNode(2, BinaryNode(4), Leaf), BinaryNode(2, Leaf, BinaryNode(3))).hasSymmetricStructure() should be(true)
+    }
+
+    it ("should return true for asymmetric trees") {
+      BinaryNode(1, BinaryNode(2, BinaryNode(3), Leaf), BinaryNode(2, BinaryNode(3), Leaf)).hasSymmetricStructure() should be(false)
+      BinaryNode(1, BinaryNode(2, BinaryNode(4), BinaryNode(2, BinaryNode(4), Leaf)), BinaryNode(2, BinaryNode(2, BinaryNode(4), Leaf), BinaryNode(3))).hasSymmetricStructure() should be(false)
+    }
+  }
 }
