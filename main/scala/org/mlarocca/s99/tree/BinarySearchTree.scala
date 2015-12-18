@@ -4,6 +4,15 @@ sealed trait BinarySearchTree[+K, +V] extends BinaryTree[K, V] {
   def insert[T >: K <% Ordered[T], W >: V](key: T, value: Option[W]): BinarySearchTree[T, W]
 }
 
+object BinarySearchTree {
+  def fromSeq[K <% Ordered[K], V](input: Seq[(K, Option[V])]): BinaryTree[K, V] = {
+    input.foldLeft[BinarySearchTree[K, V]](BinarySearchLeaf) {
+      case (tree, (key, value)) =>
+        tree.insert(key, value)
+    }
+  }
+}
+
 class BinarySearchNode[+K, +V](
     override val key: K,
     override val left: BinarySearchTree[K, V],

@@ -63,13 +63,30 @@ class BinarySearchTreeTest extends FunSpec with Matchers {
       BinarySearchLeaf.insert(1, None) should equal(BinarySearchNode[Int, Nothing](1, None))
     }
 
-    it("should insert correctly a key in a tree") {
+    it("should insert correctly a key in a tree with height 1") {
       BinarySearchNode[Int, Nothing](2, None).insert(1, None) should equal(new BinarySearchNode[Int, Nothing](2, BinarySearchNode[Int, Nothing](1, None), BinarySearchLeaf, None))
       BinarySearchNode[Int, Nothing](2, None).insert(1, None).insert(3, None) should equal(new BinarySearchNode[Int, Nothing](2, BinarySearchNode[Int, Nothing](1, None), BinarySearchNode[Int, Nothing](3, None), None))
     }
+
     it("should insert correctly a key in a deep tree") {
       BinarySearchNode[Int, Nothing](2, None).insert(1, None).insert(3, None).insert(4, Some("4")) should
           equal(new BinarySearchNode[Int, Boolean](2, BinarySearchNode[Int, Boolean](1, None), new BinarySearchNode[Int, Boolean](3, BinarySearchLeaf, BinarySearchNode[Int, Boolean](4, Some(false)), None), None))
+    }
+  }
+
+  describe("fromSeq") {
+    it("should map an empty sequence to a Leaf") {
+      BinarySearchTree.fromSeq(Nil) should equal(BinarySearchLeaf)
+    }
+
+    it("should insert correctly a key in a tree") {
+      BinarySearchTree.fromSeq(Seq((2, None), (1, None), (3, None), (4, Some(false)))) should
+        equal(new BinarySearchNode[Int, Boolean](2, BinarySearchNode[Int, Boolean](1, None), new BinarySearchNode[Int, Boolean](3, BinarySearchLeaf, BinarySearchNode[Int, Boolean](4, Some(false)), None), None))
+    }
+
+    it("absolute order shouldn't, only relative order of elements in the same branch") {
+      BinarySearchTree.fromSeq(Seq((2, None), (1, None), (3, None), (4, Some(false)))) should equal(BinarySearchTree.fromSeq(Seq((2, None), (3, None), (1, None), (4, Some(false)))))
+      BinarySearchTree.fromSeq(Seq((2, None), (1, None), (3, None), (4, Some(false)))) should equal(BinarySearchTree.fromSeq(Seq((2, None), (3, None), (4, Some(false)), (1, None))))
     }
   }
 }
