@@ -38,6 +38,9 @@ class BinaryTreeTest extends FunSpec with Matchers {
       BinaryNode(2, BinaryNode(1), BinaryNode(3)) should not equal(BinaryNode(1, BinaryNode(2), BinaryNode(3)))
       BinaryNode(1, BinaryNode(3), BinaryNode(2)) should not equal(BinaryNode(1, BinaryNode(2), BinaryNode(3)))
       BinaryNode(1, Leaf, Leaf) should not equal(BinaryNode(1, Leaf, BinaryNode(3)))
+
+      new BinaryNode("x", new BinaryNode("x", Leaf, BinaryNode("x")), new BinaryNode("x", BinaryNode("x"), Leaf)) should not
+      equal(new BinaryNode("x", new BinaryNode("x", Leaf, BinaryNode("x")), new BinaryNode("x", Leaf, BinaryNode("x"))))
     }
   }
 
@@ -111,6 +114,20 @@ class BinaryTreeTest extends FunSpec with Matchers {
     it ("should return true for asymmetric trees") {
       BinaryNode(1, BinaryNode(2, BinaryNode(3), Leaf), BinaryNode(2, BinaryNode(3), Leaf)).hasSymmetricStructure() should be(false)
       BinaryNode(1, BinaryNode(2, BinaryNode(4), BinaryNode(2, BinaryNode(4), Leaf)), BinaryNode(2, BinaryNode(2, BinaryNode(4), Leaf), BinaryNode(3))).hasSymmetricStructure() should be(false)
+    }
+  }
+
+  describe("symmetricBalancedTrees") {
+    it ("should return all and only the symmetric complete balanced trees with n nodes") {
+      BinaryTree.symmetricBalancedTrees(2, "x") should equal(Nil)
+
+      BinaryTree.symmetricBalancedTrees(3, "x") should equal(Seq(new BinaryNode("x", BinaryNode("x"), BinaryNode("x"))))
+
+      BinaryTree.symmetricBalancedTrees(4, "x") should equal(Nil)
+      BinaryTree.symmetricBalancedTrees(5, "x") should equal(Seq(
+        new BinaryNode("x", new BinaryNode("x", BinaryNode("x"), Leaf), new BinaryNode("x", Leaf, BinaryNode("x"))),
+        new BinaryNode("x", new BinaryNode("x", Leaf, BinaryNode("x")), new BinaryNode("x", BinaryNode("x"), Leaf))))
+      BinaryTree.symmetricBalancedTrees(6, "x") should equal(Nil)
     }
   }
 }

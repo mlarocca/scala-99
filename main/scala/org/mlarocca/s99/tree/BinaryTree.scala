@@ -38,6 +38,10 @@ object BinaryTree {
       leftLeaning ++ rightLeaning
   }
 
+  def symmetricBalancedTrees[K](n: Int, key: K): Seq[BinaryTree[K, Nothing]] = {
+    cBalanced(n, key).filter(_.isSymmetric())
+  }
+
   private[s99] val NegativeValueErrorMessage = "n can't be negative"
 }
 
