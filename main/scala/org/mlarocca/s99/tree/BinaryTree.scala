@@ -42,6 +42,19 @@ object BinaryTree {
     cBalanced(n, key).filter(_.isSymmetric())
   }
 
+  @throws[IllegalArgumentException]
+  def hBalanced[K](height: Int, key: K): Seq[BinaryTree[K, Nothing]] = height match {
+    case _ if height < 0 => throw new IllegalArgumentException(NegativeValueErrorMessage)
+    case 0 => Seq(Leaf)
+    case 1 => Seq(BinaryNode(key))
+    case _ =>
+      hBalanced(height - 1, key).map { t1 =>
+        BinaryNode(key, t1, t1) +: hBalanced(height - 2, key).map { t2 =>
+          Seq(BinaryNode(key, t2, t1), BinaryNode(key, t1, t2))
+        }.flatten
+      }.flatten
+  }
+
   private[s99] val NegativeValueErrorMessage = "n can't be negative"
 }
 

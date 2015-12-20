@@ -130,4 +130,42 @@ class BinaryTreeTest extends FunSpec with Matchers {
       BinaryTree.symmetricBalancedTrees(6, "x") should equal(Nil)
     }
   }
+
+  describe("hBalanced") {
+    it ("should return a Leaf for height 0") {
+      BinaryTree.hBalanced(0, "A") should equal(Seq(Leaf))
+      BinaryTree.hBalanced(0, 1) should equal(Seq(Leaf))
+    }
+
+    it ("should return a singleton for height 1") {
+      BinaryTree.hBalanced(1, "A") should equal(Seq(BinaryNode("A")))
+      BinaryTree.hBalanced(1, 1) should equal(Seq(BinaryNode(1)))
+    }
+
+    it ("should return 3 trees with height 2, for h == 2") {
+      BinaryTree.hBalanced(2, "A") should equal(Seq(
+        new BinaryNode("A", BinaryNode("A"), BinaryNode("A")),
+        new BinaryNode("A", Leaf, BinaryNode("A")),
+        new BinaryNode("A", BinaryNode("A"), Leaf)
+      ))
+    }
+
+    it ("should return 9 trees with height 3, for h == 3") {
+      BinaryTree.hBalanced(3, "A") should equal(Seq(
+        new BinaryNode("A", new BinaryNode("A", BinaryNode("A"), BinaryNode("A")), new BinaryNode("A", BinaryNode("A"), BinaryNode("A"))),
+        new BinaryNode("A", new BinaryNode("A", BinaryNode("A"), BinaryNode("A")), BinaryNode("A")),
+        new BinaryNode("A", BinaryNode("A"), new BinaryNode("A", BinaryNode("A"), BinaryNode("A"))),
+        new BinaryNode("A", new BinaryNode("A", Leaf, BinaryNode("A")), new BinaryNode("A", Leaf, BinaryNode("A"))),
+        new BinaryNode("A", new BinaryNode("A", Leaf, BinaryNode("A")), BinaryNode("A")),
+        new BinaryNode("A", BinaryNode("A"), new BinaryNode("A", Leaf, BinaryNode("A"))),
+        new BinaryNode("A", new BinaryNode("A", BinaryNode("A"), Leaf), new BinaryNode("A", BinaryNode("A"), Leaf)),
+        new BinaryNode("A", new BinaryNode("A", BinaryNode("A"), Leaf), BinaryNode("A")),
+        new BinaryNode("A", BinaryNode("A"), new BinaryNode("A", BinaryNode("A"), Leaf))
+      ))
+    }
+
+    it ("should return 63 trees for height 4") {
+      BinaryTree.hBalanced(4, "A").size should be(63)
+    }
+  }
 }
