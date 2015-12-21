@@ -2,10 +2,12 @@ package org.mlarocca.s99.tree
 
 object BinaryTree {
   /**
+   * Generates all the complete balanced trees with n nodes.
+   * A complete balanced tree is a tree where the number of nodes in the right and left subtree differs at most by 1.
    *
-   * @param n
-   * @param key
-   * @tparam K
+   * @param n Number of nodes in the tree.
+   * @param key The key to be inserted in the nodes.
+   * @tparam K Type of tree's keys
    * @throws IllegalArgumentException
    * @return
    */
@@ -38,10 +40,28 @@ object BinaryTree {
       leftLeaning ++ rightLeaning
   }
 
+  /**
+   * Generates all and only the symmetric complete balanced trees with n nodes.
+   *
+   * @param n Number of nodes in the tree.
+   * @param key The key to be inserted in the nodes.
+   * @tparam K Type of tree's keys
+   * @return
+   */
   def symmetricBalancedTrees[K](n: Int, key: K): Seq[BinaryTree[K, Nothing]] = {
     cBalanced(n, key).filter(_.isSymmetric())
   }
 
+  /**
+   * Generates all the hBalanced Trees of a certain height, with the same key for every node.
+   * An hBalanced tree is a binary tree where left and right branches's height differ at most by 1.
+   *
+   * @param height The height of the balanced tree.
+   * @param key The key to be inserted in the nodes.
+   * @tparam K The type of the tree's keys.
+   * @throws IllegalArgumentException when height is negative.
+   * @return
+   */
   @throws[IllegalArgumentException]
   def hBalanced[K](height: Int, key: K): Seq[BinaryTree[K, Nothing]] = height match {
     case _ if height < 0 => throw new IllegalArgumentException(NegativeValueErrorMessage)
@@ -54,6 +74,52 @@ object BinaryTree {
         }.flatten
       }.flatten
   }
+
+  /**
+   * Return the minimum number of nodes for a hBalanced tree with given height.
+   * NOTE: soooo Fibonacci...
+   *
+   * @param height The height for the tree.
+   * @throws IllegalArgumentException
+   * @return
+   */
+  @throws[IllegalArgumentException]
+  def minHbalNodes(height: Int): Int = height match {
+    case _ if height < 0 => throw new IllegalArgumentException(NegativeValueErrorMessage)
+    case 0 => 0
+    case 1 => 1
+    case _ => 1 + minHbalNodes(height - 1) + minHbalNodes(height - 2)
+  }
+
+  /**
+   * Compute the maximum height an hBalanced tree with n nodes could have.
+   * Slow version to double check the inductive definition.
+   *
+   * @param n The given number of nodes.
+   * @throws IllegalArgumentException
+   * @return
+   */
+  @throws[IllegalArgumentException]
+  def maxHbalHeight(n: Int): Int = n match {
+    case _ if n < 0 => throw new IllegalArgumentException(NegativeValueErrorMessage)
+    case 0 => 0
+    case 1 => 1
+    case _ =>
+      val m = n - 1
+      val h1 = maxHbalHeight(m / 2)
+      val k = minHbalNodes(h1)
+      1 + Math.min(h1 + 1, maxHbalHeight(m - k))
+  }
+
+  /**
+   * Compute the maximum height an hBalanced tree with n nodes could have.
+   * Slow version to double check the inductive definition.
+   *
+   * @param n The given number of nodes.
+   * @return
+   */
+  private [s99] def maxHbalHeightSlow(n: Int): Int =
+    Stream.from(1).takeWhile(minHbalNodes(_) <= n).last
 
   private[s99] val NegativeValueErrorMessage = "n can't be negative"
 }
@@ -83,7 +149,6 @@ case class BinaryNode[+K, +V](key: K, left: BinaryTree[K, V], right: BinaryTree[
     case that: BinaryNode[K, V] => (that canEqual this) && this.hashCode == that.hashCode
     case _ => false
   }
-
 
   override def preOrder(): Seq[K] = {
     key +: (left.preOrder() ++ right.preOrder())

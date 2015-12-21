@@ -168,4 +168,76 @@ class BinaryTreeTest extends FunSpec with Matchers {
       BinaryTree.hBalanced(4, "A").size should be(63)
     }
   }
+
+  describe("minHbalNodes") {
+    it ("should throw IllegalArgumentException for negative Int") {
+      a[IllegalArgumentException] should be thrownBy {
+        BinaryTree.minHbalNodes(-1)
+      }
+    }
+
+    it ("should return the correct value for base cases") {
+      BinaryTree.minHbalNodes(0) should be(0)
+      BinaryTree.minHbalNodes(1) should be(1)
+    }
+
+    it ("should return the correct value for inductive cases") {
+      BinaryTree.minHbalNodes(2) should be(2)
+      BinaryTree.minHbalNodes(3) should be(4)
+      BinaryTree.minHbalNodes(4) should be(7)
+      BinaryTree.minHbalNodes(5) should be(12)
+    }
+  }
+
+  describe("maxHbalHeightSlow") {
+    it ("should return the correct value for inductive cases") {
+      BinaryTree.maxHbalHeightSlow(1) should be(1)
+      BinaryTree.maxHbalHeightSlow(2) should be(2)
+      BinaryTree.maxHbalHeightSlow(3) should be(2)
+      BinaryTree.maxHbalHeightSlow(4) should be(3)
+      BinaryTree.maxHbalHeightSlow(5) should be(3)
+      BinaryTree.maxHbalHeightSlow(6) should be(3)
+      BinaryTree.maxHbalHeightSlow(7) should be(4)
+      BinaryTree.maxHbalHeightSlow(8) should be(4)
+      BinaryTree.maxHbalHeightSlow(9) should be(4)
+      BinaryTree.maxHbalHeightSlow(10) should be(4)
+      BinaryTree.maxHbalHeightSlow(11) should be(4)
+      BinaryTree.maxHbalHeightSlow(12) should be(5)
+    }
+  }
+
+  describe("maxHbalHeight") {
+    it("should throw IllegalArgumentException for negative Int") {
+      a[IllegalArgumentException] should be thrownBy {
+        BinaryTree.maxHbalHeight(-1)
+      }
+    }
+
+    it("should return the correct value for base cases") {
+      BinaryTree.maxHbalHeight(0) should be(0)
+      BinaryTree.maxHbalHeight(1) should be(1)
+    }
+
+    it("should return the correct value for inductive cases") {
+      BinaryTree.maxHbalHeight(2) should be(2)
+      BinaryTree.maxHbalHeight(3) should be(2)
+      BinaryTree.maxHbalHeight(4) should be(3)
+      BinaryTree.maxHbalHeight(5) should be(3)
+      BinaryTree.maxHbalHeight(6) should be(3)
+      BinaryTree.maxHbalHeight(7) should be(4)
+      BinaryTree.maxHbalHeight(8) should be(4)
+      BinaryTree.maxHbalHeight(9) should be(4)
+      BinaryTree.maxHbalHeight(10) should be(4)
+      BinaryTree.maxHbalHeight(11) should be(4)
+      BinaryTree.maxHbalHeight(12) should be(5)
+    }
+
+    it ("should match the slow version [random test]") {
+      (1 to 100) foreach { _ =>
+        val n = 10 + Random.nextInt(1000)
+        BinaryTree.maxHbalHeight(n) should be(BinaryTree.maxHbalHeightSlow(n))
+      }
+    }
+  }
+
 }
