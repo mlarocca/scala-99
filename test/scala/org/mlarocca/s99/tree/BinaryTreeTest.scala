@@ -44,6 +44,24 @@ class BinaryTreeTest extends FunSpec with Matchers {
     }
   }
 
+  describe("size") {
+    it ("should be 0 for a leaf") {
+      Leaf.size should be(0)
+    }
+
+    it ("should be 1 for a single node") {
+      BinaryNode(null).size should be(1)
+    }
+
+    it ("should be compute correctly for larger trees") {
+      BinaryNode(1, BinaryNode(2), BinaryNode(2)).size() should be(3)
+      BinaryNode(1, BinaryNode(2, BinaryNode(3), Leaf), BinaryNode(2, Leaf, BinaryNode(3))).size() should be(5)
+      BinaryNode(1,
+        BinaryNode(2, BinaryNode(3), BinaryNode(4, BinaryNode(5), Leaf)),
+        BinaryNode(2, BinaryNode(4, Leaf, BinaryNode(5)), BinaryNode(3))).size() should be(9)
+    }
+  }
+  
   describe("cBalanced") {
     it ("should throw IllegalArgumentException for negative Int") {
       a[IllegalArgumentException] should be thrownBy {
@@ -240,4 +258,71 @@ class BinaryTreeTest extends FunSpec with Matchers {
     }
   }
 
+  describe("hBalancedWithNodes") {
+    it ("should return a Leaf for n == 0") {
+      BinaryTree.hBalancedWithNodes(0, "A") should equal(Seq(Leaf))
+      BinaryTree.hBalancedWithNodes(0, 1) should equal(Seq(Leaf))
+    }
+
+    it ("should return a singleton for n == 1") {
+      BinaryTree.hBalancedWithNodes(1, "A") should equal(Seq(BinaryNode("A")))
+      BinaryTree.hBalancedWithNodes(1, 1) should equal(Seq(BinaryNode(1)))
+    }
+
+    it ("should return 2 trees with height 2, for n == 2") {
+      BinaryTree.hBalancedWithNodes(2, "A") should equal(Seq(
+        new BinaryNode("A", Leaf, BinaryNode("A")),
+        new BinaryNode("A", BinaryNode("A"), Leaf)
+      ))
+    }
+
+    it ("should return 1 trees with height 2, for n == 3") {
+      BinaryTree.hBalancedWithNodes(3, "A") should equal(Seq(
+        new BinaryNode("A", BinaryNode("A"), BinaryNode("A"))
+      ))
+    }
+
+    it ("should return 4 trees with height 3, for n == 4") {
+      BinaryTree.hBalancedWithNodes(4, "A") should equal(Seq(
+        new BinaryNode("A", new BinaryNode("A", Leaf, BinaryNode("A")), BinaryNode("A")),
+        new BinaryNode("A", new BinaryNode("A", BinaryNode("A"), Leaf), BinaryNode("A")),
+        new BinaryNode("A", BinaryNode("A"), new BinaryNode("A", Leaf, BinaryNode("A"))),
+        new BinaryNode("A", BinaryNode("A"), new BinaryNode("A", BinaryNode("A"), Leaf))
+      ))
+    }
+
+    it ("should return 63 trees for n == 15") {
+      BinaryTree.hBalancedWithNodes(15, "B").size should be(177)
+    }
+  }
+  
+  describe("leafCount") {
+    it ("should be 1 for a leaf") {
+      Leaf.leafCount should be(1)
+    }
+
+    it ("should be 2 for a single node") {
+      BinaryNode(null).leafCount should be(2)
+    }
+
+    it ("should be compute correctly for larger trees") {
+      BinaryNode(1, BinaryNode(2), BinaryNode(2)).leafCount() should be(4)
+      BinaryNode(1, BinaryNode(2, BinaryNode(3), Leaf), BinaryNode(2, Leaf, BinaryNode(3))).leafCount() should be(6)
+      BinaryNode(1,
+        BinaryNode(2, BinaryNode(3), BinaryNode(4, BinaryNode(5), Leaf)),
+        BinaryNode(2, BinaryNode(4, Leaf, BinaryNode(5)), BinaryNode(3))).leafCount() should be(10)
+    }
+
+    it ("should always be size + 1 [random test]") {
+      (1 to 100) foreach { _ =>
+        val h = 1 + Random.nextInt(5)
+        val n = 1 + Random.nextInt(10)
+        (BinaryTree.hBalanced(h, null) ++ BinaryTree.cBalanced(n, false)).foreach{ tree =>
+          tree.leafCount() should be(1 + tree.size())
+        }
+      }
+    }
+
+
+  }
 }

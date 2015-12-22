@@ -68,11 +68,11 @@ object BinaryTree {
     case 0 => Seq(Leaf)
     case 1 => Seq(BinaryNode(key))
     case _ =>
-      hBalanced(height - 1, key).map { t1 =>
-        BinaryNode(key, t1, t1) +: hBalanced(height - 2, key).map { t2 =>
+      hBalanced(height - 1, key).flatMap { t1 =>
+        BinaryNode(key, t1, t1) +: hBalanced(height - 2, key).flatMap { t2 =>
           Seq(BinaryNode(key, t2, t1), BinaryNode(key, t1, t2))
-        }.flatten
-      }.flatten
+        }
+      }
   }
 
   /**
@@ -92,10 +92,22 @@ object BinaryTree {
   }
 
   /**
-   * Compute the maximum height an hBalanced tree with n nodes could have.
-   * Slow version to double check the inductive definition.
+   * Compute the minimum height a tree with n nodes could have.
    *
-   * @param n The given number of nodes.
+   * @param n The number of nodes in the tree.
+   * @throws IllegalArgumentException
+   * @return
+   */
+  @throws[IllegalArgumentException]
+  def minHbalHeight(n: Int): Int = n match {
+    case _ if n < 0 => throw new IllegalArgumentException(NegativeValueErrorMessage)
+    case 0 => 0
+    case _ => log2(n).toInt
+  }
+      /**
+   * Compute the maximum height an hBalanced tree with n nodes could have.
+   *
+   * @param n The number of nodes in the tree.
    * @throws IllegalArgumentException
    * @return
    */
@@ -112,6 +124,25 @@ object BinaryTree {
   }
 
   /**
+   *
+   * @param n The number of nodes in the trees.
+   * @param key The key to be inserted in the nodes.
+   * @tparam K The type of the tree's keys.
+   * @throws IllegalArgumentException when n is negative.
+   * @return
+   */
+  @throws[IllegalArgumentException]
+  def hBalancedWithNodes[K](n: Int, key: K): Seq[BinaryTree[K, Nothing]] = n match {
+    case _ if n < 0 => throw new IllegalArgumentException(NegativeValueErrorMessage)
+    case 0 => Seq(Leaf)
+    case 1 => Seq(BinaryNode(key))
+    case _ =>
+      (minHbalHeight(n) to maxHbalHeight(n)).flatMap {
+        BinaryTree.hBalanced(_, key).filter(_.size == n)
+      }
+  }
+
+  /**
    * Compute the maximum height an hBalanced tree with n nodes could have.
    * Slow version to double check the inductive definition.
    *
@@ -122,15 +153,19 @@ object BinaryTree {
     Stream.from(1).takeWhile(minHbalNodes(_) <= n).last
 
   private[s99] val NegativeValueErrorMessage = "n can't be negative"
+
+  private def log2(x: Double) = Math.log10(x) / Math.log10(2)
 }
 
 abstract class BinaryTree[+K, +V] {
+  def size(): Int
   def inOrder(): Seq[K]
   def preOrder(): Seq[K]
   def preOrderMirror(): Seq[K]
   def postOrder(): Seq[K]
   def hasSymmetricStructure(): Boolean
   def isSymmetric(): Boolean
+  def leafCount(): Int
   private[tree] def toPreOrderOptionList(): Seq[Option[K]]
   private[tree] def toPreOrderMirrorOptionList(): Seq[Option[K]]
 }
@@ -148,6 +183,10 @@ case class BinaryNode[+K, +V](key: K, left: BinaryTree[K, V], right: BinaryTree[
   override def equals(other: Any) = other match {
     case that: BinaryNode[K, V] => (that canEqual this) && this.hashCode == that.hashCode
     case _ => false
+  }
+
+  override def size(): Int = {
+    1 + left.size() + right.size()
   }
 
   override def preOrder(): Seq[K] = {
@@ -186,6 +225,10 @@ case class BinaryNode[+K, +V](key: K, left: BinaryTree[K, V], right: BinaryTree[
   override def isSymmetric(): Boolean = {
     toPreOrderOptionList() == toPreOrderMirrorOptionList()
   }
+
+  override def leafCount(): Int = {
+    left.leafCount() + right.leafCount()
+  }
 }
 
 trait Leaf extends BinaryTree[Nothing, Nothing] {
@@ -208,10 +251,15 @@ case object Leaf extends Leaf {
   //0 == "".hashCode()
   override def hashCode = 0
 
+  override def size(): Int = 0
+
   override def canEqual(other: Any):Boolean = other match {
     case Leaf => true
     case _ => false
   }
+
+  override def leafCount(): Int = 1
+
 }
 
 object BinaryNode {

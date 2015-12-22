@@ -84,9 +84,17 @@ class BinarySearchTreeTest extends FunSpec with Matchers {
         equal(new BinarySearchNode[Int, Boolean](2, BinarySearchNode[Int, Boolean](1, None), new BinarySearchNode[Int, Boolean](3, BinarySearchLeaf, BinarySearchNode[Int, Boolean](4, Some(false)), None), None))
     }
 
-    it("absolute order shouldn't, only relative order of elements in the same branch") {
+    it("absolute order shouldn't matter, only relative order of elements in the same branch") {
       BinarySearchTree.fromSeq(Seq((2, None), (1, None), (3, None), (4, Some(false)))) should equal(BinarySearchTree.fromSeq(Seq((2, None), (3, None), (1, None), (4, Some(false)))))
       BinarySearchTree.fromSeq(Seq((2, None), (1, None), (3, None), (4, Some(false)))) should equal(BinarySearchTree.fromSeq(Seq((2, None), (3, None), (4, Some(false)), (1, None))))
+    }
+  }
+
+  describe("size") {
+    it("should match the size of the list passed to `fromSeq`") {
+      BinarySearchTree.fromSeq(Seq((2, None), (1, None), (3, None), (4, Some(false)))).size() should be(4)
+      BinarySearchTree.fromSeq(
+        Seq((2, None), (1, None), (3, None), (4, Some(false)), (4, Some(false)), (4, Some(false)))).size() should be(6)
     }
   }
 }
