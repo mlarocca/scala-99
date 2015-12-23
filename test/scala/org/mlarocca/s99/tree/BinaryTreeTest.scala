@@ -349,7 +349,54 @@ class BinaryTreeTest extends FunSpec with Matchers {
           be(Seq((1, Some("y")), (2, None), (2, Some("x"))))
       BinaryNode(1,
         BinaryNode(2, BinaryNode(3), BinaryNode(4, BinaryNode(5), Leaf)),
-        BinaryNode(2, BinaryNode(4, Leaf, BinaryNode(7)), BinaryNode(8))).internalNodeSeq() should be(Seq(1, 2, 4, 2, 4).map((_, None)))
+        BinaryNode(2, BinaryNode(4, Leaf, BinaryNode(7)), BinaryNode(8))).internalNodeSeq() should
+          be(Seq(1, 2, 4, 2, 4).map((_, None)))
+    }
+  }
+
+  describe("nodesAtLevel") {
+    it ("should throw IllegalArgumentException for negative Int") {
+      a[IllegalArgumentException] should be thrownBy {
+        Leaf.nodesAtLevel(-2)
+      }
+      a[IllegalArgumentException] should be thrownBy {
+        BinaryNode(123).nodesAtLevel(-1)
+      }
+    }
+
+    it ("should throw IllegalArgumentException when 0 is passed") {
+      a[IllegalArgumentException] should be thrownBy {
+        Leaf.nodesAtLevel(0)
+      }
+      a[IllegalArgumentException] should be thrownBy {
+        BinaryNode(1, BinaryNode(2), Leaf).nodesAtLevel(-1)
+      }
+    }
+
+    it ("should be the root for level 1") {
+      BinaryNode(1, Some(false)).nodesAtLevel(1) should be(Seq((1, Some(false))))
+    }
+
+    it ("should be compute correctly for larger trees") {
+      val t1 = BinaryNode(1, BinaryNode(2), BinaryNode(2, Some("x")))
+      t1.nodesAtLevel(1) should be(Seq((1, None)))
+      t1.nodesAtLevel(2) should be(Seq((2, None), (2, Some("x"))))
+
+      val t2 = BinaryNode(1, BinaryNode(2, BinaryNode(3), Leaf), BinaryNode(2, Leaf, BinaryNode(3), Some("x")), Some("y"))
+
+      t2.nodesAtLevel(1) should be(Seq((1, Some("y"))))
+      t2.nodesAtLevel(2) should be(Seq((2, None), (2, Some("x"))))
+      t2.nodesAtLevel(3) should be(Seq((3, None), (3, None)))
+
+      val t3 = BinaryNode(1,
+        BinaryNode(2, BinaryNode(3), BinaryNode(4, BinaryNode(5), Leaf)),
+        BinaryNode(2, BinaryNode(6, Leaf, BinaryNode(7)), BinaryNode(8)))
+
+      t3.nodesAtLevel(1) should be(Seq((1, None)))
+      t3.nodesAtLevel(2) should be(Seq((2, None), (2, None)))
+      t3.nodesAtLevel(3) should be(Seq((3, None), (4, None), (6, None), (8, None)))
+      t3.nodesAtLevel(4) should be(Seq((5, None), (7, None)))
+      t3.nodesAtLevel(5) should be(Nil)
     }
   }
 }

@@ -153,6 +153,7 @@ object BinaryTree {
     Stream.from(1).takeWhile(minHbalNodes(_) <= n).last
 
   private[s99] val NegativeValueErrorMessage = "n can't be negative"
+  private[s99] val NonPositiveValueErrorMessage = "n must be positive"
 
   private def log2(x: Double) = Math.log10(x) / Math.log10(2)
 }
@@ -168,6 +169,7 @@ abstract class BinaryTree[+K, +V] {
   def leafNodeCount(): Int
   def leafNodeSeq(): Seq[(K, Option[V])]
   def internalNodeSeq(): Seq[(K, Option[V])]
+  def nodesAtLevel(level: Int): Seq[(K, Option[V])]
   private[tree] def toPreOrderOptionList(): Seq[Option[K]]
   private[tree] def toPreOrderMirrorOptionList(): Seq[Option[K]]
 }
@@ -246,6 +248,16 @@ case class BinaryNode[+K, +V](key: K, left: BinaryTree[K, V], right: BinaryTree[
   } else {
     (key, value) +: (left.internalNodeSeq() ++ right.internalNodeSeq())
   }
+
+  @throws[IllegalArgumentException]
+  override def nodesAtLevel(level: Int): Seq[(K, Option[V])] = level match {
+    case 1 =>
+      Seq((key, value))
+    case _ if level > 1 =>
+      left.nodesAtLevel(level - 1) ++ right.nodesAtLevel(level - 1)
+    case _ =>
+      throw new IllegalArgumentException(BinaryTree.NonPositiveValueErrorMessage)
+  }
 }
 
 trait Leaf extends BinaryTree[Nothing, Nothing] {
@@ -268,6 +280,11 @@ trait Leaf extends BinaryTree[Nothing, Nothing] {
   override def leafNodeCount(): Int = 0
   override def leafNodeSeq() = Nil
   override def internalNodeSeq() = Nil
+  override def nodesAtLevel(level: Int) = if (level <= 0) {
+    throw new IllegalArgumentException(BinaryTree.NonPositiveValueErrorMessage)
+  } else {
+    Nil
+  }
 }
 
 case object Leaf extends Leaf {
