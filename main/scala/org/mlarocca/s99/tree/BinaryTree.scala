@@ -165,7 +165,9 @@ abstract class BinaryTree[+K, +V] {
   def postOrder(): Seq[K]
   def hasSymmetricStructure(): Boolean
   def isSymmetric(): Boolean
-  def leafCount(): Int
+  def leafNodeCount(): Int
+  def leafNodeSeq(): Seq[(K, Option[V])]
+  def internalNodeSeq(): Seq[(K, Option[V])]
   private[tree] def toPreOrderOptionList(): Seq[Option[K]]
   private[tree] def toPreOrderMirrorOptionList(): Seq[Option[K]]
 }
@@ -226,13 +228,30 @@ case class BinaryNode[+K, +V](key: K, left: BinaryTree[K, V], right: BinaryTree[
     toPreOrderOptionList() == toPreOrderMirrorOptionList()
   }
 
-  override def leafCount(): Int = {
-    left.leafCount() + right.leafCount()
+  private def isLeafNode(): Boolean = (left, right) match {
+    case (Leaf, Leaf) => true
+    case _ => false
+  }
+
+  override def leafNodeCount(): Int = if (isLeafNode) 1 else left.leafNodeCount() + right.leafNodeCount()
+
+  override def leafNodeSeq(): Seq[(K, Option[V])] = if (isLeafNode) {
+    Seq((key, value))
+  } else {
+    left.leafNodeSeq() ++ right.leafNodeSeq()
+  }
+
+  override def internalNodeSeq(): Seq[(K, Option[V])] = if (isLeafNode) {
+    Nil
+  } else {
+    (key, value) +: (left.internalNodeSeq() ++ right.internalNodeSeq())
   }
 }
 
 trait Leaf extends BinaryTree[Nothing, Nothing] {
   override def toString = "."
+
+  override def size(): Int = 0
 
   override def inOrder() = Nil
   override def preOrder() = Nil
@@ -245,21 +264,20 @@ trait Leaf extends BinaryTree[Nothing, Nothing] {
   override def hasSymmetricStructure(): Boolean = true
 
   override def isSymmetric(): Boolean = true
+
+  override def leafNodeCount(): Int = 0
+  override def leafNodeSeq() = Nil
+  override def internalNodeSeq() = Nil
 }
 
 case object Leaf extends Leaf {
   //0 == "".hashCode()
   override def hashCode = 0
 
-  override def size(): Int = 0
-
   override def canEqual(other: Any):Boolean = other match {
     case Leaf => true
     case _ => false
   }
-
-  override def leafCount(): Int = 1
-
 }
 
 object BinaryNode {

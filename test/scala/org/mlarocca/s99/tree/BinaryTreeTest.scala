@@ -298,31 +298,58 @@ class BinaryTreeTest extends FunSpec with Matchers {
   
   describe("leafCount") {
     it ("should be 1 for a leaf") {
-      Leaf.leafCount should be(1)
+      Leaf.leafNodeCount should be(0)
     }
 
     it ("should be 2 for a single node") {
-      BinaryNode(null).leafCount should be(2)
+      BinaryNode(null).leafNodeCount should be(1)
     }
 
     it ("should be compute correctly for larger trees") {
-      BinaryNode(1, BinaryNode(2), BinaryNode(2)).leafCount() should be(4)
-      BinaryNode(1, BinaryNode(2, BinaryNode(3), Leaf), BinaryNode(2, Leaf, BinaryNode(3))).leafCount() should be(6)
+      BinaryNode(1, BinaryNode(2), BinaryNode(2)).leafNodeCount() should be(2)
+      BinaryNode(1, BinaryNode(2, BinaryNode(3), Leaf), BinaryNode(2, Leaf, BinaryNode(3))).leafNodeCount() should be(2)
       BinaryNode(1,
         BinaryNode(2, BinaryNode(3), BinaryNode(4, BinaryNode(5), Leaf)),
-        BinaryNode(2, BinaryNode(4, Leaf, BinaryNode(5)), BinaryNode(3))).leafCount() should be(10)
+        BinaryNode(2, BinaryNode(4, Leaf, BinaryNode(5)), BinaryNode(3))).leafNodeCount() should be(4)
+    }
+  }
+
+  describe("leafNodeSeq") {
+    it ("should be Nil for a leaf") {
+      Leaf.leafNodeSeq should be(Nil)
     }
 
-    it ("should always be size + 1 [random test]") {
-      (1 to 100) foreach { _ =>
-        val h = 1 + Random.nextInt(5)
-        val n = 1 + Random.nextInt(10)
-        (BinaryTree.hBalanced(h, null) ++ BinaryTree.cBalanced(n, false)).foreach{ tree =>
-          tree.leafCount() should be(1 + tree.size())
-        }
-      }
+    it ("should be a singleton for a single node") {
+      BinaryNode(null).leafNodeSeq should be(Seq((null, None)))
+      new BinaryNode(1, Leaf, Leaf, Some("f")).leafNodeSeq should be(Seq((1, Some("f"))))
     }
 
+    it ("should be compute correctly for larger trees") {
+      BinaryNode(1, BinaryNode(2), BinaryNode(2, Some("x"))).leafNodeSeq() should be(Seq((2, None), (2, Some("x"))))
+      BinaryNode(1, BinaryNode(2, BinaryNode(3), Leaf), BinaryNode(2, Leaf, BinaryNode(3))).leafNodeSeq() should be(Seq((3, None), (3, None)))
+      BinaryNode(1,
+        BinaryNode(2, BinaryNode(3), BinaryNode(4, BinaryNode(5), Leaf)),
+        BinaryNode(2, BinaryNode(4, Leaf, BinaryNode(7)), BinaryNode(8))).leafNodeSeq() should be(Seq(3, 5, 7, 8).map((_, None)))
+    }
+  }
 
+  describe("internalNodeSeq") {
+    it ("should be 1 for a leaf") {
+      Leaf.internalNodeSeq should be(Nil)
+    }
+
+    it ("should be Nil for a single node") {
+      BinaryNode(null).internalNodeSeq should be(Nil)
+      new BinaryNode(1, Leaf, Leaf, Some("f")).internalNodeSeq should be(Nil)
+    }
+
+    it ("should be compute correctly for larger trees") {
+      BinaryNode(1, BinaryNode(2), BinaryNode(2, Some("x"))).internalNodeSeq() should be(Seq((1, None)))
+      BinaryNode(1, BinaryNode(2, BinaryNode(3), Leaf), BinaryNode(2, Leaf, BinaryNode(3), Some("x")), Some("y")).internalNodeSeq() should
+          be(Seq((1, Some("y")), (2, None), (2, Some("x"))))
+      BinaryNode(1,
+        BinaryNode(2, BinaryNode(3), BinaryNode(4, BinaryNode(5), Leaf)),
+        BinaryNode(2, BinaryNode(4, Leaf, BinaryNode(7)), BinaryNode(8))).internalNodeSeq() should be(Seq(1, 2, 4, 2, 4).map((_, None)))
+    }
   }
 }

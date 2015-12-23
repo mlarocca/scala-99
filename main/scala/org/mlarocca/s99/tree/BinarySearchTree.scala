@@ -42,10 +42,6 @@ case object BinarySearchLeaf extends Leaf with BinarySearchTree[Nothing, Nothing
   override def insert[T <% Ordered[T], W](newKey: T, newValue: Option[W]): BinarySearchTree[T, W] = {
     BinarySearchNode(newKey, newValue)
   }
-
-  override def size(): Int = 0
-
-  override def leafCount(): Int = 1
 }
 
 object BinarySearchNode {
