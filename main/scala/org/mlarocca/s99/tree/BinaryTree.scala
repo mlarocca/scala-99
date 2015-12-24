@@ -260,15 +260,15 @@ case class BinaryNode[+K, +V](key: K, left: BinaryTree[K, V], right: BinaryTree[
     case _ => false
   }
 
-  override def leafNodeCount(): Int = if (isLeafNode) 1 else left.leafNodeCount() + right.leafNodeCount()
+  override def leafNodeCount(): Int = if (isLeafNode()) 1 else left.leafNodeCount() + right.leafNodeCount()
 
-  override def leafNodeSeq(): Seq[(K, Option[V])] = if (isLeafNode) {
+  override def leafNodeSeq(): Seq[(K, Option[V])] = if (isLeafNode()) {
     Seq((key, value))
   } else {
     left.leafNodeSeq() ++ right.leafNodeSeq()
   }
 
-  override def internalNodeSeq(): Seq[(K, Option[V])] = if (isLeafNode) {
+  override def internalNodeSeq(): Seq[(K, Option[V])] = if (isLeafNode()) {
     Nil
   } else {
     (key, value) +: (left.internalNodeSeq() ++ right.internalNodeSeq())
