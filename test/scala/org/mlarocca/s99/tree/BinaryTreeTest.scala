@@ -377,7 +377,7 @@ class BinaryTreeTest extends FunSpec with Matchers {
       BinaryNode(1, Some(false)).nodesAtLevel(1) should be(Seq((1, Some(false))))
     }
 
-    it ("should be compute correctly for larger trees") {
+    it ("should be computed correctly for larger trees") {
       val t1 = BinaryNode(1, BinaryNode(2), BinaryNode(2, Some("x")))
       t1.nodesAtLevel(1) should be(Seq((1, None)))
       t1.nodesAtLevel(2) should be(Seq((2, None), (2, Some("x"))))
@@ -397,6 +397,43 @@ class BinaryTreeTest extends FunSpec with Matchers {
       t3.nodesAtLevel(3) should be(Seq((3, None), (4, None), (6, None), (8, None)))
       t3.nodesAtLevel(4) should be(Seq((5, None), (7, None)))
       t3.nodesAtLevel(5) should be(Nil)
+    }
+  }
+
+  describe("completeBinaryTree") {
+    it ("should throw IllegalArgumentException for negative Int") {
+      a[IllegalArgumentException] should be thrownBy {
+        BinaryTree.completeBinaryTree(-2, "1")
+      }
+      a[IllegalArgumentException] should be thrownBy {
+        BinaryTree.completeBinaryTree(-1, Random.nextBoolean())
+      }
+    }
+
+    it ("should return a Leaf for n == 0") {
+      BinaryTree.completeBinaryTree(0, Random.nextDouble()) should be(Leaf)
+    }
+
+    it ("should return a singleton for n == 1") {
+      BinaryTree.completeBinaryTree(1, "x") should be(BinaryNode("x"))
+    }
+
+    it ("should be generated correctly for larger trees") {
+      BinaryTree.completeBinaryTree(2, "A") should be(BinaryNode("A", BinaryNode("A"), Leaf))
+      BinaryTree.completeBinaryTree(3, "A") should be(BinaryNode("A", BinaryNode("A"), BinaryNode("A")))
+
+      BinaryTree.completeBinaryTree(4, "A") should
+          be(BinaryNode("A", BinaryNode("A", BinaryNode("A"), Leaf), BinaryNode("A")))
+      BinaryTree.completeBinaryTree(5, "A") should
+          be(BinaryNode("A", BinaryNode("A", BinaryNode("A"), BinaryNode("A")), BinaryNode("A")))
+      BinaryTree.completeBinaryTree(6, "A") should
+          be(BinaryNode("A", BinaryNode("A", BinaryNode("A"), BinaryNode("A")), BinaryNode("A", BinaryNode("A"), Leaf)))
+      BinaryTree.completeBinaryTree(7, "A") should
+          be(BinaryNode("A", BinaryNode("A", BinaryNode("A"), BinaryNode("A")), BinaryNode("A", BinaryNode("A"), BinaryNode("A"))))
+      BinaryTree.completeBinaryTree(8, "A") should
+          be(BinaryNode("A", BinaryNode("A", BinaryNode("A", BinaryNode("A"), Leaf), BinaryNode("A")), BinaryNode("A", BinaryNode("A"), BinaryNode("A"))))
+      BinaryTree.completeBinaryTree(9, "A") should
+          be(BinaryNode("A", BinaryNode("A", BinaryNode("A", BinaryNode("A"), BinaryNode("A")), BinaryNode("A")), BinaryNode("A", BinaryNode("A"), BinaryNode("A"))))
     }
   }
 }

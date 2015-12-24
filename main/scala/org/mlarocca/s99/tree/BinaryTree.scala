@@ -143,6 +143,30 @@ object BinaryTree {
   }
 
   /**
+   *
+   * @param n The number of nodes in the trees.
+   * @param key The key to be inserted in the nodes.
+   * @tparam K The type of the tree's keys.
+   * @throws IllegalArgumentException when n is negative.
+   * @return
+   */
+  @throws[IllegalArgumentException]
+  def completeBinaryTree[K](n: Int, key: K): BinaryTree[K, Nothing] = {
+    def fillInLevels(id: Int): BinaryTree[K, Nothing] = if (id > n) {
+      Leaf
+    } else {
+      BinaryNode(key, fillInLevels(2 * id), fillInLevels(2 * id + 1))
+    }
+
+    n match {
+      case _ if n < 0 => throw new IllegalArgumentException(NegativeValueErrorMessage)
+      case _ =>
+        fillInLevels(1)
+    }
+  }
+
+
+  /**
    * Compute the maximum height an hBalanced tree with n nodes could have.
    * Slow version to double check the inductive definition.
    *
