@@ -8,7 +8,7 @@ object BinaryTree {
    * @param n Number of nodes in the tree.
    * @param key The key to be inserted in the nodes.
    * @tparam K Type of tree's keys
-   * @throws IllegalArgumentException
+   * @throws IllegalArgumentException When n is negative.
    * @return
    */
   @throws[IllegalArgumentException]
@@ -17,14 +17,14 @@ object BinaryTree {
     case (0, _) => Seq(Leaf)
     case (1, _) => Seq(BinaryNode(key))
     case (_, 1) =>
-      val completeSubTrees = BinaryTree.cBalanced(n / 2, key);
+      val completeSubTrees = BinaryTree.cBalanced(n / 2, key)
       for {
         tLeft <- completeSubTrees
         tRight <- completeSubTrees
       } yield new BinaryNode(key, tLeft, tRight)
     case (_, 0) =>
       val m = (n - 1) / 2
-      val completeSubTreesSmaller = BinaryTree.cBalanced(m, key);
+      val completeSubTreesSmaller = BinaryTree.cBalanced(m, key)
       val completeSubTreesLarger = BinaryTree.cBalanced(m + 1, key); //m + m + 1 == n
 
       val leftLeaning = for {
@@ -80,7 +80,7 @@ object BinaryTree {
    * NOTE: soooo Fibonacci...
    *
    * @param height The height for the tree.
-   * @throws IllegalArgumentException
+   * @throws IllegalArgumentException when height is negative.
    * @return
    */
   @throws[IllegalArgumentException]
@@ -95,7 +95,7 @@ object BinaryTree {
    * Compute the minimum height a tree with n nodes could have.
    *
    * @param n The number of nodes in the tree.
-   * @throws IllegalArgumentException
+   * @throws IllegalArgumentException When n is negative.
    * @return
    */
   @throws[IllegalArgumentException]
@@ -143,8 +143,9 @@ object BinaryTree {
   }
 
   /**
+   * Generate a complete (balanced and hBalanced) binary tree.
    *
-   * @param n The number of nodes in the trees.
+   * @param n The number of nodes in the tree.
    * @param key The key to be inserted in the nodes.
    * @tparam K The type of the tree's keys.
    * @throws IllegalArgumentException when n is negative.
