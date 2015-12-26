@@ -326,3 +326,7 @@ object BinaryNode {
   def apply[K, V](key: K): BinaryNode[K, V] = new BinaryNode(key, Leaf, Leaf)
   def apply[K, V](key: K, value: Option[V]): BinaryNode[K, V] = BinaryNode(key, Leaf, Leaf, value)
 }
+
+case class PositionedBinaryNode[+K, +V](override val key: K, override val left: BinaryTree[K, V], override val right: BinaryTree[K, V], override value: Option[V], x: Int, y: Int) extends BinaryNode[K, V](key, left, right, value) {
+  override def toString = "T[" + x.toString + "," + y.toString + "](" + key.toString + " " + left.toString + " " + right.toString + ")"
+}
