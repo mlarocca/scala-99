@@ -1,5 +1,7 @@
 package org.mlarocca.s99.tree
 
+import org.mlarocca.s99.tree.PositionedBinaryTree
+
 object BinaryTree {
   /**
    * Generates all the complete balanced trees with n nodes.
@@ -195,6 +197,8 @@ abstract class BinaryTree[+K, +V] {
   def leafNodeSeq(): Seq[(K, Option[V])]
   def internalNodeSeq(): Seq[(K, Option[V])]
   def nodesAtLevel(level: Int): Seq[(K, Option[V])]
+  def layoutBinaryTree(): PositionedBinaryTree[K, V]
+  private[tree] def layoutBinaryTreeInner(startingX: Int = 1, startingY: Int = 1): PositionedBinaryTree[K, V]
   private[tree] def toPreOrderOptionList(): Seq[Option[K]]
   private[tree] def toPreOrderMirrorOptionList(): Seq[Option[K]]
 }
@@ -283,6 +287,17 @@ case class BinaryNode[+K, +V](key: K, left: BinaryTree[K, V], right: BinaryTree[
     case _ =>
       throw new IllegalArgumentException(BinaryTree.NonPositiveValueErrorMessage)
   }
+
+  override def layoutBinaryTree(): PositionedBinaryTree[K, V] = {
+    layoutBinaryTreeInner()
+  }
+
+  private[tree] override def layoutBinaryTreeInner(startingX: Int = 1, startingY: Int = 1): PositionedBinaryTree[K, V] = {
+    val leftP = left.layoutBinaryTreeInner(startingX, startingY + 1)
+    val actualX = startingX + left.size()
+    val rightP = right.layoutBinaryTreeInner(actualX + 1, startingY + 1)
+    new PositionedBinaryNode(key, leftP, rightP, value, startingY, actualX)
+  }
 }
 
 trait Leaf extends BinaryTree[Nothing, Nothing] {
@@ -310,6 +325,8 @@ trait Leaf extends BinaryTree[Nothing, Nothing] {
   } else {
     Nil
   }
+  override def layoutBinaryTree(): PositionedBinaryTree[Nothing, Nothing] = PositionedBinaryLeaf
+  override private[tree] def layoutBinaryTreeInner(startingX: Int, startingY: Int): PositionedBinaryTree[Nothing, Nothing] = PositionedBinaryLeaf
 }
 
 case object Leaf extends Leaf {
@@ -325,8 +342,4 @@ case object Leaf extends Leaf {
 object BinaryNode {
   def apply[K, V](key: K): BinaryNode[K, V] = new BinaryNode(key, Leaf, Leaf)
   def apply[K, V](key: K, value: Option[V]): BinaryNode[K, V] = BinaryNode(key, Leaf, Leaf, value)
-}
-
-class PositionedBinaryNode[+K, +V](override val key: K, override val left: BinaryTree[K, V], override val right: BinaryTree[K, V], override val value: Option[V], x: Int, y: Int) extends BinaryNode[K, V](key, left, right, value) {
-  override def toString = s"T[$x, $y]($key $left $right)"
 }
