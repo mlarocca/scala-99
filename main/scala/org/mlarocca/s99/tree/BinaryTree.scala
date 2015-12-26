@@ -200,7 +200,7 @@ abstract class BinaryTree[+K, +V] {
 }
 
 case class BinaryNode[+K, +V](key: K, left: BinaryTree[K, V], right: BinaryTree[K, V], value: Option[V] = None) extends BinaryTree[K, V] {
-  override def toString = "T(" + key.toString + " " + left.toString + " " + right.toString + ")"
+  override def toString = s"T($key $left $right)"
 
   //Combination of preorder + inorder is unique for each tree (trees with the same keys set could have the same inorder or preorder)
   override def hashCode = ((preOrder() ++ inOrder()).map(_.toString) mkString ".").hashCode()
@@ -327,6 +327,6 @@ object BinaryNode {
   def apply[K, V](key: K, value: Option[V]): BinaryNode[K, V] = BinaryNode(key, Leaf, Leaf, value)
 }
 
-case class PositionedBinaryNode[+K, +V](override val key: K, override val left: BinaryTree[K, V], override val right: BinaryTree[K, V], override value: Option[V], x: Int, y: Int) extends BinaryNode[K, V](key, left, right, value) {
-  override def toString = "T[" + x.toString + "," + y.toString + "](" + key.toString + " " + left.toString + " " + right.toString + ")"
+class PositionedBinaryNode[+K, +V](override val key: K, override val left: BinaryTree[K, V], override val right: BinaryTree[K, V], override val value: Option[V], x: Int, y: Int) extends BinaryNode[K, V](key, left, right, value) {
+  override def toString = s"T[$x, $y]($key $left $right)"
 }
