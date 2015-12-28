@@ -2,6 +2,7 @@ package org.mlarocca.s99.tree
 
 trait PositionedBinaryTree[+K, +V] extends BinaryTree[K, V] {
   private[tree] def toInOrderItemList[T >: K, W >: V](): Seq[PositionedItem[T, W]] = Nil
+  def itemsAtLevel[T >: K, W >: V](level: Int): Seq[PositionedItem[T, W]] = Nil
 }
 
 case object PositionedBinaryLeaf extends Leaf with PositionedBinaryTree[Nothing, Nothing]
@@ -11,6 +12,16 @@ class PositionedBinaryNode[+K, +V](override val key: K, override val left: Posit
 
   override private[tree] def toInOrderItemList[T >: K, W >: V](): Seq[PositionedItem[T, W]] = {
     left.toInOrderItemList[T, W]() ++ (PositionedItem[T, W](key, value, x, y) +: right.toInOrderItemList[T, W]())
+  }
+
+  @throws[IllegalArgumentException]
+  override def itemsAtLevel[T >: K, W >: V](level: Int): Seq[PositionedItem[T, W]] = level match {
+    case 1 =>
+      Seq(PositionedItem[T, W](key, value, x, y))
+    case _ if level > 1 =>
+      left.itemsAtLevel[T, W](level - 1) ++ right.itemsAtLevel[T, W](level - 1)
+    case _ =>
+      throw new IllegalArgumentException(BinaryTree.NonPositiveValueErrorMessage)
   }
 }
 

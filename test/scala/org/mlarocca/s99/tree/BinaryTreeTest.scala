@@ -61,7 +61,26 @@ class BinaryTreeTest extends FunSpec with Matchers {
         BinaryNode(2, BinaryNode(4, Leaf, BinaryNode(5)), BinaryNode(3))).size() should be(9)
     }
   }
-  
+
+  describe("height") {
+    it ("should be 0 for a leaf") {
+      Leaf.height should be(0)
+    }
+
+    it ("should be 1 for a single node") {
+      BinaryNode(null).height should be(1)
+    }
+
+    it ("should be compute correctly for larger trees") {
+      BinaryNode(1, BinaryNode(2), BinaryNode(2)).height() should be(2)
+      BinaryNode(1, Leaf, BinaryNode(2)).height() should be(2)
+      BinaryNode(1, BinaryNode(2, BinaryNode(3), Leaf), BinaryNode(2, Leaf, BinaryNode(3))).height() should be(3)
+      BinaryNode(1,
+        BinaryNode(2, BinaryNode(3), BinaryNode(4, BinaryNode(5), Leaf)),
+        BinaryNode(2, BinaryNode(4, Leaf, BinaryNode(5)), BinaryNode(3))).height() should be(5)
+    }
+  }
+
   describe("cBalanced") {
     it ("should throw IllegalArgumentException for negative Int") {
       a[IllegalArgumentException] should be thrownBy {
@@ -476,6 +495,12 @@ class BinaryTreeTest extends FunSpec with Matchers {
       val inorder = layoutTree.toInOrderItemList()
       inorder.zipWithIndex.map {
         case (node, position) => node.x should be(position + 1) //Indices starts from 0
+      }
+      val h = layoutTree.height
+      (1 to h).foreach { h =>
+        layoutTree.itemsAtLevel(h).foreach { item: PositionedItem[Char, Nothing] =>
+          item.y should be(h)
+        }
       }
     }
   }

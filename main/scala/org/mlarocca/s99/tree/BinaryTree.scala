@@ -185,6 +185,7 @@ object BinaryTree {
 
 abstract class BinaryTree[+K, +V] {
   def size(): Int
+  def height(): Int
   def inOrder(): Seq[K]
   def preOrder(): Seq[K]
   def preOrderMirror(): Seq[K]
@@ -219,6 +220,10 @@ case class BinaryNode[+K, +V](key: K, left: BinaryTree[K, V], right: BinaryTree[
 
   override def size(): Int = {
     1 + left.size() + right.size()
+  }
+
+  override def height(): Int = {
+    1 + Math.max(left.size(), right.size())
   }
 
   override def preOrder(): Seq[K] = {
@@ -307,6 +312,7 @@ trait Leaf extends BinaryTree[Nothing, Nothing] {
   override def toString = "."
 
   override def size(): Int = 0
+  override def height(): Int = 0
 
   override def inOrder() = Nil
   override def preOrder() = Nil
