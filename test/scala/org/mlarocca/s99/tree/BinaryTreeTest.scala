@@ -325,7 +325,7 @@ class BinaryTreeTest extends FunSpec with Matchers {
     }
 
     it ("should be compute correctly for larger trees") {
-      BinaryNode(1, BinaryNode(2), BinaryNode(2, Some("x"))).leafNodeSeq() should be(Seq((2, None), (2, Some("x"))))
+      BinaryNode(1, BinaryNode(2), BinaryNode(2, "x")).leafNodeSeq() should be(Seq((2, None), (2, Some("x"))))
       BinaryNode(1, BinaryNode(2, BinaryNode(3), Leaf), BinaryNode(2, Leaf, BinaryNode(3))).leafNodeSeq() should be(Seq((3, None), (3, None)))
       BinaryNode(1,
         BinaryNode(2, BinaryNode(3), BinaryNode(4, BinaryNode(5), Leaf)),
@@ -374,11 +374,11 @@ class BinaryTreeTest extends FunSpec with Matchers {
     }
 
     it ("should be the root for level 1") {
-      BinaryNode(1, Some(false)).nodesAtLevel(1) should be(Seq((1, Some(false))))
+      BinaryNode(1, false).nodesAtLevel(1) should be(Seq((1, Some(false))))
     }
 
     it ("should be computed correctly for larger trees") {
-      val t1 = BinaryNode(1, BinaryNode(2), BinaryNode(2, Some("x")))
+      val t1 = BinaryNode(1, BinaryNode(2), BinaryNode(2, "x"))
       t1.nodesAtLevel(1) should be(Seq((1, None)))
       t1.nodesAtLevel(2) should be(Seq((2, None), (2, Some("x"))))
 
@@ -434,6 +434,49 @@ class BinaryTreeTest extends FunSpec with Matchers {
           be(BinaryNode("A", BinaryNode("A", BinaryNode("A", BinaryNode("A"), Leaf), BinaryNode("A")), BinaryNode("A", BinaryNode("A"), BinaryNode("A"))))
       BinaryTree.completeBinaryTree(9, "A") should
           be(BinaryNode("A", BinaryNode("A", BinaryNode("A", BinaryNode("A"), BinaryNode("A")), BinaryNode("A")), BinaryNode("A", BinaryNode("A"), BinaryNode("A"))))
+    }
+  }
+
+  describe("layoutBinaryTree") {
+    it ("should return a PositionedBinaryLeaf for a Leaf") {
+      Leaf.layoutBinaryTree() should be(PositionedBinaryLeaf)
+    }
+
+    it ("should return a PositionedNode for a root") {
+      BinaryNode("A", Some("2")).layoutBinaryTree() should be(PositionedBinaryNode("A", "2", 1, 1))
+    }
+
+    it ("should return the right PositionedTree for a simple Tree") {
+      BinarySearchTree.fromKeySeq(Seq('a','b','c')).layoutBinaryTree() should be (
+        new PositionedBinaryNode("a",
+          PositionedBinaryLeaf,
+          new PositionedBinaryNode("b",
+            PositionedBinaryLeaf,
+            PositionedBinaryNode("c", 3, 3), None, 2, 2),
+          None, 1, 1))
+
+      BinarySearchTree.fromKeySeq(Seq('b','a','c')).layoutBinaryTree() should be (
+        new PositionedBinaryNode("b",
+          PositionedBinaryNode("a", 1, 2),
+          PositionedBinaryNode("c", 3, 2),
+          None, 2, 1)
+      )
+      BinarySearchTree.fromKeySeq(Seq('c','b','a')).layoutBinaryTree() should be (
+        new PositionedBinaryNode("c",
+          new PositionedBinaryNode("b",
+            PositionedBinaryNode("a", 1, 3),
+            PositionedBinaryLeaf,
+            None, 2, 2),
+          PositionedBinaryLeaf,
+          None, 3, 1))
+    }
+
+    it ("should layout the tree correctly for larger trees") {
+      val layoutTree = BinarySearchTree.fromKeySeq(Seq('n','k','m','c','a','h','g','e','u','p','s','q')).layoutBinaryTree()
+      val inorder = layoutTree.toInOrderItemList()
+      inorder.zipWithIndex.map {
+        case (node, position) => node.x should be(position + 1) //Indices starts from 0
+      }
     }
   }
 }

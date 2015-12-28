@@ -11,6 +11,10 @@ object BinarySearchTree {
         tree.insert(key, value)
     }
   }
+
+  def fromKeySeq[K <% Ordered[K]](input: Seq[K]): BinaryTree[K, Nothing] = {
+    fromSeq(input.map{(_, None)})
+  }
 }
 
 class BinarySearchNode[+K, +V](

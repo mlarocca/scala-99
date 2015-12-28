@@ -90,6 +90,13 @@ class BinarySearchTreeTest extends FunSpec with Matchers {
     }
   }
 
+  describe("fromKeySeq") {
+    it("should insert correctly a key in a tree, setting values to None") {
+      BinarySearchTree.fromKeySeq(Seq(2, 1, 3, 4)) should
+          equal(new BinarySearchNode[Int, Boolean](2, BinarySearchNode[Int, Boolean](1, None), new BinarySearchNode[Int, Boolean](3, BinarySearchLeaf, BinarySearchNode[Int, Boolean](4, None), None), None))
+    }
+  }
+
   describe("size") {
     it("should match the size of the list passed to `fromSeq`") {
       BinarySearchTree.fromSeq(Seq((2, None), (1, None), (3, None), (4, Some(false)))).size() should be(4)
