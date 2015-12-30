@@ -224,7 +224,7 @@ case class BinaryNode[+K, +V](key: K, left: BinaryTree[K, V], right: BinaryTree[
   }
 
   override def height(): Int = {
-    1 + Math.max(left.size(), right.size())
+    1 + Math.max(left.height(), right.height())
   }
 
   override def preOrder(): Seq[K] = {

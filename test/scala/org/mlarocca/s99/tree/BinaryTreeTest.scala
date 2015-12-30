@@ -77,7 +77,7 @@ class BinaryTreeTest extends FunSpec with Matchers {
       BinaryNode(1, BinaryNode(2, BinaryNode(3), Leaf), BinaryNode(2, Leaf, BinaryNode(3))).height() should be(3)
       BinaryNode(1,
         BinaryNode(2, BinaryNode(3), BinaryNode(4, BinaryNode(5), Leaf)),
-        BinaryNode(2, BinaryNode(4, Leaf, BinaryNode(5)), BinaryNode(3))).height() should be(5)
+        BinaryNode(2, BinaryNode(4, Leaf, BinaryNode(5)), BinaryNode(3))).height() should be(4)
     }
   }
 
@@ -540,9 +540,23 @@ class BinaryTreeTest extends FunSpec with Matchers {
     }
 
     it ("should layout the tree correctly for larger trees") {
+      val layoutTree = BinarySearchTree.fromKeySeq(Seq('n', 'k', 'c', 'm', 'a', 'e', 'd', 'g', 'u', 'p', 'q')).layoutBinaryTreeConstantSpace()
+      layoutTree.itemsAtLevel(1).head.x should be(16)
+      println(layoutTree)
+      layoutTree.toString() should equal("T[16, 1](n T[8, 2](k T[2, 3](c T[1, 4](a . .) T[4, 4](e T[3, 5](d . .) T[5, 5](g . .))) T[9, 3](m . .)) T[20, 2](u T[17, 3](p . T[18, 4](q . .)) .))")
+      val h = layoutTree.height
+      (1 to h).foreach { h =>
+        layoutTree.itemsAtLevel(h).foreach { item: PositionedItem[Char, Nothing] =>
+          item.y should be(h)
+        }
+      }
+    }
+
+    it ("should layout the tree correctly for even larger trees") {
       val layoutTree = BinarySearchTree.fromKeySeq(Seq('n','k','m','c','a','h','g','e','u','p','s','q')).layoutBinaryTreeConstantSpace()
-      //val inorder = layoutTree.toInOrderItemList()
-      layoutTree.itemsAtLevel(1).head.x should be(64)
+
+      layoutTree.itemsAtLevel(1).head.x should be(32)
+      layoutTree.toString() should equal("T[32, 1](n T[16, 2](k T[2, 3](c T[1, 4](a . .) T[6, 4](h T[4, 5](g T[3, 6](e . .) .) .)) T[17, 3](m . .)) T[40, 2](u T[33, 3](p . T[35, 4](s T[34, 5](q . .) .)) .))")
       val h = layoutTree.height
       (1 to h).foreach { h =>
         layoutTree.itemsAtLevel(h).foreach { item: PositionedItem[Char, Nothing] =>
