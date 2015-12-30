@@ -504,4 +504,51 @@ class BinaryTreeTest extends FunSpec with Matchers {
       }
     }
   }
+
+  describe("layoutBinaryTreeConstantSpace") {
+    it ("should return a PositionedBinaryLeaf for a Leaf") {
+      Leaf.layoutBinaryTreeConstantSpace() should be(PositionedBinaryLeaf)
+    }
+
+    it ("should return a PositionedNode for a root") {
+      BinaryNode("A", Some("2")).layoutBinaryTreeConstantSpace() should be(PositionedBinaryNode("A", "2", 1, 1))
+    }
+
+    it ("should return the right PositionedTree for a simple Tree") {
+      BinarySearchTree.fromKeySeq(Seq('a','b','c')).layoutBinaryTreeConstantSpace() should be (
+        new PositionedBinaryNode("a",
+          PositionedBinaryLeaf,
+          new PositionedBinaryNode("b",
+            PositionedBinaryLeaf,
+            PositionedBinaryNode("c", 3, 3), None, 2, 2),
+          None, 1, 1))
+
+      BinarySearchTree.fromKeySeq(Seq('b','a','c')).layoutBinaryTreeConstantSpace() should be (
+        new PositionedBinaryNode("b",
+          PositionedBinaryNode("a", 1, 2),
+          PositionedBinaryNode("c", 3, 2),
+          None, 2, 1)
+      )
+      BinarySearchTree.fromKeySeq(Seq('c','b','a')).layoutBinaryTreeConstantSpace() should be (
+        new PositionedBinaryNode("c",
+          new PositionedBinaryNode("b",
+            PositionedBinaryNode("a", 1, 3),
+            PositionedBinaryLeaf,
+            None, 2, 2),
+          PositionedBinaryLeaf,
+          None, 4, 1))
+    }
+
+    it ("should layout the tree correctly for larger trees") {
+      val layoutTree = BinarySearchTree.fromKeySeq(Seq('n','k','m','c','a','h','g','e','u','p','s','q')).layoutBinaryTreeConstantSpace()
+      //val inorder = layoutTree.toInOrderItemList()
+      layoutTree.itemsAtLevel(1).head.x should be(64)
+      val h = layoutTree.height
+      (1 to h).foreach { h =>
+        layoutTree.itemsAtLevel(h).foreach { item: PositionedItem[Char, Nothing] =>
+          item.y should be(h)
+        }
+      }
+    }
+  }  
 }
