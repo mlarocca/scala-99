@@ -542,7 +542,6 @@ class BinaryTreeTest extends FunSpec with Matchers {
     it ("should layout the tree correctly for larger trees") {
       val layoutTree = BinarySearchTree.fromKeySeq(Seq('n', 'k', 'c', 'm', 'a', 'e', 'd', 'g', 'u', 'p', 'q')).layoutBinaryTreeConstantSpace()
       layoutTree.itemsAtLevel(1).head.x should be(16)
-      println(layoutTree)
       layoutTree.toString() should equal("T[16, 1](n T[8, 2](k T[2, 3](c T[1, 4](a . .) T[4, 4](e T[3, 5](d . .) T[5, 5](g . .))) T[9, 3](m . .)) T[20, 2](u T[17, 3](p . T[18, 4](q . .)) .))")
       val h = layoutTree.height
       (1 to h).foreach { h =>
