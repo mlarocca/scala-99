@@ -3,6 +3,8 @@ package org.mlarocca.s99.tree
 trait PositionedBinaryTree[+K, +V] extends BinaryTree[K, V] {
   private[tree] def toInOrderItemList[T >: K, W >: V](): Seq[PositionedItem[T, W]] = Nil
   def itemsAtLevel[T >: K, W >: V](level: Int): Seq[PositionedItem[T, W]] = Nil
+  def leftMostX(): Int = 0
+  def rightMostX(): Int = 0
 }
 
 case object PositionedBinaryLeaf extends Leaf with PositionedBinaryTree[Nothing, Nothing]
@@ -35,6 +37,24 @@ class PositionedBinaryNode[+K, +V](override val key: K, override val left: Posit
       left.itemsAtLevel[T, W](level - 1) ++ right.itemsAtLevel[T, W](level - 1)
     case _ =>
       throw new IllegalArgumentException(BinaryTree.NonPositiveValueErrorMessage)
+  }
+
+  /**
+   * Return the x position of the leftmost node in the subtree
+   * @return
+   */
+  override def leftMostX(): Int = left match {
+    case PositionedBinaryLeaf => x
+    case _ => left.leftMostX()
+  }
+
+  /**
+   * Return the x position of the rightmost node in the subtree
+   * @return
+   */
+  override def rightMostX(): Int = right match {
+    case PositionedBinaryLeaf => x
+    case _ => right.rightMostX()
   }
 }
 
