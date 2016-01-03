@@ -1,15 +1,53 @@
 package org.mlarocca.s99.tree
 
 trait PositionedBinaryTree[+K, +V] extends BinaryTree[K, V] {
-  private[tree] def toInOrderItemList[T >: K, W >: V](): Seq[PositionedItem[T, W]] = Nil
-  def itemsAtLevel[T >: K, W >: V](level: Int): Seq[PositionedItem[T, W]] = Nil
-  def leftMostX(): Int = 0
-  def rightMostX(): Int = 0
+  private[tree] def toInOrderItemList[T >: K, W >: V](): Seq[PositionedItem[T, W]]
+  def itemsAtLevel[T >: K, W >: V](level: Int): Seq[PositionedItem[T, W]]
+  def leftMostX(): Int
+  def rightMostX(): Int
+  private[tree] def leftBoundaries(): Map[Int, PositionedBinaryTree[K, V]]
+  private[tree] def rightBoundaries(): Map[Int, PositionedBinaryTree[K, V]]
+  private[tree] def compact(): PositionedBinaryTree[K, V]
 }
 
-case object PositionedBinaryLeaf extends Leaf with PositionedBinaryTree[Nothing, Nothing]
+case object PositionedBinaryLeaf extends Leaf with PositionedBinaryTree[Nothing, Nothing] {
+  override private[tree] def toInOrderItemList[T, W ]() = Nil
+  override def itemsAtLevel[T, W](level: Int) = Nil
+  override def leftMostX(): Int = 0
+  override def rightMostX(): Int = 0
+  override private[tree] def compact() = PositionedBinaryLeaf
+  override private[tree] def leftBoundaries(): Map[Int, Int] = Map.empty.withDefaultValue(0)
+  override private[tree] def rightBoundaries(): Map[Int, Int] = Map.empty.withDefaultValue(0)
+}
 
 class PositionedBinaryNode[+K, +V](override val key: K, override val left: PositionedBinaryTree[K, V], override val right: PositionedBinaryTree[K, V], override val value: Option[V], x: Int, y: Int) extends BinaryNode[K, V](key, left, right, value) with PositionedBinaryTree[K, V] {
+  private lazy val bounds = (left, right) match {
+    case (PositionedBinaryLeaf, PositionedBinaryLeaf) => 1 -> (x + 1, x - 1)
+    case (leftTree: PositionedBinaryNode, PositionedBinaryLeaf) => {
+      leftTree.leftBoundaries().map {
+        case (level, (leftBound, rightBound)) =>
+          (level + 1 ->(leftBound, rightBound))
+      } +(1 -> (leftTree.x, Math.max(leftTree.x, x - 1)))
+    }
+    case (PositionedBinaryLeaf, rightTree: PositionedBinaryNode) => {
+      rightTree.leftBoundaries().map {
+        case (level, (leftBound, rightBound)) =>
+          (level + 1 -> (leftBound, rightBound))
+      } + (1 -> (Math.min(rightTree.x, x + 1), rightTree.x))
+    }
+    case (PositionedBinaryLeaf, rightTree: PositionedBinaryNode) => {
+      rightTree.leftBoundaries().map {
+        case (level, (leftBound, rightBound)) =>
+          (level + 1 -> (leftBound, rightBound))
+      } + (1 -> (Math.min(rightTree.x, x + 1), rightTree.x))
+    }
+
+  }
+
+  private lazy val rightBounds = right.rightBoundaries().map {
+    case (level, node) =>
+      (level + 1 -> node)
+  } + (1 -> right)
 
   //Combination of preorder + inorder is unique for each tree (trees with the same keys set could have the same inorder or preorder)
   override def hashCode = this.toString.hashCode()
@@ -55,6 +93,14 @@ class PositionedBinaryNode[+K, +V](override val key: K, override val left: Posit
   override def rightMostX(): Int = right match {
     case PositionedBinaryLeaf => x
     case _ => right.rightMostX()
+  }
+
+  override private[tree] def leftBoundaries(): Map[Int, PositionedBinaryTree[K, V]] = leftBounds
+
+  override private[tree] def rightBoundaries(): Map[Int, PositionedBinaryTree[K, V]] = rightBounds
+
+  override private[tree] def compact(): PositionedBinaryTree[K, V] = {
+
   }
 }
 

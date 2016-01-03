@@ -505,31 +505,32 @@ class BinaryTreeTest extends FunSpec with Matchers {
     }
   }
 
-  describe("layoutBinaryTreeConstantSpace") {
+  describe("layoutBinaryTreeConstantGap") {
     it ("should return a PositionedBinaryLeaf for a Leaf") {
-      Leaf.layoutBinaryTreeConstantSpace() should be(PositionedBinaryLeaf)
+      Leaf.layoutBinaryTreeConstantGap() should be(PositionedBinaryLeaf)
     }
 
     it ("should return a PositionedNode for a root") {
-      BinaryNode("A", Some("2")).layoutBinaryTreeConstantSpace() should be(PositionedBinaryNode("A", "2", 1, 1))
+      BinaryNode("A", Some("2")).layoutBinaryTreeConstantGap() should be(PositionedBinaryNode("A", "2", 1, 1))
     }
 
     it ("should return the right PositionedTree for a simple Tree") {
-      BinarySearchTree.fromKeySeq(Seq('a','b','c')).layoutBinaryTreeConstantSpace() should be (
+      BinarySearchTree.fromKeySeq(Seq('a','b','c')).layoutBinaryTreeConstantGap() should be (
         new PositionedBinaryNode("a",
           PositionedBinaryLeaf,
           new PositionedBinaryNode("b",
             PositionedBinaryLeaf,
-            PositionedBinaryNode("c", 3, 3), None, 2, 2),
+            PositionedBinaryNode("c", 3, 3),
+            None, 2, 2),
           None, 1, 1))
 
-      BinarySearchTree.fromKeySeq(Seq('b','a','c')).layoutBinaryTreeConstantSpace() should be (
+      BinarySearchTree.fromKeySeq(Seq('b','a','c')).layoutBinaryTreeConstantGap() should be (
         new PositionedBinaryNode("b",
           PositionedBinaryNode("a", 1, 2),
           PositionedBinaryNode("c", 3, 2),
           None, 2, 1)
       )
-      BinarySearchTree.fromKeySeq(Seq('c','b','a')).layoutBinaryTreeConstantSpace() should be (
+      BinarySearchTree.fromKeySeq(Seq('c','b','a')).layoutBinaryTreeConstantGap() should be (
         new PositionedBinaryNode("c",
           new PositionedBinaryNode("b",
             PositionedBinaryNode("a", 1, 3),
@@ -540,7 +541,7 @@ class BinaryTreeTest extends FunSpec with Matchers {
     }
 
     it ("should layout the tree correctly for larger trees") {
-      val layoutTree = BinarySearchTree.fromKeySeq(Seq('n', 'k', 'c', 'm', 'a', 'e', 'd', 'g', 'u', 'p', 'q')).layoutBinaryTreeConstantSpace()
+      val layoutTree = BinarySearchTree.fromKeySeq(Seq('n', 'k', 'c', 'm', 'a', 'e', 'd', 'g', 'u', 'p', 'q')).layoutBinaryTreeConstantGap()
       layoutTree.itemsAtLevel(1).head.x should be(16)
       layoutTree.toString() should equal("T[16, 1](n T[8, 2](k T[2, 3](c T[1, 4](a . .) T[4, 4](e T[3, 5](d . .) T[5, 5](g . .))) T[9, 3](m . .)) T[20, 2](u T[17, 3](p . T[18, 4](q . .)) .))")
       val h = layoutTree.height
@@ -552,7 +553,7 @@ class BinaryTreeTest extends FunSpec with Matchers {
     }
 
     it ("should layout the tree correctly for even larger trees") {
-      val layoutTree = BinarySearchTree.fromKeySeq(Seq('n','k','m','c','a','h','g','e','u','p','s','q')).layoutBinaryTreeConstantSpace()
+      val layoutTree = BinarySearchTree.fromKeySeq(Seq('n','k','m','c','a','h','g','e','u','p','s','q')).layoutBinaryTreeConstantGap()
 
       layoutTree.itemsAtLevel(1).head.x should be(32)
       layoutTree.toString() should equal("T[32, 1](n T[16, 2](k T[2, 3](c T[1, 4](a . .) T[6, 4](h T[4, 5](g T[3, 6](e . .) .) .)) T[17, 3](m . .)) T[40, 2](u T[33, 3](p . T[35, 4](s T[34, 5](q . .) .)) .))")
@@ -563,5 +564,67 @@ class BinaryTreeTest extends FunSpec with Matchers {
         }
       }
     }
-  }  
+  }
+
+  describe("layoutBinaryTreeCompact") {
+    it ("should return a PositionedBinaryLeaf for a Leaf") {
+      Leaf.layoutBinaryTreeCompact() should be(PositionedBinaryLeaf)
+    }
+
+    it ("should return a PositionedNode for a root") {
+      BinaryNode("A", Some("2")).layoutBinaryTreeCompact() should be(PositionedBinaryNode("A", "2", 1, 1))
+    }
+
+    it ("should return the right PositionedTree for a simple Tree") {
+      BinarySearchTree.fromKeySeq(Seq('a','b','c')).layoutBinaryTreeCompact() should be (
+        new PositionedBinaryNode("a",
+          PositionedBinaryLeaf,
+          new PositionedBinaryNode("b",
+            PositionedBinaryLeaf,
+            PositionedBinaryNode("c", 3, 3),
+            None, 2, 2),
+          None, 1, 1))
+
+      BinarySearchTree.fromKeySeq(Seq('b','a','c')).layoutBinaryTreeCompact() should be (
+        new PositionedBinaryNode("b",
+          PositionedBinaryNode("a", 1, 2),
+          PositionedBinaryNode("c", 3, 2),
+          None, 2, 1)
+      )
+      BinarySearchTree.fromKeySeq(Seq('c','b','a')).layoutBinaryTreeCompact() should be (
+        new PositionedBinaryNode("c",
+          new PositionedBinaryNode("b",
+            PositionedBinaryNode("a", 1, 3),
+            PositionedBinaryLeaf,
+            None, 2, 2),
+          PositionedBinaryLeaf,
+          None, 3, 1))
+    }
+
+    it ("should layout the tree correctly for larger trees") {
+      val layoutTree = BinarySearchTree.fromKeySeq(Seq('n', 'k', 'c', 'm', 'a', 'e', 'd', 'g', 'u', 'p', 'q')).layoutBinaryTreeCompact()
+      layoutTree.itemsAtLevel(1).head.x should be(10)
+      println(layoutTree)
+      layoutTree.toString() should equal("T[16, 1](n T[8, 2](k T[2, 3](c T[1, 4](a . .) T[4, 4](e T[3, 5](d . .) T[5, 5](g . .))) T[9, 3](m . .)) T[20, 2](u T[17, 3](p . T[18, 4](q . .)) .))")
+      val h = layoutTree.height
+      (1 to h).foreach { h =>
+        layoutTree.itemsAtLevel(h).foreach { item: PositionedItem[Char, Nothing] =>
+          item.y should be(h)
+        }
+      }
+    }
+
+    it ("should layout the tree correctly for even larger trees") {
+      val layoutTree = BinarySearchTree.fromKeySeq(Seq('n','k','m','c','a','h','g','e','u','p','s','q')).layoutBinaryTreeCompact()
+
+      layoutTree.itemsAtLevel(1).head.x should be(32)
+      layoutTree.toString() should equal("T[32, 1](n T[16, 2](k T[2, 3](c T[1, 4](a . .) T[6, 4](h T[4, 5](g T[3, 6](e . .) .) .)) T[17, 3](m . .)) T[40, 2](u T[33, 3](p . T[35, 4](s T[34, 5](q . .) .)) .))")
+      val h = layoutTree.height
+      (1 to h).foreach { h =>
+        layoutTree.itemsAtLevel(h).foreach { item: PositionedItem[Char, Nothing] =>
+          item.y should be(h)
+        }
+      }
+    }
+  }
 }
