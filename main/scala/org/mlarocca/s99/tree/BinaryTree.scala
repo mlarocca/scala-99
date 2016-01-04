@@ -197,7 +197,7 @@ abstract class BinaryTree[+K, +V] {
   def internalNodeSeq(): Seq[(K, Option[V])]
   def nodesAtLevel(level: Int): Seq[(K, Option[V])]
   def layoutBinaryTree(): PositionedBinaryTree[K, V]
-  def layoutBinaryTreeConstantSpace(): PositionedBinaryTree[K, V]
+  def layoutBinaryTreeConstantGap(): PositionedBinaryTree[K, V]
   def layoutBinaryTreeCompact(): PositionedBinaryTree[K, V]
   private[tree] def layoutBinaryTreeInner(startingX: Int = 1, startingY: Int = 1, computeLeftX: PositionedBinaryTree[K, V] => Int): PositionedBinaryTree[K, V]
   private[tree] def toInOrderList(): Seq[K]
@@ -310,15 +310,12 @@ case class BinaryNode[+K, +V](key: K, left: BinaryTree[K, V], right: BinaryTree[
     new PositionedBinaryNode(key, leftP, rightP, value, actualX, startingY)
   }
 
-  override def layoutBinaryTreeConstantSpace(): PositionedBinaryTree[K, V] = {
+  override def layoutBinaryTreeConstantGap(): PositionedBinaryTree[K, V] = {
     layoutBinaryTreeInner(1, 1, (tree: PositionedBinaryTree[K, V]) => Math.pow(2, tree.height()).toInt - 1)
   }
 
   override def layoutBinaryTreeCompact(): PositionedBinaryTree[K, V] = {
-    def computeSize(tree: PositionedBinaryTree[K, V]): Int = {
-      1 + tree.rightMostX()
-    }
-    layoutBinaryTreeInner(1, 1, computeSize)
+    layoutBinaryTreeInner(1, 1, (tree: PositionedBinaryTree[K, V]) => tree.rightMostX()).compact()
   }
 }
 
@@ -350,7 +347,7 @@ trait Leaf extends BinaryTree[Nothing, Nothing] {
     Nil
   }
   override def layoutBinaryTree(): PositionedBinaryTree[Nothing, Nothing] = PositionedBinaryLeaf
-  override def layoutBinaryTreeConstantSpace() = PositionedBinaryLeaf
+  override def layoutBinaryTreeConstantGap() = PositionedBinaryLeaf
   override def layoutBinaryTreeCompact(): PositionedBinaryTree[Nothing, Nothing] = PositionedBinaryLeaf
   override private[tree] def layoutBinaryTreeInner(
       startingX: Int, startingY: Int,

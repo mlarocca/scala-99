@@ -97,4 +97,216 @@ class PositionedBinaryTreeTest extends FunSpec with Matchers {
       new PositionedBinaryNode(2, PositionedBinaryNode(1, 3, 2), PositionedBinaryNode(3, 1, 2), None, 2, 1).rightMostX() should be(1)
     }
   }
+
+  describe("bounds") {
+    it("should return the right bounds for a singleton") {
+      PositionedBinaryNode("A", "2", 1, 1).bounds should be(Map(1 -> Bound(1, 1)))
+    }
+
+    it("should return the right bounds for a simple Tree") {
+      val tree1 = new PositionedBinaryNode("a",
+        PositionedBinaryLeaf,
+        new PositionedBinaryNode("b",
+          PositionedBinaryLeaf,
+          PositionedBinaryNode("c", 3, 3),
+          None, 2, 2),
+        None, 1, 1)
+
+      tree1.bounds should be(Map(
+          1 -> Bound(1, 3),
+          2 -> Bound(2, 4),
+          3 -> Bound(3, 3)
+      ))
+
+      tree1.right.bounds should be(Map(
+        1 -> Bound(2, 4),
+        2 -> Bound(3, 3)
+      ))
+
+      val tree2 = new PositionedBinaryNode("b",
+        PositionedBinaryNode("a", 1, 2),
+        PositionedBinaryNode("c", 3, 2),
+      None, 2, 1)
+
+      tree2.left.bounds should be(Map(1 -> Bound(1, 1)))
+      tree2.right.bounds should be(Map(1 -> Bound(3, 3)))
+      tree2.bounds should be(
+        Map(
+          1 -> Bound(0, 4),
+          2 -> Bound(1, 3)
+      ))
+
+      val tree3 = new PositionedBinaryNode("c",
+        new PositionedBinaryNode("b",
+          PositionedBinaryNode("a", 1, 3),
+          PositionedBinaryLeaf,
+          None, 2, 2),
+        PositionedBinaryLeaf,
+        None, 3, 1)
+
+      tree3.left.bounds should be(Map(
+        1 -> Bound(0, 2),
+        2 -> Bound(1, 1)
+      ))
+      tree3.bounds should be(
+        Map(
+          1 -> Bound(1, 3),
+          2 -> Bound(0, 2),
+          3 -> Bound(1, 1)
+        ))
+    }
+
+    it("should layout the tree correctly for larger trees") {
+      val tree1 = new PositionedBinaryNode("a",
+        PositionedBinaryLeaf,
+        new PositionedBinaryNode("b",
+          PositionedBinaryNode("a", 1, 3),
+          PositionedBinaryNode("c", 3, 3),
+          None, 2, 2),
+        None, 1, 1)
+
+      tree1.bounds should be(Map(
+        1 -> Bound(1, 3),
+        2 -> Bound(0, 4),
+        3 -> Bound(1, 3)
+      ))
+
+      val tree2 = new PositionedBinaryNode("5",
+        new PositionedBinaryNode("2",
+          new PositionedBinaryNode("1",
+            PositionedBinaryLeaf,
+            PositionedBinaryNode("3", 3, 4),
+            None, 1, 3),
+          PositionedBinaryNode("4", 4, 3),
+          None, 2, 2),
+        new PositionedBinaryNode("7",
+          new PositionedBinaryNode("6",
+            PositionedBinaryNode("5.5", 5, 4),
+            PositionedBinaryNode("6.5", 7, 4),
+            None, 6, 3),
+          PositionedBinaryNode("8", 8, 3),
+          None, 7, 2),
+        None, 5, 1)
+
+      tree2.bounds should be(Map(
+        1 -> Bound(1, 8),
+        2 -> Bound(0, 9),
+        3 -> Bound(1, 8),
+        4 -> Bound(3, 7)
+      ))
+    }
+  }
+
+  describe("compact") {
+    it("should return the right compact() for a singleton") {
+      PositionedBinaryNode("A", "2", 1, 1).compact() should be(PositionedBinaryNode("A", "2", 1, 1))
+      PositionedBinaryNode("A", "2", 2, 1).compact() should be(PositionedBinaryNode("A", "2", 2, 1))
+      PositionedBinaryNode("A", "2", 3, 1).compact() should be(PositionedBinaryNode("A", "2", 3, 1))
+    }
+
+    it("should return the right compact() for a simple Tree") {
+      val tree1 = new PositionedBinaryNode("a",
+        PositionedBinaryLeaf,
+        new PositionedBinaryNode("b",
+          PositionedBinaryLeaf,
+          PositionedBinaryNode("c", 3, 3),
+          None, 2, 2),
+        None, 1, 1)
+
+      val tree1A = new PositionedBinaryNode("a",
+        PositionedBinaryLeaf,
+        new PositionedBinaryNode("b",
+          PositionedBinaryLeaf,
+          PositionedBinaryNode("c", 4, 3),
+          None, 2, 2),
+        None, 1, 1)
+
+      val tree1B = new PositionedBinaryNode("a",
+        PositionedBinaryLeaf,
+        new PositionedBinaryNode("b",
+          PositionedBinaryLeaf,
+          PositionedBinaryNode("c", 6, 3),
+          None, 3, 2),
+        None, 1, 1)
+println(tree1A.compact())
+      tree1A.compact() should equal(tree1)
+      tree1B.compact() should equal(tree1)
+
+/**
+      val tree2 = new PositionedBinaryNode("b",
+        PositionedBinaryNode("a", 1, 2),
+        PositionedBinaryNode("c", 3, 2),
+      None, 2, 1)
+
+      tree2.left.compact() should be(Map(1 -> Bound(1, 1)))
+      tree2.right.compact() should be(Map(1 -> Bound(3, 3)))
+      tree2.compact() should be(
+        Map(
+          1 -> Bound(0, 4),
+          2 -> Bound(1, 3)
+      ))
+
+      val tree3 = new PositionedBinaryNode("c",
+        new PositionedBinaryNode("b",
+          PositionedBinaryNode("a", 1, 3),
+          PositionedBinaryLeaf,
+          None, 2, 2),
+        PositionedBinaryLeaf,
+        None, 3, 1)
+
+      tree3.left.compact() should be(Map(
+        1 -> Bound(0, 2),
+        2 -> Bound(1, 1)
+      ))
+      tree3.compact() should be(
+        Map(
+          1 -> Bound(1, 3),
+          2 -> Bound(0, 2),
+          3 -> Bound(1, 1)
+        ))
+  */
+    }
+
+    it("should layout the tree correctly for larger trees") {
+    /**
+      val tree1 = new PositionedBinaryNode("a",
+        PositionedBinaryLeaf,
+        new PositionedBinaryNode("b",
+          PositionedBinaryNode("a", 1, 3),
+          PositionedBinaryNode("c", 3, 3),
+          None, 2, 2),
+        None, 1, 1)
+
+      tree1.compact() should be(Map(
+        1 -> Bound(1, 3),
+        2 -> Bound(0, 4),
+        3 -> Bound(1, 3)
+      ))
+
+      val tree2 = new PositionedBinaryNode("5",
+        new PositionedBinaryNode("2",
+          new PositionedBinaryNode("1",
+            PositionedBinaryLeaf,
+            PositionedBinaryNode("3", 3, 4),
+            None, 1, 3),
+          PositionedBinaryNode("4", 4, 3),
+          None, 2, 2),
+        new PositionedBinaryNode("7",
+          new PositionedBinaryNode("6",
+            PositionedBinaryNode("5.5", 5, 4),
+            PositionedBinaryNode("6.5", 7, 4),
+            None, 6, 3),
+          PositionedBinaryNode("8", 8, 3),
+          None, 7, 2),
+        None, 5, 1)
+
+      tree2.compact() should be(Map(
+        1 -> Bound(1, 8),
+        2 -> Bound(0, 9),
+        3 -> Bound(1, 8),
+        4 -> Bound(3, 7)
+      ))
+      */
+    }
+  }
 }
