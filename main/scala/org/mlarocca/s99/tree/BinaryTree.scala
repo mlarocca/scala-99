@@ -315,7 +315,7 @@ case class BinaryNode[+K, +V](key: K, left: BinaryTree[K, V], right: BinaryTree[
   }
 
   override def layoutBinaryTreeCompact(): PositionedBinaryTree[K, V] = {
-    layoutBinaryTreeInner(1, 1, (tree: PositionedBinaryTree[K, V]) => tree.rightMostX()).compact()
+    layoutBinaryTreeInner(1, 1, (tree: PositionedBinaryTree[K, V]) => tree.rightMostX()).compactTree()
   }
 }
 

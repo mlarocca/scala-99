@@ -5,7 +5,7 @@ trait PositionedBinaryTree[+K, +V] extends BinaryTree[K, V] {
   def itemsAtLevel[T >: K, W >: V](level: Int): Seq[PositionedItem[T, W]]
   def leftMostX(): Int
   def rightMostX(): Int
-  private[tree] def compact(): PositionedBinaryTree[K, V]
+  def compactTree(isRoot: Boolean = false): PositionedBinaryTree[K, V]
   private[tree] def moveToLeft(delta: Int): PositionedBinaryTree[K, V]
   private[tree] val bounds: Map[Int, Bound]
 }
@@ -15,7 +15,7 @@ case object PositionedBinaryLeaf extends Leaf with PositionedBinaryTree[Nothing,
   override def itemsAtLevel[T, W](level: Int) = Nil
   override def leftMostX(): Int = 0
   override def rightMostX(): Int = 0
-  override private[tree] def compact() = PositionedBinaryLeaf
+  override def compactTree(isRoot: Boolean = false): PositionedBinaryTree[Nothing, Nothing] = PositionedBinaryLeaf
   override private[tree] def moveToLeft(delta: Int) = PositionedBinaryLeaf
   override private[tree] val bounds: Map[Int, Bound] = Map.empty
 }
@@ -103,9 +103,9 @@ class PositionedBinaryNode[+K, +V](override val key: K, override val left: Posit
     case _ => right.rightMostX()
   }
 
-  override private[tree] def compact(): PositionedBinaryTree[K, V] = {
-    val compactedLeft = left.compact()
-    val compactedRight = right.compact()
+  override def compactTree(isRoot: Boolean = false): PositionedBinaryTree[K, V] = {
+    val compactedLeft = left.compactTree()
+    val compactedRight = right.compactTree()
     val leftBounds = compactedLeft.bounds
     val rightBounds = compactedRight.bounds
 
@@ -119,6 +119,12 @@ class PositionedBinaryNode[+K, +V](override val key: K, override val left: Posit
       }
     }
 
+    val rootDelta = (isRoot, left) match {
+      case (false, _) => 0
+      case (_, PositionedBinaryLeaf) => x - 1
+      case (_, leftNode: PositionedBinaryNode[K, V]) => x - leftNode.x - 1
+    }
+
     val maxH = Math.max(maxOption(leftBounds.keys, 0), maxOption(rightBounds.keys, 0))
 
     val maxDelta = minOption((1 to maxH)
@@ -126,9 +132,9 @@ class PositionedBinaryNode[+K, +V](override val key: K, override val left: Posit
       .filter(_.isDefined).map(_.get), 0)
 
     if (maxDelta > 0) {
-      new PositionedBinaryNode[K, V](key, compactedLeft, compactedRight.moveToLeft(maxDelta), value, x , y)
+      new PositionedBinaryNode[K, V](key, compactedLeft, compactedRight.moveToLeft(maxDelta), value, x - rootDelta, y)
     } else {
-      new PositionedBinaryNode[K, V](key, compactedLeft, compactedRight, value, x, y)
+      new PositionedBinaryNode[K, V](key, compactedLeft, compactedRight, value, x - rootDelta, y)
     }
   }
 
