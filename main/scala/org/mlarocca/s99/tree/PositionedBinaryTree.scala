@@ -6,7 +6,7 @@ trait PositionedBinaryTree[+K, +V] extends BinaryTree[K, V] {
   def leftMostX(): Int
   def rightMostX(): Int
   def compactTree(isRoot: Boolean = false): PositionedBinaryTree[K, V]
-  private[tree] def moveToLeft(delta: Int): PositionedBinaryTree[K, V]
+  private[tree] def moveToLeft(delta: Int, parentX: Int): PositionedBinaryTree[K, V]
   private[tree] val bounds: Map[Int, Bound]
 }
 
@@ -16,7 +16,7 @@ case object PositionedBinaryLeaf extends Leaf with PositionedBinaryTree[Nothing,
   override def leftMostX(): Int = 0
   override def rightMostX(): Int = 0
   override def compactTree(isRoot: Boolean = false): PositionedBinaryTree[Nothing, Nothing] = PositionedBinaryLeaf
-  override private[tree] def moveToLeft(delta: Int) = PositionedBinaryLeaf
+  override private[tree] def moveToLeft(delta: Int, parentX: Int) = PositionedBinaryLeaf
   override private[tree] val bounds: Map[Int, Bound] = Map.empty
 }
 
@@ -103,8 +103,8 @@ class PositionedBinaryNode[+K, +V](override val key: K, override val left: Posit
     case _ => right.rightMostX()
   }
 
-  override def compactTree(isRoot: Boolean = false): PositionedBinaryTree[K, V] = {
-    val compactedLeft = left.compactTree()
+  override def compactTree(isLeftMost: Boolean = false): PositionedBinaryTree[K, V] = {
+    val compactedLeft = left.compactTree(isLeftMost)
     val compactedRight = right.compactTree()
     val leftBounds = compactedLeft.bounds
     val rightBounds = compactedRight.bounds
@@ -112,17 +112,18 @@ class PositionedBinaryNode[+K, +V](override val key: K, override val left: Posit
     def deltaAtLevelH(h: Int): Option[Int] = {
       (leftBounds.get(h), rightBounds.get(h)) match {
         case (Some(_), None) => None
-        case (None, Some(rB)) => Some(rB.left - x - 1)
-        case (Some(lB), Some(rB)) => Some(rB.left - lB.right + 1)
+        case (None, Some(rB)) => Some(rB.left - 1)
+        case (Some(lB), Some(rB)) => Some(rB.left - lB.right - 1)
         //INVARIANT: case (None, None) isn't possible by construction
         case _ => throw new RuntimeException
       }
     }
-
-    val rootDelta = (isRoot, left) match {
+    val rootDelta = (isLeftMost, compactedLeft) match {
       case (false, _) => 0
       case (_, PositionedBinaryLeaf) => x - 1
       case (_, leftNode: PositionedBinaryNode[K, V]) => x - leftNode.x - 1
+      //INVARIANT: Can't happen by construction of compactedLeft
+      case _ => throw new RuntimeException
     }
 
     val maxH = Math.max(maxOption(leftBounds.keys, 0), maxOption(rightBounds.keys, 0))
@@ -132,15 +133,16 @@ class PositionedBinaryNode[+K, +V](override val key: K, override val left: Posit
       .filter(_.isDefined).map(_.get), 0)
 
     if (maxDelta > 0) {
-      new PositionedBinaryNode[K, V](key, compactedLeft, compactedRight.moveToLeft(maxDelta), value, x - rootDelta, y)
+      new PositionedBinaryNode[K, V](key, compactedLeft, compactedRight.moveToLeft(maxDelta, x - rootDelta), value, x - rootDelta, y)
     } else {
       new PositionedBinaryNode[K, V](key, compactedLeft, compactedRight, value, x - rootDelta, y)
     }
   }
 
-  override private[tree] def moveToLeft(delta: Int): PositionedBinaryTree[K, V] = {
+  override private[tree] def moveToLeft(delta: Int, parentX: Int): PositionedBinaryTree[K, V] = {
     //INVARIANT: delta > 0
-    new PositionedBinaryNode[K, V](key, left.moveToLeft(delta), right.moveToLeft(delta), value, x - delta , y)
+    val newX = Math.max(x - delta, parentX + 1)
+    new PositionedBinaryNode[K, V](key, left.moveToLeft(delta, 0), right.moveToLeft(delta, newX), value, newX, y)
   }
 
 }
