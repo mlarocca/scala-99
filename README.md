@@ -14,4 +14,6 @@ Codes (X)
 
 Binary Trees (X)
 
-Binary Search Trees (O)
+Binary Search Trees (X)
+
+Binary Trees Layout (O)
