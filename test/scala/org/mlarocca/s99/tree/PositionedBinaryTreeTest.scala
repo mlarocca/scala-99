@@ -113,14 +113,9 @@ class PositionedBinaryTreeTest extends FunSpec with Matchers {
         None, 1, 1)
 
       tree1.bounds should be(Map(
-          1 -> Bound(1, 3),
-          2 -> Bound(2, 4),
+          1 -> Bound(1, 1),
+          2 -> Bound(2, 2),
           3 -> Bound(3, 3)
-      ))
-
-      tree1.right.bounds should be(Map(
-        1 -> Bound(2, 4),
-        2 -> Bound(3, 3)
       ))
 
       val tree2 = new PositionedBinaryNode("b",
@@ -128,11 +123,9 @@ class PositionedBinaryTreeTest extends FunSpec with Matchers {
         PositionedBinaryNode("c", 3, 2),
       None, 2, 1)
 
-      tree2.left.bounds should be(Map(1 -> Bound(1, 1)))
-      tree2.right.bounds should be(Map(1 -> Bound(3, 3)))
       tree2.bounds should be(
         Map(
-          1 -> Bound(0, 4),
+          1 -> Bound(2, 2),
           2 -> Bound(1, 3)
       ))
 
@@ -144,14 +137,10 @@ class PositionedBinaryTreeTest extends FunSpec with Matchers {
         PositionedBinaryLeaf,
         None, 3, 1)
 
-      tree3.left.bounds should be(Map(
-        1 -> Bound(0, 2),
-        2 -> Bound(1, 1)
-      ))
       tree3.bounds should be(
         Map(
-          1 -> Bound(1, 3),
-          2 -> Bound(0, 2),
+          1 -> Bound(3, 3),
+          2 -> Bound(2, 2),
           3 -> Bound(1, 1)
         ))
     }
@@ -166,8 +155,8 @@ class PositionedBinaryTreeTest extends FunSpec with Matchers {
         None, 1, 1)
 
       tree1.bounds should be(Map(
-        1 -> Bound(1, 3),
-        2 -> Bound(0, 4),
+        1 -> Bound(1, 1),
+        2 -> Bound(2, 2),
         3 -> Bound(1, 3)
       ))
 
@@ -189,135 +178,149 @@ class PositionedBinaryTreeTest extends FunSpec with Matchers {
         None, 5, 1)
 
       tree2.bounds should be(Map(
-        1 -> Bound(1, 8),
-        2 -> Bound(0, 9),
+        1 -> Bound(5, 5),
+        2 -> Bound(2, 7),
         3 -> Bound(1, 8),
         4 -> Bound(3, 7)
       ))
     }
   }
 
-  describe("compactTree") {
-    describe("should return the right compact() for a singleton") {
-      it("should not move left aligned nodes") {
-        PositionedBinaryNode("A", "2", 1, 1).compactTree(true) should be(PositionedBinaryNode("A", "2", 1, 1))
-        PositionedBinaryNode("A", "2", 1, 1).compactTree(false) should be(PositionedBinaryNode("A", "2", 1, 1))
-      }
-      it("should not move nodes if `isRoot`param is false") {
-        PositionedBinaryNode("A", "2", 2, 1).compactTree(false) should be(PositionedBinaryNode("A", "2", 2, 1))
-        PositionedBinaryNode("A", "2", 3, 1).compactTree(false) should be(PositionedBinaryNode("A", "2", 3, 1))
-      }
-      it("should align nodes if `isRoot`param is true") {
-        PositionedBinaryNode("A", "2", 2, 1).compactTree(true) should be(PositionedBinaryNode("A", "2", 1, 1))
-        PositionedBinaryNode("A", "2", 3, 1).compactTree(true) should be(PositionedBinaryNode("A", "2", 1, 1))
-      }
-    }
-
-    it("should return the right compact() for a simple Tree") {
-      val tree1 = new PositionedBinaryNode("a",
-        PositionedBinaryLeaf,
-        new PositionedBinaryNode("b",
-          PositionedBinaryLeaf,
-          PositionedBinaryNode("c", 3, 3),
-          None, 2, 2),
-        None, 1, 1)
-
-      val tree1A = new PositionedBinaryNode("a",
-        PositionedBinaryLeaf,
-        new PositionedBinaryNode("b",
-          PositionedBinaryLeaf,
-          PositionedBinaryNode("c", 4, 3),
-          None, 2, 2),
-        None, 1, 1)
-
-      val tree1B = new PositionedBinaryNode("a",
-        PositionedBinaryLeaf,
-        new PositionedBinaryNode("b",
-          PositionedBinaryLeaf,
-          PositionedBinaryNode("c", 6, 3),
-          None, 3, 2),
-        None, 1, 1)
-
-      tree1A.compactTree(true) should equal(tree1)
-      tree1B.compactTree(true) should equal(tree1)
-
-      val tree2 = new PositionedBinaryNode("b",
-        PositionedBinaryNode("a", 1, 2),
-        PositionedBinaryNode("c", 3, 2),
-        None, 2, 1)
-
-      val tree2A = new PositionedBinaryNode("b",
-        PositionedBinaryNode("a", 2, 2),
-        PositionedBinaryNode("c", 6, 2),
-      None, 3, 1)
-
-      val tree2B = new PositionedBinaryNode("b",
-        PositionedBinaryNode("a", 2, 2),
-        PositionedBinaryNode("c", 6, 2),
-        None, 5, 1)
-
-      tree2A.compactTree(true) should be(tree2)
-      tree2B.compactTree(true) should be(tree2)
-
-      val tree3 = new PositionedBinaryNode("c",
-        new PositionedBinaryNode("b",
-          PositionedBinaryNode("a", 1, 3),
-          PositionedBinaryLeaf,
-          None, 2, 2),
-        PositionedBinaryLeaf,
-        None, 3, 1)
-
-      val tree3A = new PositionedBinaryNode("c",
-        new PositionedBinaryNode("b",
-          PositionedBinaryNode("a", 1, 3),
-          PositionedBinaryLeaf,
-          None, 3, 2),
-        PositionedBinaryLeaf,
-        None, 6, 1)
-
-      tree3A.compactTree(true) should be(tree3)
-    }
-
-    it("should layout the tree correctly for larger trees") {
-    /**
-      val tree1 = new PositionedBinaryNode("a",
-        PositionedBinaryLeaf,
-        new PositionedBinaryNode("b",
-          PositionedBinaryNode("a", 1, 3),
-          PositionedBinaryNode("c", 3, 3),
-          None, 2, 2),
-        None, 1, 1)
-
-      tree1.compact() should be(Map(
-        1 -> Bound(1, 3),
-        2 -> Bound(0, 4),
-        3 -> Bound(1, 3)
-      ))
-
-      val tree2 = new PositionedBinaryNode("5",
-        new PositionedBinaryNode("2",
-          new PositionedBinaryNode("1",
-            PositionedBinaryLeaf,
-            PositionedBinaryNode("3", 3, 4),
-            None, 1, 3),
-          PositionedBinaryNode("4", 4, 3),
-          None, 2, 2),
-        new PositionedBinaryNode("7",
-          new PositionedBinaryNode("6",
-            PositionedBinaryNode("5.5", 5, 4),
-            PositionedBinaryNode("6.5", 7, 4),
-            None, 6, 3),
-          PositionedBinaryNode("8", 8, 3),
-          None, 7, 2),
-        None, 5, 1)
-
-      tree2.compact() should be(Map(
-        1 -> Bound(1, 8),
-        2 -> Bound(0, 9),
-        3 -> Bound(1, 8),
-        4 -> Bound(3, 7)
-      ))
-      */
-    }
-  }
+//  describe("compactTreeInner") {
+//    describe("should compact singletons") {
+//      it("should not move left aligned nodes") {
+//        PositionedBinaryNode("A", "2", 1, 1).compactTreeInner(true) should be(PositionedBinaryNode("A", "2", 1, 1))
+//        PositionedBinaryNode("A", "2", 1, 1).compactTreeInner(false) should be(PositionedBinaryNode("A", "2", 1, 1))
+//      }
+//      it("should not move nodes if `isRoot`param is false") {
+//        PositionedBinaryNode("A", "2", 2, 1).compactTreeInner(false) should be(PositionedBinaryNode("A", "2", 2, 1))
+//        PositionedBinaryNode("A", "2", 3, 1).compactTreeInner(false) should be(PositionedBinaryNode("A", "2", 3, 1))
+//      }
+//      it("should align nodes if `isRoot`param is true") {
+//        PositionedBinaryNode("A", "2", 2, 1).compactTreeInner(true) should be(PositionedBinaryNode("A", "2", 1, 1))
+//        PositionedBinaryNode("A", "2", 3, 1).compactTreeInner(true) should be(PositionedBinaryNode("A", "2", 1, 1))
+//      }
+//    }
+//
+//    it("should compact simple Trees") {
+//      val tree1 = new PositionedBinaryNode("a",
+//        PositionedBinaryLeaf,
+//        new PositionedBinaryNode("b",
+//          PositionedBinaryLeaf,
+//          PositionedBinaryNode("c", 3, 3),
+//          None, 2, 2),
+//        None, 1, 1)
+//
+//      val tree1A = new PositionedBinaryNode("a",
+//        PositionedBinaryLeaf,
+//        new PositionedBinaryNode("b",
+//          PositionedBinaryLeaf,
+//          PositionedBinaryNode("c", 4, 3),
+//          None, 2, 2),
+//        None, 1, 1)
+//
+//      val tree1B = new PositionedBinaryNode("a",
+//        PositionedBinaryLeaf,
+//        new PositionedBinaryNode("b",
+//          PositionedBinaryLeaf,
+//          PositionedBinaryNode("c", 6, 3),
+//          None, 3, 2),
+//        None, 1, 1)
+//
+//      tree1A.compactTree() should equal(tree1)
+//      tree1B.compactTree() should equal(tree1)
+//
+//      val tree2 = new PositionedBinaryNode("b",
+//        PositionedBinaryNode("a", 1, 2),
+//        PositionedBinaryNode("c", 3, 2),
+//        None, 2, 1)
+//
+//      val tree2A = new PositionedBinaryNode("b",
+//        PositionedBinaryNode("a", 2, 2),
+//        PositionedBinaryNode("c", 6, 2),
+//      None, 3, 1)
+//
+//      val tree2B = new PositionedBinaryNode("b",
+//        PositionedBinaryNode("a", 2, 2),
+//        PositionedBinaryNode("c", 6, 2),
+//        None, 5, 1)
+//
+//      tree2A.compactTree() should be(tree2)
+//      tree2B.compactTree() should be(tree2)
+//
+//      val tree3 = new PositionedBinaryNode("c",
+//        new PositionedBinaryNode("b",
+//          PositionedBinaryNode("a", 1, 3),
+//          PositionedBinaryLeaf,
+//          None, 2, 2),
+//        PositionedBinaryLeaf,
+//        None, 3, 1)
+//
+//      val tree3A = new PositionedBinaryNode("c",
+//        new PositionedBinaryNode("b",
+//          PositionedBinaryNode("a", 1, 3),
+//          PositionedBinaryLeaf,
+//          None, 3, 2),
+//        PositionedBinaryLeaf,
+//        None, 6, 1)
+//
+//      tree3A.compactTree() should be(tree3)
+//    }
+//
+//    it("should compact larger trees") {
+//      val tree1 = new PositionedBinaryNode("5",
+//        PositionedBinaryLeaf,
+//        new PositionedBinaryNode("7",
+//          PositionedBinaryNode("6", 1, 3),
+//          PositionedBinaryNode("8", 3, 3),
+//          None, 2, 2),
+//        None, 1, 1)
+//
+//      val tree1A = new PositionedBinaryNode("5",
+//        PositionedBinaryLeaf,
+//        new PositionedBinaryNode("7",
+//          PositionedBinaryNode("6", 6, 3),
+//          PositionedBinaryNode("8", 8, 3),
+//          None, 7, 2),
+//        None, 1, 1)
+//
+//      tree1A.compactTree() should be(tree1)
+//
+//      val tree2A = new PositionedBinaryNode("5",
+//        new PositionedBinaryNode("2",
+//          new PositionedBinaryNode("1",
+//            PositionedBinaryLeaf,
+//            PositionedBinaryNode("3", 3, 4),
+//            None, 1, 3),
+//          PositionedBinaryNode("4", 4, 3),
+//          None, 2, 2),
+//        new PositionedBinaryNode("7",
+//          new PositionedBinaryNode("6",
+//            PositionedBinaryNode("5R", 5, 4),
+//            PositionedBinaryNode("6R", 7, 4),
+//            None, 6, 3),
+//          PositionedBinaryNode("8", 8, 3),
+//          None, 7, 2),
+//        None, 5, 1)
+//
+//      val tree2 = new PositionedBinaryNode("5",
+//        new PositionedBinaryNode("2",
+//          new PositionedBinaryNode("1",
+//            PositionedBinaryLeaf,
+//            PositionedBinaryNode("3", 2, 4),
+//            None, 1, 3),
+//          PositionedBinaryNode("4", 3, 3),
+//          None, 2, 2),
+//        new PositionedBinaryNode("7",
+//          new PositionedBinaryNode("6",
+//            PositionedBinaryNode("5R", 3, 4),
+//            PositionedBinaryNode("6R", 5, 4),
+//            None, 4, 3),
+//          PositionedBinaryNode("8", 6, 3),
+//          None, 5, 2),
+//        None, 3, 1)
+//
+//      tree2A.compactTree() should be(tree2)
+//    }
+//  }
 }

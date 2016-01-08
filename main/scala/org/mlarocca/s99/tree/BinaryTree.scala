@@ -181,11 +181,19 @@ object BinaryTree {
   private[s99] val NonPositiveValueErrorMessage = "n must be positive"
 
   private def log2(x: Double) = Math.log10(x) / Math.log10(2)
+
+  private[tree] def maxOption(s: Iterable[Int], defaultValue: Int): Int = {
+    s.reduceOption(Math.max(_, _)).getOrElse(defaultValue)
+  }
+
+  private[tree] def minOption(s: Iterable[Int], defaultValue: Int): Int = {
+    s.reduceOption(Math.min(_, _)).getOrElse(defaultValue)
+  }
 }
 
 abstract class BinaryTree[+K, +V] {
-  def size(): Int
-  def height(): Int
+  val size: Int
+  val height: Int
   def inOrder(): Seq[K]
   def preOrder(): Seq[K]
   def preOrderMirror(): Seq[K]
@@ -200,13 +208,15 @@ abstract class BinaryTree[+K, +V] {
   def layoutBinaryTreeConstantGap(): PositionedBinaryTree[K, V]
   def layoutBinaryTreeCompact(): PositionedBinaryTree[K, V]
   private[tree] def layoutBinaryTreeInner(startingX: Int = 1, startingY: Int = 1, computeLeftX: PositionedBinaryTree[K, V] => Int): PositionedBinaryTree[K, V]
+  private[tree] def layoutBinaryTreeCompactInner[T >: K, W >:V](x: Int, y: Int, bounds: Map[Int, Bound]): LayoutIntermediateResult[T, W]
   private[tree] def toInOrderList(): Seq[K]
   private[tree] def toPreOrderOptionList(): Seq[Option[K]]
   private[tree] def toPreOrderMirrorOptionList(): Seq[Option[K]]
 }
 
 case class BinaryNode[+K, +V](key: K, left: BinaryTree[K, V], right: BinaryTree[K, V], value: Option[V] = None) extends BinaryTree[K, V] {
-
+  import BinaryTree.maxOption
+  
   override def toString = s"T($key $left $right)"
 
   //Combination of preorder + inorder is unique for each tree (trees with the same keys set could have the same inorder or preorder)
@@ -221,12 +231,12 @@ case class BinaryNode[+K, +V](key: K, left: BinaryTree[K, V], right: BinaryTree[
     case _ => false
   }
 
-  override def size(): Int = {
-    1 + left.size() + right.size()
+  override lazy val size = {
+    1 + left.size + right.size
   }
 
-  override def height(): Int = {
-    1 + Math.max(left.height(), right.height())
+  override lazy val height = {
+    1 + Math.max(left.height, right.height)
   }
 
   override def preOrder(): Seq[K] = {
@@ -300,7 +310,7 @@ case class BinaryNode[+K, +V](key: K, left: BinaryTree[K, V], right: BinaryTree[
   }
 
   override def layoutBinaryTree(): PositionedBinaryTree[K, V] = {
-    layoutBinaryTreeInner(1, 1, (tree: PositionedBinaryTree[K, V]) => tree.size())
+    layoutBinaryTreeInner(1, 1, (tree: PositionedBinaryTree[K, V]) => tree.size)
   }
 
   private[tree] override def layoutBinaryTreeInner(startingX: Int = 1, startingY: Int = 1, computeLeftX: PositionedBinaryTree[K, V] => Int): PositionedBinaryTree[K, V] = {
@@ -311,19 +321,41 @@ case class BinaryNode[+K, +V](key: K, left: BinaryTree[K, V], right: BinaryTree[
   }
 
   override def layoutBinaryTreeConstantGap(): PositionedBinaryTree[K, V] = {
-    layoutBinaryTreeInner(1, 1, (tree: PositionedBinaryTree[K, V]) => Math.pow(2, tree.height()).toInt - 1)
+    layoutBinaryTreeInner(1, 1, (tree: PositionedBinaryTree[K, V]) => Math.pow(2, tree.height).toInt - 1)
   }
 
   override def layoutBinaryTreeCompact(): PositionedBinaryTree[K, V] = {
-    layoutBinaryTreeInner(1, 1, (tree: PositionedBinaryTree[K, V]) => tree.rightMostX()).compactTree()
+    layoutBinaryTreeCompactInner[K, V](1, 1, Map.empty[Int, Bound]).tree
+  }
+
+  override private[tree] def layoutBinaryTreeCompactInner[T >: K, W >:V](x: Int, y: Int, bounds: Map[Int, Bound]): LayoutIntermediateResult[T, W] = {
+    val startingX = Math.max(x, bounds.get(y).map(_.right).getOrElse(0) + 1)
+
+    val LayoutIntermediateResult(leftP, leftDelta) =
+      left.layoutBinaryTreeCompactInner(startingX - 1, y + 1, bounds)
+
+    val leftX = leftP match {
+      case PositionedBinaryLeaf => startingX - 1
+      case node: PositionedBinaryNode[K, V] => node.x
+    }
+
+    val LayoutIntermediateResult(rightP, rightDelta) =
+      right.layoutBinaryTreeCompactInner(leftX + 2, y + 1, leftP.bounds)
+
+    val newX = rightP match {
+      case PositionedBinaryLeaf => Math.max(leftX + 1, startingX)
+      case node: PositionedBinaryNode[K, V] =>
+        (leftX + node.x) / 2
+    }
+    LayoutIntermediateResult(new PositionedBinaryNode(key, leftP, rightP, value, newX, y), 0)
   }
 }
 
 trait Leaf extends BinaryTree[Nothing, Nothing] {
   override def toString = "."
 
-  override def size(): Int = 0
-  override def height(): Int = 0
+  override val size = 0
+  override val height = 0
 
   override def inOrder() = Nil
   override def preOrder() = Nil
@@ -353,6 +385,8 @@ trait Leaf extends BinaryTree[Nothing, Nothing] {
       startingX: Int, startingY: Int,
       computeLeftX: PositionedBinaryTree[Nothing, Nothing] => Int): PositionedBinaryTree[Nothing, Nothing] =
     PositionedBinaryLeaf
+  override private[tree] def layoutBinaryTreeCompactInner[K, V](x: Int, y: Int, bounds: Map[Int, Bound]) =
+    LayoutIntermediateResult[K, V](PositionedBinaryLeaf, 0)
 }
 
 case object Leaf extends Leaf {
@@ -369,3 +403,5 @@ object BinaryNode {
   def apply[K, V](key: K): BinaryNode[K, V] = new BinaryNode(key, Leaf, Leaf)
   def apply[K, V](key: K, value: V): BinaryNode[K, V] = BinaryNode(key, Leaf, Leaf, Some(value))
 }
+
+private case class LayoutIntermediateResult[K,V](val tree: PositionedBinaryTree[K,V], val delta: Int)
