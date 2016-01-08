@@ -194,6 +194,7 @@ object BinaryTree {
 abstract class BinaryTree[+K, +V] {
   val size: Int
   val height: Int
+  val asString: String
   def inOrder(): Seq[K]
   def preOrder(): Seq[K]
   def preOrderMirror(): Seq[K]
@@ -237,6 +238,16 @@ case class BinaryNode[+K, +V](key: K, left: BinaryTree[K, V], right: BinaryTree[
 
   override lazy val height = {
     1 + Math.max(left.height, right.height)
+  }
+
+  override lazy val asString = {
+    val lStr = left.asString
+    val rStr = right.asString
+    (lStr, rStr) match {
+      case ("", "") => s"$key"
+      case (_, "") => s"$key($lStr)"
+      case _ =>  s"$key($lStr,$rStr)"
+    }
   }
 
   override def preOrder(): Seq[K] = {
@@ -353,6 +364,7 @@ case class BinaryNode[+K, +V](key: K, left: BinaryTree[K, V], right: BinaryTree[
 
 trait Leaf extends BinaryTree[Nothing, Nothing] {
   override def toString = "."
+  override lazy val asString = ""
 
   override val size = 0
   override val height = 0
