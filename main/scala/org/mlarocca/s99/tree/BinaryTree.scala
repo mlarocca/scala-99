@@ -166,7 +166,73 @@ object BinaryTree {
     }
   }
 
+  @throws[IllegalArgumentException]
+  def fromString(s: String): BinaryTree[String, Nothing] = s match {
+    case "" => Leaf
+    case RegexSimpleNode(s) => BinaryNode(s)
+    case RegexLeftOnlySimpleNode(rootKey, leftChildKey) =>
+      BinaryNode(rootKey, BinaryNode(leftChildKey), Leaf, None)
+    case RegexRightOnlySimpleNode(rootKey, rightChildKey) =>
+      BinaryNode(rootKey, Leaf, BinaryNode(rightChildKey), None)
+    case RegexLeftRightSimpleNode(rootKey, innerTreeString) =>
+      val Array(leftKey, rightKey) = try {
+        innerTreeString.split(',')
+      } catch {
+        case e: MatchError =>
+          throw new IllegalArgumentException(UnParsableString.format(s))
+      }
+      BinaryNode(rootKey, BinaryNode(leftKey), BinaryNode(rightKey), None)
+    case RegexComplexNode(rootKey, children) =>
+      val (left, right) = if (children.contains(',')) {
+        val (leftString, rightString) = splitTreeString(children)
+        (fromString(leftString), fromString(rightString))
+      } else {
+        (fromString(children), Leaf)
+      }
+      BinaryNode(rootKey, left, right, None)
+    case _ =>
+      throw new IllegalArgumentException(UnParsableString.format(s))
+  }
 
+  private def splitTreeString(s: String): (String, String) = {
+    def findMiddleComma(s: String, parensCount: Int): Option[Int] = s match {
+      case "" =>
+        if (parensCount == 0) Some(0) else None
+      case RegExpRP(rest) =>
+        parensCount match {
+          case 0 => None
+          case 1 => Some(0)
+          case _ => findMiddleComma(rest, parensCount - 1) match {
+            case Some(index) => Some(1 + index)
+            case None => None
+          }
+      }
+      case RegExpLP(rest) =>
+        findMiddleComma(rest, parensCount + 1) match {
+          case Some(index) => Some(1 + index)
+          case None => None
+        }
+      case RegExpComma(rest) =>
+        parensCount match {
+          case 0 => Some(0)
+          case _ => findMiddleComma(rest, parensCount) match {
+            case Some(index) => Some(1 + index)
+            case None => None
+          }
+      }
+      case _ =>
+        findMiddleComma(s.drop(1), parensCount) match {
+          case Some(index) => Some(1 + index)
+          case None => None
+        }
+    }
+
+    val splitPoint = findMiddleComma(s, 0).getOrElse{
+      throw new IllegalArgumentException(UnParsableString.format(s))
+    }
+    val(left, right) = s.splitAt(splitPoint)
+    (left, right.drop(1))
+  }
   /**
    * Compute the maximum height an hBalanced tree with n nodes could have.
    * Slow version to double check the inductive definition.
@@ -174,13 +240,8 @@ object BinaryTree {
    * @param n The given number of nodes.
    * @return
    */
-  private [s99] def maxHbalHeightSlow(n: Int): Int =
+  private [tree] def maxHbalHeightSlow(n: Int): Int =
     Stream.from(1).takeWhile(minHbalNodes(_) <= n).last
-
-  private[s99] val NegativeValueErrorMessage = "n can't be negative"
-  private[s99] val NonPositiveValueErrorMessage = "n must be positive"
-
-  private def log2(x: Double) = Math.log10(x) / Math.log10(2)
 
   private[tree] def maxOption(s: Iterable[Int], defaultValue: Int): Int = {
     s.reduceOption(Math.max(_, _)).getOrElse(defaultValue)
@@ -189,6 +250,23 @@ object BinaryTree {
   private[tree] def minOption(s: Iterable[Int], defaultValue: Int): Int = {
     s.reduceOption(Math.min(_, _)).getOrElse(defaultValue)
   }
+
+  private def log2(x: Double) = Math.log10(x) / Math.log10(2)
+
+  private[s99] val NegativeValueErrorMessage = "n can't be negative"
+  private[s99] val NonPositiveValueErrorMessage = "n must be positive"
+  private[s99] val UnParsableString = "Input string %s can't be parsed as a valid Tree"
+
+  private lazy val RegexComplexNode = """^([^,()]+)\((.+)\)$""".r
+  private lazy val RegexSimpleNode = """^([^,()]+)$""".r
+  private lazy val RegexLeftOnlySimpleNode = """^([^,()]+)\(([^,()]+)\)$""".r
+  private lazy val RegexRightOnlySimpleNode = """^([^,()]+)\(,([^,()]+)\)$""".r
+  private lazy val RegexLeftRightSimpleNode = """^([^,()]+)\(([^,]+)\)$""".r
+
+  private lazy val RegExpRP = """^\)(.*)""".r
+  private lazy val RegExpLP = """^\((.*)""".r
+  private lazy val RegExpComma = """^,(.*)""".r
+
 }
 
 abstract class BinaryTree[+K, +V] {

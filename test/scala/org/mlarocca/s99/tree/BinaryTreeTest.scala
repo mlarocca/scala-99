@@ -1,5 +1,6 @@
 package org.mlarocca.s99.tree
 
+import org.mlarocca.s99.tree
 import org.scalatest._
 
 import scala.util.Random
@@ -653,6 +654,39 @@ class BinaryTreeTest extends FunSpec with Matchers {
         BinaryNode(2, BinaryNode(4, Leaf, BinaryNode(5)), BinaryNode(3))).asString should be("1(2(3,4(5)),2(4(,5),3))")
 
       BinaryNode('a', BinaryNode('b', BinaryNode('d'), BinaryNode('e')), BinaryNode('c', Leaf, BinaryNode('f', BinaryNode('g'), Leaf))).asString should be("a(b(d,e),c(,f(g)))")
+    }
+  }
+
+
+  describe("fromString") {
+    it ("should throw IllegalArgumentException for malformed strings") {
+      a[IllegalArgumentException] should be thrownBy {
+        BinaryTree.fromString(",")
+      }
+
+      a[IllegalArgumentException] should be thrownBy {
+        BinaryTree.fromString("a(,")
+      }
+
+      a[IllegalArgumentException] should be thrownBy {
+        BinaryTree.fromString("a)")
+      }
+
+      a[IllegalArgumentException] should be thrownBy {
+        BinaryTree.fromString("a()")
+      }
+
+      a[IllegalArgumentException] should be thrownBy {
+        BinaryTree.fromString("a()")
+      }
+    }
+
+    it ("should correctly parse simple (non-recursive) trees") {
+      BinaryTree.fromString("a") should be(BinaryNode("a"))
+      BinaryTree.fromString("a(b)") should be(BinaryNode("a", BinaryNode("b"), Leaf, None))
+      BinaryTree.fromString("a(,b)") should be(BinaryNode("a", Leaf, BinaryNode("b"), None))
+      BinaryTree.fromString("abc") should be(BinaryNode("abc"))
+      BinaryTree.fromString("abc(def,ghi)") should be(BinaryNode("abc", BinaryNode("def"), BinaryNode("ghi"), None))
     }
   }
 
