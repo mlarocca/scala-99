@@ -6,7 +6,7 @@ trait PositionedBinaryTree[+K, +V] extends BinaryTree[K, V] {
   def leftMostX(): Int
   def rightMostX(): Int
   private[tree] val bounds: Map[Int, Bound]
-  private[tree] def moveTo(deltaX: Int, deltaY: Int): PositionedBinaryTree[K, V]
+  private[tree] def moveBy(deltaX: Int, deltaY: Int): PositionedBinaryTree[K, V]
 }
 
 case object PositionedBinaryLeaf extends Leaf with PositionedBinaryTree[Nothing, Nothing] {
@@ -15,7 +15,7 @@ case object PositionedBinaryLeaf extends Leaf with PositionedBinaryTree[Nothing,
   override def leftMostX(): Int = 0
   override def rightMostX(): Int = 0
   override private[tree] val bounds: Map[Int, Bound] = Map.empty
-  override private[tree] def moveTo(deltaX: Int, deltaY: Int) = PositionedBinaryLeaf
+  override private[tree] def moveBy(deltaX: Int, deltaY: Int) = PositionedBinaryLeaf
 }
 
 class PositionedBinaryNode[+K, +V](override val key: K, override val left: PositionedBinaryTree[K, V], override val right: PositionedBinaryTree[K, V], override val value: Option[V], val x: Int, val y: Int) extends BinaryNode[K, V](key, left, right, value) with PositionedBinaryTree[K, V] {
@@ -91,8 +91,8 @@ class PositionedBinaryNode[+K, +V](override val key: K, override val left: Posit
     case _ => right.rightMostX()
   }
 
-  override private[tree] def moveTo(deltaX: Int, deltaY: Int): PositionedBinaryTree[K, V] = {
-    new PositionedBinaryNode[K, V](key, left.moveTo(deltaX, deltaY), right.moveTo(deltaX, deltaY), value, x + deltaX, y + deltaY)
+  override private[tree] def moveBy(deltaX: Int, deltaY: Int): PositionedBinaryTree[K, V] = {
+    new PositionedBinaryNode[K, V](key, left.moveBy(deltaX, deltaY), right.moveBy(deltaX, deltaY), value, x + deltaX, y + deltaY)
   }
 }
 

@@ -605,8 +605,8 @@ class BinaryTreeTest extends FunSpec with Matchers {
     it ("should layout the tree correctly for larger trees") {
       val layoutTree = BinarySearchTree.fromKeySeq(Seq('n', 'k', 'c', 'm', 'a', 'e', 'd', 'g', 'u', 'p', 'q')).layoutBinaryTreeCompact()
 
-      layoutTree.itemsAtLevel(1).head.x should be(4)
-      layoutTree.toString() should equal("T[4, 1](n T[3, 2](k T[2, 3](c T[1, 4](a . .) T[3, 4](e T[2, 5](d . .) T[4, 5](g . .))) T[4, 3](m . .)) T[6, 2](u T[5, 3](p . T[6, 4](q . .)) .))")
+      layoutTree.itemsAtLevel(1).head.x should be(5)
+      layoutTree.toString() should equal("T[5, 1](n T[3, 2](k T[2, 3](c T[1, 4](a . .) T[3, 4](e T[2, 5](d . .) T[4, 5](g . .))) T[4, 3](m . .)) T[7, 2](u T[6, 3](p . T[7, 4](q . .)) .))")
       val h = layoutTree.height
       (1 to h).foreach { h =>
         layoutTree.itemsAtLevel(h).foreach { item: PositionedItem[Char, Nothing] =>
@@ -618,8 +618,8 @@ class BinaryTreeTest extends FunSpec with Matchers {
     it ("should layout the tree correctly for even larger trees") {
       val layoutTree = BinarySearchTree.fromKeySeq(Seq('n','k','m','c','a','h','g','e','u','p','s','q')).layoutBinaryTreeCompact()
 
-      layoutTree.itemsAtLevel(1).head.x should be(4)
-      layoutTree.toString() should equal("T[4, 1](n T[3, 2](k T[2, 3](c T[1, 4](a . .) T[3, 4](h T[2, 5](g T[1, 6](e . .) .) .)) T[4, 3](m . .)) T[6, 2](u T[5, 3](p . T[6, 4](s T[5, 5](q . .) .)) .))")
+      layoutTree.itemsAtLevel(1).head.x should be(5)
+      layoutTree.toString() should equal("T[5, 1](n T[3, 2](k T[2, 3](c T[1, 4](a . .) T[3, 4](h T[2, 5](g T[1, 6](e . .) .) .)) T[4, 3](m . .)) T[7, 2](u T[6, 3](p . T[7, 4](s T[6, 5](q . .) .)) .))")
       val h = layoutTree.height
       (1 to h).foreach { h =>
         layoutTree.itemsAtLevel(h).foreach { item: PositionedItem[Char, Nothing] =>
@@ -687,6 +687,17 @@ class BinaryTreeTest extends FunSpec with Matchers {
       BinaryTree.fromString("a(,b)") should be(BinaryNode("a", Leaf, BinaryNode("b"), None))
       BinaryTree.fromString("abc") should be(BinaryNode("abc"))
       BinaryTree.fromString("abc(def,ghi)") should be(BinaryNode("abc", BinaryNode("def"), BinaryNode("ghi"), None))
+    }
+
+    it ("should correctly parse recursive trees") {
+      BinaryTree.fromString("a(b(c))") should be(BinaryNode("a", BinaryNode("b", BinaryNode("c"), Leaf, None), Leaf, None))
+      BinaryTree.fromString("a(,b(c))") should be(BinaryNode("a", Leaf, BinaryNode("b", BinaryNode("c"), Leaf, None), None))
+      BinaryTree.fromString("a(,b(,c))") should be(BinaryNode("a", Leaf, BinaryNode("b", Leaf, BinaryNode("c"), None), None))
+      BinaryTree.fromString("abc(d(e,f),gh(i))") should be(
+        BinaryNode("abc",
+          BinaryNode("d", BinaryNode("e"), BinaryNode("f"), None),
+          BinaryNode("gh",BinaryNode("i"), Leaf, None),
+          None))
     }
   }
 

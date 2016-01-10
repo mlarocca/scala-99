@@ -201,7 +201,6 @@ object BinaryTree {
       case RegExpRP(rest) =>
         parensCount match {
           case 0 => None
-          case 1 => Some(0)
           case _ => findMiddleComma(rest, parensCount - 1) match {
             case Some(index) => Some(1 + index)
             case None => None
@@ -261,7 +260,7 @@ object BinaryTree {
   private lazy val RegexSimpleNode = """^([^,()]+)$""".r
   private lazy val RegexLeftOnlySimpleNode = """^([^,()]+)\(([^,()]+)\)$""".r
   private lazy val RegexRightOnlySimpleNode = """^([^,()]+)\(,([^,()]+)\)$""".r
-  private lazy val RegexLeftRightSimpleNode = """^([^,()]+)\(([^,]+)\)$""".r
+  private lazy val RegexLeftRightSimpleNode = """^([^,()]+)\(([^()]+)\)$""".r
 
   private lazy val RegExpRP = """^\)(.*)""".r
   private lazy val RegExpLP = """^\((.*)""".r
@@ -431,12 +430,18 @@ case class BinaryNode[+K, +V](key: K, left: BinaryTree[K, V], right: BinaryTree[
     val LayoutIntermediateResult(rightP, rightDelta) =
       right.layoutBinaryTreeCompactInner(leftX + 2, y + 1, leftP.bounds)
 
-    val newX = rightP match {
-      case PositionedBinaryLeaf => Math.max(leftX + 1, startingX)
+    val (newX, rightN) = rightP match {
+      case PositionedBinaryLeaf => (Math.max(leftX + 1, startingX), PositionedBinaryLeaf)
       case node: PositionedBinaryNode[K, V] =>
-        (leftX + node.x) / 2
+        val wholeDist = leftX + node.x
+        if (wholeDist % 2 == 1) {
+          ((wholeDist + 1) / 2, node.moveBy(1, 0))
+        } else {
+          (wholeDist / 2, node)
+        }
+
     }
-    LayoutIntermediateResult(new PositionedBinaryNode(key, leftP, rightP, value, newX, y), 0)
+    LayoutIntermediateResult(new PositionedBinaryNode(key, leftP, rightN, value, newX, y), 0)
   }
 }
 
