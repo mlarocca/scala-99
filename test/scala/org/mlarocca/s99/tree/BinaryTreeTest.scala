@@ -657,7 +657,6 @@ class BinaryTreeTest extends FunSpec with Matchers {
     }
   }
 
-
   describe("fromString") {
     it ("should throw IllegalArgumentException for malformed strings") {
       a[IllegalArgumentException] should be thrownBy {
@@ -700,5 +699,44 @@ class BinaryTreeTest extends FunSpec with Matchers {
           None))
     }
   }
+  
+  describe("toDotString") {
+    it ("should throw Exception for malformed strings") {
+      a[NoSuchElementException] should be thrownBy {
+        BinaryNode(false).toDotString
+      }
+
+      a[NoSuchElementException] should be thrownBy {
+        BinaryNode("abc").toDotString
+      }
+
+      a[NoSuchElementException] should be thrownBy {
+        BinaryNode('a', BinaryNode(1), Leaf).toDotString
+      }
+    }
+
+
+    it ("should be . for a leaf") {
+      Leaf.toDotString should be(".")
+    }
+
+    it ("should be the key for a single node") {
+      BinaryNode('a').toDotString should be("a..")
+      BinaryNode('1').toDotString should be("1..")
+    }
+
+    it ("should be constructed correctly for simple trees") {
+      BinaryNode('1', BinaryNode('2'), BinaryNode('c')).toDotString should be("12..c..")
+      BinaryNode('1', Leaf, BinaryNode('c')).toDotString should be("1.c..")
+      BinaryNode('1', BinaryNode('2'), Leaf).toDotString should be("12...")
+    }
+
+    it ("should be compute correctly for larger trees") {
+      BinaryNode('1', BinaryNode('2', BinaryNode('3'), Leaf), BinaryNode('4', Leaf, BinaryNode('5'))).toDotString should be("123...4.5..")
+
+      BinaryNode('a', BinaryNode('b', BinaryNode('d'), BinaryNode('e')), BinaryNode('c', Leaf, BinaryNode('f', BinaryNode('g'), Leaf))).toDotString should be("abd..e..c.fg...")
+    }
+  }
+
 
 }

@@ -252,10 +252,6 @@ object BinaryTree {
 
   private def log2(x: Double) = Math.log10(x) / Math.log10(2)
 
-  private[s99] val NegativeValueErrorMessage = "n can't be negative"
-  private[s99] val NonPositiveValueErrorMessage = "n must be positive"
-  private[s99] val UnParsableString = "Input string %s can't be parsed as a valid Tree"
-
   private lazy val RegexComplexNode = """^([^,()]+)\((.+)\)$""".r
   private lazy val RegexSimpleNode = """^([^,()]+)$""".r
   private lazy val RegexLeftOnlySimpleNode = """^([^,()]+)\(([^,()]+)\)$""".r
@@ -266,12 +262,17 @@ object BinaryTree {
   private lazy val RegExpLP = """^\((.*)""".r
   private lazy val RegExpComma = """^,(.*)""".r
 
+  private[s99] val NegativeValueErrorMessage = "n can't be negative"
+  private[s99] val NonPositiveValueErrorMessage = "n must be positive"
+  private[s99] val UnParsableString = "Input string %s can't be parsed as a valid Tree"
+  private[s99] val ToDoStringTypeException = "`.toDotString` defined only for BinaryTree[Character, _]"
 }
 
 abstract class BinaryTree[+K, +V] {
   val size: Int
   val height: Int
   val asString: String
+  val toDotString: String
   def inOrder(): Seq[K]
   def preOrder(): Seq[K]
   def preOrderMirror(): Seq[K]
@@ -286,16 +287,36 @@ abstract class BinaryTree[+K, +V] {
   def layoutBinaryTreeConstantGap(): PositionedBinaryTree[K, V]
   def layoutBinaryTreeCompact(): PositionedBinaryTree[K, V]
   private[tree] def layoutBinaryTreeInner(startingX: Int = 1, startingY: Int = 1, computeLeftX: PositionedBinaryTree[K, V] => Int): PositionedBinaryTree[K, V]
-  private[tree] def layoutBinaryTreeCompactInner[T >: K, W >:V](x: Int, y: Int, bounds: Map[Int, Bound]): LayoutIntermediateResult[T, W]
+  private[tree] def layoutBinaryTreeCompactInner[T >: K, W >:V](x: Int, y: Int, bounds: Map[Int, Bound]): PositionedBinaryTree[T, W]
   private[tree] def toInOrderList(): Seq[K]
   private[tree] def toPreOrderOptionList(): Seq[Option[K]]
   private[tree] def toPreOrderMirrorOptionList(): Seq[Option[K]]
 }
 
 case class BinaryNode[+K, +V](key: K, left: BinaryTree[K, V], right: BinaryTree[K, V], value: Option[V] = None) extends BinaryTree[K, V] {
-  import BinaryTree.maxOption
-  
   override def toString = s"T($key $left $right)"
+
+  override lazy val asString = {
+    val lStr = left.asString
+    val rStr = right.asString
+    (lStr, rStr) match {
+      case ("", "") => s"$key"
+      case (_, "") => s"$key($lStr)"
+      case _ =>  s"$key($lStr,$rStr)"
+    }
+  }
+
+  /**
+   * String representation for BinaryTree[Character]:
+   * - a(b,c) becomes abc
+   * - a(b,) becomes ab.
+   * - a(,c) becomes a.c
+   */
+  @throws[NoSuchElementException]
+  override lazy val toDotString = key match {
+    case c: Character => s"$key${left.toDotString}${right.toDotString}"
+    case _ => throw new NoSuchElementException(BinaryTree.ToDoStringTypeException)
+  }
 
   //Combination of preorder + inorder is unique for each tree (trees with the same keys set could have the same inorder or preorder)
   override def hashCode = ((preOrder() ++ inOrder()).map(_.toString) mkString ".").hashCode()
@@ -315,16 +336,6 @@ case class BinaryNode[+K, +V](key: K, left: BinaryTree[K, V], right: BinaryTree[
 
   override lazy val height = {
     1 + Math.max(left.height, right.height)
-  }
-
-  override lazy val asString = {
-    val lStr = left.asString
-    val rStr = right.asString
-    (lStr, rStr) match {
-      case ("", "") => s"$key"
-      case (_, "") => s"$key($lStr)"
-      case _ =>  s"$key($lStr,$rStr)"
-    }
   }
 
   override def preOrder(): Seq[K] = {
@@ -413,22 +424,20 @@ case class BinaryNode[+K, +V](key: K, left: BinaryTree[K, V], right: BinaryTree[
   }
 
   override def layoutBinaryTreeCompact(): PositionedBinaryTree[K, V] = {
-    layoutBinaryTreeCompactInner[K, V](1, 1, Map.empty[Int, Bound]).tree
+    layoutBinaryTreeCompactInner[K, V](1, 1, Map.empty[Int, Bound])
   }
 
-  override private[tree] def layoutBinaryTreeCompactInner[T >: K, W >:V](x: Int, y: Int, bounds: Map[Int, Bound]): LayoutIntermediateResult[T, W] = {
+  override private[tree] def layoutBinaryTreeCompactInner[T >: K, W >:V](x: Int, y: Int, bounds: Map[Int, Bound]): PositionedBinaryTree[T, W] = {
     val startingX = Math.max(x, bounds.get(y).map(_.right).getOrElse(0) + 1)
 
-    val LayoutIntermediateResult(leftP, leftDelta) =
-      left.layoutBinaryTreeCompactInner(startingX - 1, y + 1, bounds)
+    val leftP = left.layoutBinaryTreeCompactInner(startingX - 1, y + 1, bounds)
 
     val leftX = leftP match {
       case PositionedBinaryLeaf => startingX - 1
       case node: PositionedBinaryNode[K, V] => node.x
     }
 
-    val LayoutIntermediateResult(rightP, rightDelta) =
-      right.layoutBinaryTreeCompactInner(leftX + 2, y + 1, leftP.bounds)
+    val rightP = right.layoutBinaryTreeCompactInner(leftX + 2, y + 1, leftP.bounds)
 
     val (newX, rightN) = rightP match {
       case PositionedBinaryLeaf => (Math.max(leftX + 1, startingX), PositionedBinaryLeaf)
@@ -439,18 +448,19 @@ case class BinaryNode[+K, +V](key: K, left: BinaryTree[K, V], right: BinaryTree[
         } else {
           (wholeDist / 2, node)
         }
-
     }
-    LayoutIntermediateResult(new PositionedBinaryNode(key, leftP, rightN, value, newX, y), 0)
+
+    new PositionedBinaryNode(key, leftP, rightN, value, newX, y)
   }
 }
 
 trait Leaf extends BinaryTree[Nothing, Nothing] {
   override def toString = "."
-  override lazy val asString = ""
+  override final val toDotString = "."
+  override final val asString = ""
 
-  override val size = 0
-  override val height = 0
+  override final val size = 0
+  override final val height = 0
 
   override def inOrder() = Nil
   override def preOrder() = Nil
@@ -480,8 +490,7 @@ trait Leaf extends BinaryTree[Nothing, Nothing] {
       startingX: Int, startingY: Int,
       computeLeftX: PositionedBinaryTree[Nothing, Nothing] => Int): PositionedBinaryTree[Nothing, Nothing] =
     PositionedBinaryLeaf
-  override private[tree] def layoutBinaryTreeCompactInner[K, V](x: Int, y: Int, bounds: Map[Int, Bound]) =
-    LayoutIntermediateResult[K, V](PositionedBinaryLeaf, 0)
+  override private[tree] def layoutBinaryTreeCompactInner[K, V](x: Int, y: Int, bounds: Map[Int, Bound]) = PositionedBinaryLeaf
 }
 
 case object Leaf extends Leaf {
@@ -498,5 +507,3 @@ object BinaryNode {
   def apply[K, V](key: K): BinaryNode[K, V] = new BinaryNode(key, Leaf, Leaf)
   def apply[K, V](key: K, value: V): BinaryNode[K, V] = BinaryNode(key, Leaf, Leaf, Some(value))
 }
-
-private case class LayoutIntermediateResult[K,V](val tree: PositionedBinaryTree[K,V], val delta: Int)
