@@ -194,6 +194,29 @@ object BinaryTree {
       throw new IllegalArgumentException(UnParsableString.format(s))
   }
 
+  @throws[IllegalArgumentException]
+  def fromDotString(str: String): BinaryTree[Char, Nothing] = {
+
+    @throws[IllegalArgumentException]
+    def parseDotString(s: String): (BinaryTree[Char, Nothing], String) = s.headOption match {
+      case None =>
+        throw new IllegalArgumentException(UnParsableString.format(str))
+      case Some('.') =>
+        (Leaf, s.drop(1))
+      case Some(c) =>
+        val (left, lRemainder) = parseDotString(s.drop(1))
+        val (right, rRemainder) = parseDotString(lRemainder)
+        (BinaryNode(c, left, right), rRemainder)
+    }
+
+    val (tree, remainder) = parseDotString(str)
+    if (remainder == "") {
+      tree
+    } else {
+      throw new IllegalArgumentException(UnParsableString.format(str))
+    }
+  }
+
   private def splitTreeString(s: String): (String, String) = {
     def findMiddleComma(s: String, parensCount: Int): Option[Int] = s match {
       case "" =>

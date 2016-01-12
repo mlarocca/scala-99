@@ -738,5 +738,50 @@ class BinaryTreeTest extends FunSpec with Matchers {
     }
   }
 
+  describe("fromDotString") {
+    it ("should throw IllegalArgumentException for malformed strings") {
+      a[IllegalArgumentException] should be thrownBy {
+        BinaryTree.fromDotString("a")
+      }
 
+      a[IllegalArgumentException] should be thrownBy {
+        BinaryTree.fromDotString("a.")
+      }
+
+      a[IllegalArgumentException] should be thrownBy {
+        BinaryTree.fromDotString("ab..")
+      }
+
+      a[IllegalArgumentException] should be thrownBy {
+        BinaryTree.fromDotString("123..")
+      }
+
+      a[IllegalArgumentException] should be thrownBy {
+        BinaryTree.fromDotString("..")
+      }
+
+    }
+
+    it ("should correctly parse leaves") {
+      BinaryTree.fromDotString(".") should be(Leaf)
+    }
+
+    it ("should correctly parse simple (non-recursive) trees") {
+      BinaryTree.fromDotString("a..") should be(BinaryNode("a"))
+      BinaryTree.fromDotString("ab...") should be(BinaryNode("a", BinaryNode("b"), Leaf, None))
+      BinaryTree.fromDotString("a.b..") should be(BinaryNode("a", Leaf, BinaryNode("b"), None))
+      BinaryTree.fromDotString("ab..c..") should be(BinaryNode("a", BinaryNode("b"), BinaryNode("c")))
+    }
+
+    it ("should correctly parse recursive trees") {
+      BinaryTree.fromDotString("abc....") should be(BinaryNode("a", BinaryNode("b", BinaryNode("c"), Leaf, None), Leaf, None))
+      BinaryTree.fromDotString("a.bc...") should be(BinaryNode("a", Leaf, BinaryNode("b", BinaryNode("c"), Leaf, None), None))
+      BinaryTree.fromDotString("a.b.c..") should be(BinaryNode("a", Leaf, BinaryNode("b", Leaf, BinaryNode("c"), None), None))
+      BinaryTree.fromDotString("ade..f..hi...") should be(
+        BinaryNode("a",
+          BinaryNode("d", BinaryNode("e"), BinaryNode("f"), None),
+          BinaryNode("h",BinaryNode("i"), Leaf, None),
+          None))
+    }
+  }
 }
