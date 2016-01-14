@@ -23,6 +23,9 @@ class BinaryTreeTest extends FunSpec with Matchers {
     it ("should return false for two roots with different keys") {
       BinaryNode(Random.nextInt()) should not equal (BinaryNode(-1))
       BinaryNode(1 + Random.nextInt()) should not equal (BinaryNode(0))
+      BinaryNode(1) should not equal(BinaryNode('1'))
+      BinaryNode(1) should not equal(BinaryNode("1"))
+      BinaryNode("1") should not equal(BinaryNode('1'))
       BinaryNode(1) should not equal(BinaryNode(2))
       BinaryNode("1") should not equal(BinaryNode("2"))
       BinaryNode("abc") should not equal(BinaryNode("abcd"))
@@ -191,14 +194,14 @@ class BinaryTreeTest extends FunSpec with Matchers {
     it ("should return 9 trees with height 3, for h == 3") {
       BinaryTree.hBalanced(3, "A") should equal(Seq(
         new BinaryNode("A", new BinaryNode("A", BinaryNode("A"), BinaryNode("A")), new BinaryNode("A", BinaryNode("A"), BinaryNode("A"))),
-        new BinaryNode("A", new BinaryNode("A", BinaryNode("A"), BinaryNode("A")), BinaryNode("A")),
         new BinaryNode("A", BinaryNode("A"), new BinaryNode("A", BinaryNode("A"), BinaryNode("A"))),
+        new BinaryNode("A", new BinaryNode("A", BinaryNode("A"), BinaryNode("A")), BinaryNode("A")),
         new BinaryNode("A", new BinaryNode("A", Leaf, BinaryNode("A")), new BinaryNode("A", Leaf, BinaryNode("A"))),
-        new BinaryNode("A", new BinaryNode("A", Leaf, BinaryNode("A")), BinaryNode("A")),
         new BinaryNode("A", BinaryNode("A"), new BinaryNode("A", Leaf, BinaryNode("A"))),
+        new BinaryNode("A", new BinaryNode("A", Leaf, BinaryNode("A")), BinaryNode("A")),
         new BinaryNode("A", new BinaryNode("A", BinaryNode("A"), Leaf), new BinaryNode("A", BinaryNode("A"), Leaf)),
-        new BinaryNode("A", new BinaryNode("A", BinaryNode("A"), Leaf), BinaryNode("A")),
-        new BinaryNode("A", BinaryNode("A"), new BinaryNode("A", BinaryNode("A"), Leaf))
+        new BinaryNode("A", BinaryNode("A"), new BinaryNode("A", BinaryNode("A"), Leaf)),
+        new BinaryNode("A", new BinaryNode("A", BinaryNode("A"), Leaf), BinaryNode("A"))
       ))
     }
 
@@ -304,10 +307,10 @@ class BinaryTreeTest extends FunSpec with Matchers {
 
     it ("should return 4 trees with height 3, for n == 4") {
       BinaryTree.hBalancedWithNodes(4, "A") should equal(Seq(
-        new BinaryNode("A", new BinaryNode("A", Leaf, BinaryNode("A")), BinaryNode("A")),
-        new BinaryNode("A", new BinaryNode("A", BinaryNode("A"), Leaf), BinaryNode("A")),
         new BinaryNode("A", BinaryNode("A"), new BinaryNode("A", Leaf, BinaryNode("A"))),
-        new BinaryNode("A", BinaryNode("A"), new BinaryNode("A", BinaryNode("A"), Leaf))
+        new BinaryNode("A", new BinaryNode("A", Leaf, BinaryNode("A")), BinaryNode("A")),
+        new BinaryNode("A", BinaryNode("A"), new BinaryNode("A", BinaryNode("A"), Leaf)),
+        new BinaryNode("A", new BinaryNode("A", BinaryNode("A"), Leaf), BinaryNode("A"))
       ))
     }
 
@@ -767,20 +770,20 @@ class BinaryTreeTest extends FunSpec with Matchers {
     }
 
     it ("should correctly parse simple (non-recursive) trees") {
-      BinaryTree.fromDotString("a..") should be(BinaryNode("a"))
-      BinaryTree.fromDotString("ab...") should be(BinaryNode("a", BinaryNode("b"), Leaf, None))
-      BinaryTree.fromDotString("a.b..") should be(BinaryNode("a", Leaf, BinaryNode("b"), None))
-      BinaryTree.fromDotString("ab..c..") should be(BinaryNode("a", BinaryNode("b"), BinaryNode("c")))
+      BinaryTree.fromDotString("a..") should be(BinaryNode('a'))
+      BinaryTree.fromDotString("ab...") should be(BinaryNode('a', BinaryNode('b'), Leaf, None))
+      BinaryTree.fromDotString("a.b..") should be(BinaryNode('a', Leaf, BinaryNode('b'), None))
+      BinaryTree.fromDotString("ab..c..") should be(BinaryNode('a', BinaryNode('b'), BinaryNode('c')))
     }
 
     it ("should correctly parse recursive trees") {
-      BinaryTree.fromDotString("abc....") should be(BinaryNode("a", BinaryNode("b", BinaryNode("c"), Leaf, None), Leaf, None))
-      BinaryTree.fromDotString("a.bc...") should be(BinaryNode("a", Leaf, BinaryNode("b", BinaryNode("c"), Leaf, None), None))
-      BinaryTree.fromDotString("a.b.c..") should be(BinaryNode("a", Leaf, BinaryNode("b", Leaf, BinaryNode("c"), None), None))
+      BinaryTree.fromDotString("abc....") should be(BinaryNode('a', BinaryNode('b', BinaryNode('c'), Leaf, None), Leaf, None))
+      BinaryTree.fromDotString("a.bc...") should be(BinaryNode('a', Leaf, BinaryNode('b', BinaryNode('c'), Leaf, None), None))
+      BinaryTree.fromDotString("a.b.c..") should be(BinaryNode('a', Leaf, BinaryNode('b', Leaf, BinaryNode('c'), None), None))
       BinaryTree.fromDotString("ade..f..hi...") should be(
-        BinaryNode("a",
-          BinaryNode("d", BinaryNode("e"), BinaryNode("f"), None),
-          BinaryNode("h",BinaryNode("i"), Leaf, None),
+        BinaryNode('a',
+          BinaryNode('d', BinaryNode('e'), BinaryNode('f'), None),
+          BinaryNode('h',BinaryNode('i'), Leaf, None),
           None))
     }
   }

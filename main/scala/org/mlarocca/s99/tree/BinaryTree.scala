@@ -1,5 +1,7 @@
 package org.mlarocca.s99.tree
 
+import com.owlike.genson.defaultGenson
+
 object BinaryTree {
   /**
    * Generates all the complete balanced trees with n nodes.
@@ -137,7 +139,7 @@ object BinaryTree {
     case 0 => Seq(Leaf)
     case 1 => Seq(BinaryNode(key))
     case _ =>
-      (minHbalHeight(n) to maxHbalHeight(n)).flatMap {
+      (minHbalHeight(n) to maxHbalHeight(n)).toSeq.flatMap {
         BinaryTree.hBalanced(_, key).filter(_.size == n)
       }
   }
@@ -296,6 +298,7 @@ abstract class BinaryTree[+K, +V] {
   val height: Int
   val asString: String
   val toDotString: String
+  private[tree] val toHashString: String
   def inOrder(): Seq[K]
   def preOrder(): Seq[K]
   def preOrderMirror(): Seq[K]
@@ -318,6 +321,7 @@ abstract class BinaryTree[+K, +V] {
 
 case class BinaryNode[+K, +V](key: K, left: BinaryTree[K, V], right: BinaryTree[K, V], value: Option[V] = None) extends BinaryTree[K, V] {
   override def toString = s"T($key $left $right)"
+  override lazy val toHashString = s"T($key[:${key.getClass.getName}}] ${left.toHashString} ${right.toHashString})"
 
   override lazy val asString = {
     val lStr = left.asString
@@ -341,8 +345,7 @@ case class BinaryNode[+K, +V](key: K, left: BinaryTree[K, V], right: BinaryTree[
     case _ => throw new NoSuchElementException(BinaryTree.ToDoStringTypeException)
   }
 
-  //Combination of preorder + inorder is unique for each tree (trees with the same keys set could have the same inorder or preorder)
-  override def hashCode = ((preOrder() ++ inOrder()).map(_.toString) mkString ".").hashCode()
+  override def hashCode = toHashString.hashCode()
 
   override def canEqual(other: Any): Boolean = {
     other.isInstanceOf[BinaryNode[K, V]]
@@ -479,6 +482,7 @@ case class BinaryNode[+K, +V](key: K, left: BinaryTree[K, V], right: BinaryTree[
 
 trait Leaf extends BinaryTree[Nothing, Nothing] {
   override def toString = "."
+  override final val toHashString = "."
   override final val toDotString = "."
   override final val asString = ""
 

@@ -99,9 +99,9 @@ class BinarySearchTreeTest extends FunSpec with Matchers {
 
   describe("size") {
     it("should match the size of the list passed to `fromSeq`") {
-      BinarySearchTree.fromSeq(Seq((2, None), (1, None), (3, None), (4, Some(false)))).size() should be(4)
+      BinarySearchTree.fromSeq(Seq((2, None), (1, None), (3, None), (4, Some(false)))).size should be(4)
       BinarySearchTree.fromSeq(
-        Seq((2, None), (1, None), (3, None), (4, Some(false)), (4, Some(false)), (4, Some(false)))).size() should be(6)
+        Seq((2, None), (1, None), (3, None), (4, Some(false)), (4, Some(false)), (4, Some(false)))).size should be(6)
     }
   }
 }
