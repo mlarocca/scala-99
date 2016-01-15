@@ -78,4 +78,45 @@ class MultiwayTreeTest extends FunSpec with Matchers {
       MultiWayTree(2, None, MultiWayTree(3), MultiWayTree(4, None, MultiWayTree(5))),
       MultiWayTree(2, None, MultiWayTree(4, None, MultiWayTree(5)), MultiWayTree(3))).height should be(4)
   }
+
+  describe("fromString") {
+    it ("should throw IllegalArgumentException for malformed strings") {
+      a[IllegalArgumentException] should be thrownBy {
+        MultiWayTree.fromString("a")
+      }
+
+      a[IllegalArgumentException] should be thrownBy {
+        MultiWayTree.fromString("ab^")
+      }
+
+      a[IllegalArgumentException] should be thrownBy {
+        MultiWayTree.fromString("abc")
+      }
+
+      a[IllegalArgumentException] should be thrownBy {
+        MultiWayTree.fromString("a^b^")
+      }
+
+      a[IllegalArgumentException] should be thrownBy {
+        MultiWayTree.fromString("ab^^C")
+      }
+    }
+
+    it ("should correctly parse simple (non-recursive) trees") {
+      MultiWayTree.fromString("a^") should be(MultiWayTree('a'))
+      MultiWayTree.fromString("ab^^") should be(MultiWayTree('a', None, MultiWayTree('b')))
+      MultiWayTree.fromString("ab^c^^") should be(MultiWayTree('a', None, MultiWayTree('b'), MultiWayTree('c')))
+      MultiWayTree.fromString("ab^c^d^e^^") should be(MultiWayTree('a', None, MultiWayTree('b'), MultiWayTree('c'), MultiWayTree('d'), MultiWayTree('e')))
+    }
+
+    it ("should correctly parse recursive trees") {
+      MultiWayTree.fromString("abc^^^") should be(MultiWayTree('a', None, MultiWayTree('b', None, MultiWayTree('c'))))
+      MultiWayTree.fromString("abc^d^^^") should be(MultiWayTree('a', None, MultiWayTree('b', None, MultiWayTree('c'), MultiWayTree('d'))))
+      MultiWayTree.fromString("abc^d^^e^^") should be(MultiWayTree('a', None, MultiWayTree('b', None, MultiWayTree('c'), MultiWayTree('d')), MultiWayTree('e')))
+      MultiWayTree.fromString("abc^de^^^fg^^^") should be(MultiWayTree('a', None, MultiWayTree('b', None, MultiWayTree('c'), MultiWayTree('d', None, MultiWayTree('e'))), MultiWayTree('f', None, MultiWayTree('g'))))
+      MultiWayTree.fromString("abcde^f^^^^^") should be(MultiWayTree('a', None, MultiWayTree('b', None, MultiWayTree('c', None, MultiWayTree('d', None, MultiWayTree('e'), MultiWayTree('f'))))))
+    }
+
+  }
+
 }
