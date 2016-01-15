@@ -6,6 +6,8 @@ case class MultiWayTree[+K, +V](val key: K, val value: Option[V], children: Mult
 
   lazy val size: Int = 1 + children.map(_.size).sum
   lazy val height: Int = 1 + (0 +: children.map(_.height)).max
+  private lazy val paths: Seq[Int] = 0 +: children.flatMap(_.paths.map(_ + 1))
+  lazy val internalPathLength: Int = paths.sum
 
   override def canEqual(other: Any) = {
     other.isInstanceOf[MultiWayTree[K, V]]

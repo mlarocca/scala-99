@@ -1,7 +1,7 @@
 package org.mlarocca.s99.tree
 
 import org.scalatest._
-
+import MultiWayTree.fromString
 import scala.util.Random
 
 class MultiwayTreeTest extends FunSpec with Matchers {
@@ -116,7 +116,27 @@ class MultiwayTreeTest extends FunSpec with Matchers {
       MultiWayTree.fromString("abc^de^^^fg^^^") should be(MultiWayTree('a', None, MultiWayTree('b', None, MultiWayTree('c'), MultiWayTree('d', None, MultiWayTree('e'))), MultiWayTree('f', None, MultiWayTree('g'))))
       MultiWayTree.fromString("abcde^f^^^^^") should be(MultiWayTree('a', None, MultiWayTree('b', None, MultiWayTree('c', None, MultiWayTree('d', None, MultiWayTree('e'), MultiWayTree('f'))))))
     }
-
   }
 
+  describe("internalPathLength") {
+    it ("should be 0 for a root with no children") {
+      "a^".internalPathLength should be(0)
+    }
+
+    it ("should be the path length for a tree with 1 child") {
+      "ab^^".internalPathLength should be(1)
+    }
+
+    it ("should be the sum of the path lengths for a linear tree") {
+      "abc^^^".internalPathLength should be(3)
+      "abcdef^^^^^^".internalPathLength should be{
+        val n =  "abcdef^^^^^^".count(_ == '^')
+        n * (n - 1) / 2
+      }
+    }
+
+    it ("should be computed correctly for larger trees") {
+      "afg^^c^bd^e^^^".internalPathLength should be(9)
+    }
+  }
 }
