@@ -82,6 +82,10 @@ class MultiwayTreeTest extends FunSpec with Matchers {
   describe("fromString") {
     it ("should throw IllegalArgumentException for malformed strings") {
       a[IllegalArgumentException] should be thrownBy {
+        MultiWayTree.fromString("")
+      }
+      
+      a[IllegalArgumentException] should be thrownBy {
         MultiWayTree.fromString("a")
       }
 
@@ -195,6 +199,69 @@ class MultiwayTreeTest extends FunSpec with Matchers {
       "abc^^^".toLispyString should be("(a (b c))")
       "bd^e^^".toLispyString should be("(b d e)")
       "afg^^c^bd^e^^^".toLispyString should be("(a (f g) c (b d e))")
+    }
+  }
+
+  describe("fromLispyString") {
+    it ("should throw IllegalArgumentException for malformed strings") {
+      a[IllegalArgumentException] should be thrownBy {
+        MultiWayTree.fromLispyString("")
+      }
+
+      a[IllegalArgumentException] should be thrownBy {
+        MultiWayTree.fromLispyString("(ab")
+      }
+
+      a[IllegalArgumentException] should be thrownBy {
+        MultiWayTree.fromLispyString("abc)")
+      }
+
+      a[IllegalArgumentException] should be thrownBy {
+        MultiWayTree.fromLispyString("a(b")
+      }
+
+      a[IllegalArgumentException] should be thrownBy {
+        MultiWayTree.fromLispyString("ab)(C")
+      }
+      
+      a[IllegalArgumentException] should be thrownBy {
+        MultiWayTree.fromLispyString("a(b d( C)")
+      }
+
+      a[IllegalArgumentException] should be thrownBy {
+        MultiWayTree.fromLispyString("a(b d C)")
+      }
+
+      a[IllegalArgumentException] should be thrownBy {
+        MultiWayTree.fromLispyString("a (a b) (d C)")
+      }
+
+      a[IllegalArgumentException] should be thrownBy {
+        MultiWayTree.fromLispyString("(a b) (d C)")
+      }
+
+      a[IllegalArgumentException] should be thrownBy {
+        MultiWayTree.fromLispyString("a b")
+      }
+    }
+
+    it ("should correctly parse simple trees (no children)") {
+      MultiWayTree.fromLispyString("a") should be(MultiWayTree("a"))
+      MultiWayTree.fromLispyString("ab") should be(MultiWayTree("ab"))
+    }
+    
+    it ("should correctly parse simple (non-recursive) trees") {
+      MultiWayTree.fromLispyString("(a b)") should be(MultiWayTree("a", None, MultiWayTree("b")))
+      MultiWayTree.fromLispyString("(a b c)") should be(MultiWayTree("a", None, MultiWayTree("b"), MultiWayTree("c")))
+      MultiWayTree.fromLispyString("(a1 b23 c d e456)") should be(MultiWayTree("a1", None, MultiWayTree("b23"), MultiWayTree("c"), MultiWayTree("d"), MultiWayTree("e456")))
+    }
+
+    it ("should correctly parse recursive trees") {
+      MultiWayTree.fromLispyString("(a (b c))") should be(MultiWayTree("a", None, MultiWayTree("b", None, MultiWayTree("c"))))
+      MultiWayTree.fromLispyString("(a (b c d))") should be(MultiWayTree("a", None, MultiWayTree("b", None, MultiWayTree("c"), MultiWayTree("d"))))
+      MultiWayTree.fromLispyString("(a (b c d) e)") should be(MultiWayTree("a", None, MultiWayTree("b", None, MultiWayTree("c"), MultiWayTree("d")), MultiWayTree("e")))
+      MultiWayTree.fromLispyString("(a (b c (d e)) (f g))") should be(MultiWayTree("a", None, MultiWayTree("b", None, MultiWayTree("c"), MultiWayTree("d", None, MultiWayTree("e"))), MultiWayTree("f", None, MultiWayTree("g"))))
+      MultiWayTree.fromLispyString("(a (b (c (d e f))))") should be(MultiWayTree("a", None, MultiWayTree("b", None, MultiWayTree("c", None, MultiWayTree("d", None, MultiWayTree("e"), MultiWayTree("f"))))))
     }
   }
 }
