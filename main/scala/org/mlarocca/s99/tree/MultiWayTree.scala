@@ -1,14 +1,6 @@
 package org.mlarocca.s99.tree
 
 case class MultiWayTree[+K, +V](val key: K, val value: Option[V], children: MultiWayTree[K, V]*) {
-  override def toString = s"$key${children.map(_.toString).mkString("")}^"
-  private def toHashString = s"MT($key[:${key.getClass.getName}}] ${children.map(_.toString).mkString(", ")})"
-
-  lazy val size: Int = 1 + children.map(_.size).sum
-  lazy val height: Int = 1 + (0 +: children.map(_.height)).max
-  private lazy val paths: Seq[Int] = 0 +: children.flatMap(_.paths.map(_ + 1))
-  lazy val internalPathLength: Int = paths.sum
-
   override def canEqual(other: Any) = {
     other.isInstanceOf[MultiWayTree[K, V]]
   }
@@ -20,6 +12,22 @@ case class MultiWayTree[+K, +V](val key: K, val value: Option[V], children: Mult
       this.hashCode == that.hashCode
     case _ => false
   }
+  override def toString = s"$key${children.map(_.toString).mkString("")}^"
+
+  lazy val size: Int = 1 + children.map(_.size).sum
+  lazy val height: Int = 1 + (0 +: children.map(_.height)).max
+  lazy val internalPathLength: Int = paths.sum
+
+  def preOrder(): Seq[K] = {
+    key +: children.flatMap(_.preOrder())
+  }
+
+  def postOrder(): Seq[K] = {
+    children.flatMap(_.postOrder()) :+ key
+  }
+
+  private def toHashString = s"MT($key[:${key.getClass.getName}}] ${children.map(_.toString).mkString(", ")})"
+  private lazy val paths: Seq[Int] = 0 +: children.flatMap(_.paths.map(_ + 1))
 }
 
 object MultiWayTree {

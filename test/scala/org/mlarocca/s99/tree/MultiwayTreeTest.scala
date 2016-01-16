@@ -139,4 +139,38 @@ class MultiwayTreeTest extends FunSpec with Matchers {
       "afg^^c^bd^e^^^".internalPathLength should be(9)
     }
   }
+
+  describe("preOrder") {
+    it ("should be Seq(key) for a root without children") {
+      "a^".preOrder() should be(Seq('a'))
+      MultiWayTree("abc").preOrder() should be(Seq("abc"))
+      MultiWayTree(1).preOrder() should be(Seq(1))
+    }
+
+    it ("should be computed for simple trees") {
+      "ab^^".preOrder() should be(Seq('a', 'b'))
+      MultiWayTree("abc", None, MultiWayTree("def")).preOrder() should be(Seq("abc", "def"))
+      MultiWayTree(1, None, MultiWayTree(2)).preOrder() should be(Seq(1, 2))
+    }
+    it ("should be computed correctly for larger trees") {
+      "afg^^c^bd^e^^^".preOrder() should be(Seq('a', 'f', 'g', 'c', 'b', 'd', 'e'))
+    }
+  }
+
+  describe("postOrder") {
+    it ("should be Seq(key) for a root without children") {
+      "a^".postOrder() should be(Seq('a'))
+      MultiWayTree("abc").postOrder() should be(Seq("abc"))
+      MultiWayTree(1).postOrder() should be(Seq(1))
+    }
+
+    it ("should be computed for simple trees") {
+      "ab^^".postOrder() should be(Seq('b', 'a'))
+      MultiWayTree("abc", None, MultiWayTree("def")).postOrder() should be(Seq("def", "abc"))
+      MultiWayTree(1, None, MultiWayTree(2)).postOrder() should be(Seq(2, 1))
+    }
+    it ("should be computed correctly for larger trees") {
+      "afg^^c^bd^e^^^".postOrder() should be(Seq('g', 'f', 'c', 'd', 'e', 'b', 'a'))
+    }
+  }
 }
