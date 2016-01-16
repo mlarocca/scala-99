@@ -17,6 +17,12 @@ case class MultiWayTree[+K, +V](val key: K, val value: Option[V], children: Mult
   lazy val size: Int = 1 + children.map(_.size).sum
   lazy val height: Int = 1 + (0 +: children.map(_.height)).max
   lazy val internalPathLength: Int = paths.sum
+  lazy val toLispyString: String = children match {
+    case Nil =>
+      key.toString
+    case _ =>
+      s"(${key} ${children.map(_.toLispyString) mkString(" ")})"
+  }
 
   def preOrder(): Seq[K] = {
     key +: children.flatMap(_.preOrder())

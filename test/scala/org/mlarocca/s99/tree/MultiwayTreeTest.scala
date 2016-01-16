@@ -147,7 +147,7 @@ class MultiwayTreeTest extends FunSpec with Matchers {
       MultiWayTree(1).preOrder() should be(Seq(1))
     }
 
-    it ("should be computed for simple trees") {
+    it ("should be computed correctly for simple trees") {
       "ab^^".preOrder() should be(Seq('a', 'b'))
       MultiWayTree("abc", None, MultiWayTree("def")).preOrder() should be(Seq("abc", "def"))
       MultiWayTree(1, None, MultiWayTree(2)).preOrder() should be(Seq(1, 2))
@@ -164,13 +164,37 @@ class MultiwayTreeTest extends FunSpec with Matchers {
       MultiWayTree(1).postOrder() should be(Seq(1))
     }
 
-    it ("should be computed for simple trees") {
+    it ("should be computed correctly for simple trees") {
       "ab^^".postOrder() should be(Seq('b', 'a'))
       MultiWayTree("abc", None, MultiWayTree("def")).postOrder() should be(Seq("def", "abc"))
       MultiWayTree(1, None, MultiWayTree(2)).postOrder() should be(Seq(2, 1))
     }
     it ("should be computed correctly for larger trees") {
       "afg^^c^bd^e^^^".postOrder() should be(Seq('g', 'f', 'c', 'd', 'e', 'b', 'a'))
+    }
+  }
+  
+  describe("toLispyString") {
+    it ("should be key.toString for a root without children") {
+      "a^".toLispyString should be("a")
+      MultiWayTree("abc").toLispyString should be("abc")
+      MultiWayTree("(abc def)").toLispyString should be("(abc def)")
+      MultiWayTree(1).toLispyString should be("1")
+      MultiWayTree(false).toLispyString should be("false")
+      MultiWayTree(BinaryNode("x")).toLispyString should be(BinaryNode("x").toString)
+    }
+
+    it ("should be a simple list for simple trees (max h == 2)") {
+      "ab^^".toLispyString should be("(a b)")
+      MultiWayTree("abc", None, MultiWayTree("def")).toLispyString should be("(abc def)")
+      MultiWayTree("(ab c", None, MultiWayTree("def)")).toLispyString should be("((ab c def))")
+      MultiWayTree(1, None, MultiWayTree(2)).toLispyString should be("(1 2)")
+    }
+
+    it ("should be computed correctly for larger trees") {
+      "abc^^^".toLispyString should be("(a (b c))")
+      "bd^e^^".toLispyString should be("(b d e)")
+      "afg^^c^bd^e^^^".toLispyString should be("(a (f g) c (b d e))")
     }
   }
 }
