@@ -1,6 +1,5 @@
 package org.mlarocca.s99.tree
 
-
 import org.scalatest._
 
 import scala.util.Random
