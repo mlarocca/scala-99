@@ -14,7 +14,7 @@ class VertexTest extends FunSpec with Matchers {
 
     it ("should match vertices despite adjacentcy list") {
       new SimpleVertex('a', Seq(WeightedEdge(null, null))) should equal(SimpleVertex('a'))
-      new SimpleVertex(1, Seq(WeightedEdge(SimpleVertex('a'), SimpleVertex(1)))) should equal(SimpleVertex(1))
+      new SimpleVertex(1, Seq(WeightedEdge[Any](SimpleVertex('a'), SimpleVertex(1)))) should equal(SimpleVertex(1))
     }
   }
 }
