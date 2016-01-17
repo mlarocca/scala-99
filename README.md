@@ -18,4 +18,6 @@ Binary Search Trees (X)
 
 Binary Trees Layout (X)
 
-MultiTrees (O)
+MultiTrees (X)
+
+Graphs ()
