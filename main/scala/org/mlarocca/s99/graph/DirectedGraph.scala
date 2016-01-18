@@ -59,7 +59,7 @@ class DirectedGraph[K, T](
       else
         s"${u.key} > ${v.key}"
     }
-    s"[${edgesStr.toSeq.sorted mkString EdgeStringsSeparator}]"
+    s"[${edgesStr.toSeq.sorted mkString EdgesListSeparator}]"
   }
 }
 
@@ -67,7 +67,44 @@ object DirectedGraph {
   def apply[K, T](vertices: Seq[SimpleVertex[K, T]]) = new DirectedGraph[K, T](vertices, Nil)
   def apply[K, T](vertices: Seq[SimpleVertex[K, T]], edges: Seq[WeightedEdge[K, T]]) = new DirectedGraph[K, T](vertices, edges)
 
-  private[graph] val EdgeStringsSeparator = ", "
+  @throws[IllegalArgumentException]
+  implicit def fromString(s: String): DirectedGraph[String, String] = s match {
+    case ValidGraphString(edgesStr) =>
+      val edgesDec = edgesStr.split(EdgesListSeparator)
+        .map(_.trim)
+        .filter(!_.isEmpty)
+        .map {
+          case ValidEdgeString(src, verse, dst) =>
+            EdgeDecomposition(src, verse, dst)
+          case _ =>
+            throw new IllegalArgumentException(UnParsableStringExceptionMessage.format(s))
+        }
+
+      val newVertices = edgesDec.flatMap {
+        case EdgeDecomposition(src, verse, dst) =>
+          Set(src, dst)
+      }.toSeq.map(SimpleVertex.apply)
+
+      val newEdges = edgesDec.flatMap {
+        case EdgeDecomposition(src, verse, dst) => verse match {
+          case ">" =>
+            Seq(WeightedEdge[String](src, dst))
+          case "-" =>
+            Seq(WeightedEdge[String](src, dst), WeightedEdge[String](dst, src))
+        }
+      }
+
+      new DirectedGraph[String, String](newVertices, newEdges)
+    case _ =>
+      throw new IllegalArgumentException(UnParsableStringExceptionMessage.format(s))
+  }
+
+  private[graph] val EdgesListSeparator = ", "
+  private[graph] lazy val ValidGraphString = """\[((?:(?:[^\[\]]+)(?:,\s[^\[\],\s]+)*)?)\]""".r
+  private[graph] lazy val ValidEdgeString = """([^\[\]\->,]+)\s(\-|>)\s([^\[\]\->,]+)""".r
+  private[graph] val UnParsableStringExceptionMessage = "String %s is not a valid Graph"
+  
+  private case class EdgeDecomposition(src: String, verse: String, dst: String)
 }
 
 case object EmptyGraph extends DirectedGraph[Nothing, Nothing]() {

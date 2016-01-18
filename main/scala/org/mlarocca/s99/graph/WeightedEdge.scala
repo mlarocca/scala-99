@@ -15,6 +15,7 @@ class WeightedEdge[+K, +T](
 
 object WeightedEdge {
   def apply[K](source: SimpleVertex[K, String], dest: SimpleVertex[K, String]) = new WeightedEdge[K, String](source, dest, "", 0)
+  def apply[K](sourceKey: K, destKey: K): WeightedEdge[K, String] = WeightedEdge[K](SimpleVertex(sourceKey), SimpleVertex(destKey))
   def apply[K, T](source: SimpleVertex[K, T], dest: SimpleVertex[K, T], label: T) = new WeightedEdge[K, T](source, dest, label, 0)
 
   implicit def labeled2WeightedEdge[K, T](e: LabeledEdge[K, T]): WeightedEdge[K, T] = WeightedEdge(e.source, e.destination, e.label)
