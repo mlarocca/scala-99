@@ -8,9 +8,13 @@ abstract case class Vertex[+K, +T](val key: K, val adj: Seq[Edge[K, T]] = Nil) {
     case _ => false
   }
 
-  override def hashCode(): Int = s"${key.toString}[${key.getClass}}]".hashCode
+  override def hashCode(): Int = toTypedString().hashCode
 
   override def toString(): String = s"v[$key]"
 
+  def compare[J >: K, U >: T](that: Vertex[J, U]) =  this.toTypedString() compare that.toTypedString()
+
   def neighbors[J >: K, U >: T]: Set[Vertex[J, U]] = adj.map(_.destination).toSet
+
+  private def toTypedString(): String = s"${key.toString}[${key.getClass}}]"
 }

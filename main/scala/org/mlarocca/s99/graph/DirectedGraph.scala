@@ -1,11 +1,13 @@
 package org.mlarocca.s99.graph
 
+import org.mlarocca.s99.graph
+
 import scala.util.control.Exception._
 
 class DirectedGraph[K, T](
     _vertices: Seq[SimpleVertex[K, T]] = Nil,
-    _edges: Seq[WeightedEdge[K, T]] = Nil) extends Graph[K, T](
-  _vertices, _edges) {
+    _edges: Seq[WeightedEdge[K, T]] = Nil) extends Graph[K, T](_vertices, _edges) {
+  import graph.DirectedGraph._
 
   @throws[IllegalArgumentException]
   override def addVertex[J >: K, U >: T](label: J): DirectedGraph[J, U] = {
@@ -45,11 +47,27 @@ class DirectedGraph[K, T](
       throw new IllegalArgumentException(Graph.DuplicateVertexExceptionMessage.format(e.toString))
     }
   }
+
+  override def toString(): String = {
+    val edgesStr = edges.filter { e =>
+      val Edge(u, v) = e
+      !this.hasEdge(v, u) || u.compare(v) <= 0
+    }.map { e =>
+      val Edge(u, v) = e
+      if (this.hasEdge(v, u))
+        s"${u.key} - ${v.key}"
+      else
+        s"${u.key} > ${v.key}"
+    }
+    s"[${edgesStr.toSeq.sorted mkString EdgeStringsSeparator}]"
+  }
 }
 
 object DirectedGraph {
   def apply[K, T](vertices: Seq[SimpleVertex[K, T]]) = new DirectedGraph[K, T](vertices, Nil)
   def apply[K, T](vertices: Seq[SimpleVertex[K, T]], edges: Seq[WeightedEdge[K, T]]) = new DirectedGraph[K, T](vertices, edges)
+
+  private[graph] val EdgeStringsSeparator = ", "
 }
 
 case object EmptyGraph extends DirectedGraph[Nothing, Nothing]() {
@@ -61,5 +79,4 @@ case object EmptyGraph extends DirectedGraph[Nothing, Nothing]() {
   }
 
   override def hashCode(): Int = 0
-
 }
