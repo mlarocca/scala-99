@@ -64,7 +64,7 @@ class DirectedGraph[K, T](
   }
 
   @throws[IllegalArgumentException]
-  def bfs(source: SimpleVertex[K, T]) = {
+  def bfs(source: SimpleVertex[K, T]): SearchResult[K, T] = {
     def init(): (mutable.PriorityQueue[VertexWithDistance], mutable.Map[SimpleVertex[K, T], SimpleVertex[K,T]], mutable.Map[SimpleVertex[K, T], Double]) = {
       val predecessors = mutable.Map[SimpleVertex[K, T], SimpleVertex[K,T]]()
       val queue = new mutable.PriorityQueue[VertexWithDistance]()(VertexWithDistanceOrdering)
@@ -104,11 +104,26 @@ class DirectedGraph[K, T](
     } while (!queue.isEmpty && predecessors.size < n)
 
     //Converts to immutable maps
-    BfsResult(distances.toMap, predecessors.toMap)
+    SearchResult(distances.toMap, predecessors.toMap)
   }
 
   @throws[IllegalArgumentException]
-  def dfs(source: SimpleVertex[K, T]) = ???
+  def dfs(source: SimpleVertex[K, T]): SearchResult[K, T]  = {
+    val predecessors = mutable.Map[SimpleVertex[K, T], SimpleVertex[K,T]]()
+    val distances = mutable.Map[SimpleVertex[K, T], Double]().withDefaultValue(Double.MaxValue)
+
+    def doDfs(v: SimpleVertex[K, T], discoveryTime: Int): Int = {
+      val exitTime: Int = v.neighbors.foldLeft(discoveryTime) { (dist: Int, u: Vertex[K, T]) =>
+        doDfs(u.asInstanceOf[SimpleVertex[K, T]], dist + 1)
+      }
+      distances.+(v -> exitTime)
+      exitTime
+    }
+
+    doDfs(source, 0)
+    //Converts to immutable maps
+    SearchResult(distances.toMap, predecessors.toMap)
+  }
 }
 
 object DirectedGraph {
@@ -155,7 +170,7 @@ object DirectedGraph {
 
   private case class EdgeDecomposition(src: String, verse: String, dst: String)
   private case class VertexWithDistance(vertex: SimpleVertex[_, _], distance: Double)
-  private case class BfsResult[K, T](distances: Map[SimpleVertex[K, T], Double], predecessors: Map[SimpleVertex[K, T], SimpleVertex[K, T]])
+  private case class SearchResult[K, T](distances: Map[SimpleVertex[K, T], Double], predecessors: Map[SimpleVertex[K, T], SimpleVertex[K, T]])
 
   private final val VertexWithDistanceOrdering = new Ordering[VertexWithDistance] {
     override def compare(x: VertexWithDistance, y: VertexWithDistance): Int = {
