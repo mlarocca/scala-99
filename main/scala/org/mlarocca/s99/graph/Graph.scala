@@ -44,6 +44,12 @@ abstract class Graph[K, T](_vertices: Seq[Vertex[K, T]] = Nil, _edges: Seq[Edge[
 
   @throws[IllegalArgumentException]
   def addEdge[J >: K, U >: T](e: Edge[J, U]): Graph[J, U] = ???
+
+  @throws[IllegalArgumentException]
+  def bfs(source: Vertex[K, T]) = ???
+
+  @throws[IllegalArgumentException]
+  def dfs(source: Vertex[K, T]) = ???
 }
 
 object Graph {

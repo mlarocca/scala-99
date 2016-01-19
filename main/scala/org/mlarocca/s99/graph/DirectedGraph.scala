@@ -2,6 +2,7 @@ package org.mlarocca.s99.graph
 
 import org.mlarocca.s99.graph
 
+import scala.collection.mutable
 import scala.util.control.Exception._
 
 class DirectedGraph[K, T](
@@ -61,6 +62,53 @@ class DirectedGraph[K, T](
     }
     s"[${edgesStr.toSeq.sorted mkString EdgesListSeparator}]"
   }
+
+  @throws[IllegalArgumentException]
+  def bfs(source: SimpleVertex[K, T]) = {
+    def init(): (mutable.PriorityQueue[VertexWithDistance], mutable.Map[SimpleVertex[K, T], SimpleVertex[K,T]], mutable.Map[SimpleVertex[K, T], Double]) = {
+      val predecessors = mutable.Map[SimpleVertex[K, T], SimpleVertex[K,T]]()
+      val queue = new mutable.PriorityQueue[VertexWithDistance]()(VertexWithDistanceOrdering)
+      val distances = mutable.Map[SimpleVertex[K, T], Double]().withDefaultValue(Double.MaxValue)
+      (queue, predecessors, distances)
+    }
+
+    def addVertexToQueueGeneric(
+        queue: mutable.PriorityQueue[VertexWithDistance],
+        predecessors: mutable.Map[SimpleVertex[K, T], SimpleVertex[K,T]],
+        distances: mutable.Map[SimpleVertex[K, T], Double])
+      (v: SimpleVertex[K, T], predecessor: SimpleVertex[K,T], distance: Double) {
+      queue.enqueue(VertexWithDistance(v, distance))
+      predecessors.+(v -> predecessor)
+      distances.+(v -> distance)
+    }
+
+    if (!hasVertex(source)) {
+      throw new IllegalArgumentException(IllegalVertexExceptionMessage.format(source))
+    }
+
+    val (queue, predecessors, distances) = init()
+    val addVertexToQueue = addVertexToQueueGeneric(queue, predecessors, distances)
+    lazy val n = vertices.size
+
+    addVertexToQueue(source, null, 0)
+
+    do {
+      val current = queue.dequeue()
+      current.vertex.adj.foreach { e =>
+        val (u, weight) = (e.destination.asInstanceOf[SimpleVertex[K, T]], e.weight)
+        if (distances(u) > weight + current.distance) {
+          addVertexToQueue(u, current.vertex.asInstanceOf[SimpleVertex[K, T]],  weight + current.distance)
+        }
+      }
+
+    } while (!queue.isEmpty && predecessors.size < n)
+
+    //Converts to immutable maps
+    BfsResult(distances.toMap, predecessors.toMap)
+  }
+
+  @throws[IllegalArgumentException]
+  def dfs(source: SimpleVertex[K, T]) = ???
 }
 
 object DirectedGraph {
@@ -103,8 +151,24 @@ object DirectedGraph {
   private[graph] lazy val ValidGraphString = """\[((?:(?:[^\[\]]+)(?:,\s[^\[\],\s]+)*)?)\]""".r
   private[graph] lazy val ValidEdgeString = """([^\[\]\->,]+)\s(\-|>)\s([^\[\]\->,]+)""".r
   private[graph] val UnParsableStringExceptionMessage = "String %s is not a valid Graph"
-  
+  private[graph] val IllegalVertexExceptionMessage = "Vertex %s is not part of this Graph"
+
   private case class EdgeDecomposition(src: String, verse: String, dst: String)
+  private case class VertexWithDistance(vertex: SimpleVertex[_, _], distance: Double)
+  private case class BfsResult[K, T](distances: Map[SimpleVertex[K, T], Double], predecessors: Map[SimpleVertex[K, T], SimpleVertex[K, T]])
+
+  private final val VertexWithDistanceOrdering = new Ordering[VertexWithDistance] {
+    override def compare(x: VertexWithDistance, y: VertexWithDistance): Int = {
+      val (xDist, yDist) = (x.distance, y.distance)
+      if (Math.abs(xDist - yDist) < 10e-20) {
+        0
+      } else if (xDist < yDist) {
+        -1
+      } else {
+        1
+      }
+    }
+  }
 }
 
 case object EmptyGraph extends DirectedGraph[Nothing, Nothing]() {
