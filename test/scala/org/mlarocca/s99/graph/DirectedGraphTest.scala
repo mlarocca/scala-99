@@ -214,6 +214,8 @@ class DirectedGraphTest extends FunSpec with Matchers {
   describe("bfs") {
     val G1 = "[a - b, b - c, b - d, c - e, d - e]": DirectedGraph[String, String]
     val G2 = "[a > b, b > c, b > d, c > e, d > e]": DirectedGraph[String, String]
+    val G3 = "[a - c, b - c, c - d, c - f, c - h, d - e, d - f, d - i, f - g, g - i, h - i]": DirectedGraph[String, String]
+
     val vA = G1.getVertex("a")
     val vB = G1.getVertex("b")
     val vC = G1.getVertex("c")
@@ -281,6 +283,20 @@ class DirectedGraphTest extends FunSpec with Matchers {
           Seq(vA, vB, vD, vE)).map {
           _.map(_.key)
         } should contain(path.get)
+
+        G2.bfs(vA.key, vB.key).path.get should be(Seq(vA.key, vB.key))
+        G2.bfs(vA.key, vC.key).path.get should be(Seq(vA.key, vB.key, vC.key))
+
+        val SearchResult(distances1, predecessors1, path1) = G3.bfs("a", "i")
+
+        distances1 should equal(
+          Map("a" -> 0, "c" -> 1, "b" -> 2, "d" -> 2, "f" -> 2, "h" -> 2, "e" -> 3, "g" -> 3, "i" -> 3)
+        )
+
+        predecessors1 should equal(Map("a" -> "a", "b" -> "c", "c" -> "a", "d" -> "c",
+          "f" -> "c", "h" -> "c", "e" -> "d", "g" -> "f", "i" -> "h"))
+
+        path1.get should equal(Seq("a", "c", "h", "i"))
       }
 
     }

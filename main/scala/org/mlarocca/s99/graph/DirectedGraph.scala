@@ -153,8 +153,6 @@ class DirectedGraph[K <% Ordered[K], T](
       queue.enqueue(VertexWithDistance(getVertex(v), distance))
       predecessors.put(v, predecessor)
       distances.put(v, distance)
-      println("XXXXXXXXXXXXXX")
-      println(distances, queue)
     }
 
     if (!hasVertex(source)) {
@@ -169,22 +167,15 @@ class DirectedGraph[K <% Ordered[K], T](
 
     do {
       val current = queue.dequeue()
-      println(current)
-      println(current.vertex.adj)
       val v = getVertex(current.vertex.asInstanceOf[SimpleVertex[K,T]].key)
       current.vertex.adj.foreach { e =>
         val u = e.destination.asInstanceOf[K]
         val newDist = distanceFunction(e.asInstanceOf[WeightedEdge[K,T]]) + current.distance
-        println(u, distances(u), newDist)
         if (distances(u) > newDist) {
           addVertexToQueue(u, current.vertex.asInstanceOf[SimpleVertex[K, T]].key,  newDist)
         }
       }
-      println("**********")
-      println(queue, predecessors.size, n)
-      println(distances)
     } while (queue.nonEmpty && predecessors.size < n)
-println(distances)
     //Converts to immutable maps
     SearchResult(distances.toMap, predecessors.toMap)
   }
@@ -246,7 +237,6 @@ println(distances)
 
     //Converts to immutable maps
     val predecessorsIM = predecessors.toMap
-    println(predecessorsIM)
     SearchResult(distances.toMap, predecessorsIM, reconstructPath[K](predecessorsIM)(source, goal))
   }
 
