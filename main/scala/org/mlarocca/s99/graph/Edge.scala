@@ -1,6 +1,6 @@
 package org.mlarocca.s99.graph
 
-abstract case class Edge[+K, +T](val source: Vertex[K, T], val destination: Vertex[K, T]) {
+abstract case class Edge[+K <% Ordered[K], +T](val source: K, val destination: K) {
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Edge[K, T]]
 
   override def equals(other: Any): Boolean = other match {

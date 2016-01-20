@@ -1,6 +1,6 @@
 package org.mlarocca.s99.graph
 
-abstract case class Vertex[+K, +T](val key: K, val adj: Seq[Edge[K, T]] = Nil) {
+abstract case class Vertex[+K <% Ordered[K], +T](val key: K, val adj: Seq[Edge[K, T]] = Nil) {
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Vertex[K, T]]
 
   override def equals(other: Any): Boolean = other match {
@@ -14,7 +14,7 @@ abstract case class Vertex[+K, +T](val key: K, val adj: Seq[Edge[K, T]] = Nil) {
 
   def compare[J >: K, U >: T](that: Vertex[J, U]) =  this.toTypedString() compare that.toTypedString()
 
-  def neighbors[J >: K, U >: T]: Set[Vertex[J, U]] = adj.map(_.destination).toSet
+  def neighbors[J >: K]: Set[J] = adj.map(_.destination).toSet
 
   private def toTypedString(): String = s"${key.toString}[${key.getClass}}]"
 }

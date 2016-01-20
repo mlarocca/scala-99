@@ -1,16 +1,14 @@
 package org.mlarocca.s99.graph
 
-class LabeledEdge[+K, +T](
-    override val source: SimpleVertex[K, T],
-    override val destination: SimpleVertex[K, T],
+class LabeledEdge[+K <% Ordered[K], +T](
+    override val source: K,
+    override val destination: K,
     val label: T) extends Edge[K, T](source, destination) {
 
   override def canEqual(other: Any): Boolean = {
     lazy val thatEdge = other.asInstanceOf[LabeledEdge[K, T]]
 
-    other.isInstanceOf[LabeledEdge[K, T]] &&
-        source.canEqual(thatEdge.source) &&
-        destination.canEqual(thatEdge.destination)
+    other.isInstanceOf[LabeledEdge[K, T]]
   }
 
   override def hashCode(): Int = (source.hashCode(), destination.hashCode(), label).hashCode()
@@ -19,5 +17,5 @@ class LabeledEdge[+K, +T](
 }
 
 object LabeledEdge {
-  def apply[K](source: SimpleVertex[K, String], dest: SimpleVertex[K, String]) = new LabeledEdge[K, String](source, dest, "")
+  def apply[K <% Ordered[K]](source: K, dest: K) = new LabeledEdge[K, String](source, dest, "")
 }

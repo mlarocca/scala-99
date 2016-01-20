@@ -11,21 +11,21 @@ class LabeledEdgeTest extends FunSpec with Matchers {
     val v1 = new SimpleVertex('v')
 
     it ("should match edges with the same vertices and label") {
-      LabeledEdge(u, v) should equal(LabeledEdge(u, v))
-      new LabeledEdge(u, v, "lab") should equal(new LabeledEdge(u, v, "lab"))
-      LabeledEdge(u, v) should equal(LabeledEdge(u1, v1))
-      new LabeledEdge(u, v, "lab") should equal(new LabeledEdge(u1, v1, "lab"))
+      LabeledEdge(u.key, v.key) should equal(LabeledEdge(u.key, v.key))
+      new LabeledEdge(u.key, v.key, "lab") should equal(new LabeledEdge(u.key, v.key, "lab"))
+      LabeledEdge(u.key, v.key) should equal(LabeledEdge(u1.key, v1.key))
+      new LabeledEdge(u.key, v.key, "lab") should equal(new LabeledEdge(u1.key, v1.key, "lab"))
     }
 
     it ("should not match edges with the same vertices but different label") {
-      new LabeledEdge(u, v, "lab") should not equal(new LabeledEdge(u, v, "lab2"))
-      new LabeledEdge(u, v, "lab") should not equal(new LabeledEdge(u1, v1, "lab3"))
+      new LabeledEdge(u.key, v.key, "lab") should not equal(new LabeledEdge(u.key, v.key, "lab2"))
+      new LabeledEdge(u.key, v.key, "lab") should not equal(new LabeledEdge(u1.key, v1.key, "lab3"))
     }
 
     it ("vertices order should matter") {
-      new LabeledEdge(u, v, "lab") should not equal(new LabeledEdge(v, u, "lab2"))
-      new LabeledEdge(u, v, 21) should not equal(new LabeledEdge(v1, u1, 32))
-      new LabeledEdge(u, v, "21") should not equal(new LabeledEdge(v1, u1, 21))
+      new LabeledEdge(u.key, v.key, "lab") should not equal(new LabeledEdge(v.key, u.key, "lab2"))
+      new LabeledEdge(u.key, v.key, 21) should not equal(new LabeledEdge(v1.key, u1.key, 32))
+      new LabeledEdge(u.key, v.key, "21") should not equal(new LabeledEdge(v1.key, u1.key, 21))
     }
   }
 }
@@ -39,28 +39,28 @@ class WeightedEdgeTest extends FunSpec with Matchers {
     val v1 = new SimpleVertex('v')
 
     it ("should match edges with the same vertices and label") {
-      WeightedEdge(u, v, "lab") should equal(WeightedEdge(u, v, "lab"))
-      WeightedEdge(u, v, "lab") should equal(WeightedEdge(u1, v1, "lab"))
+      WeightedEdge(u.key, v.key, "lab") should equal(WeightedEdge(u.key, v.key, "lab"))
+      WeightedEdge(u.key, v.key, "lab") should equal(WeightedEdge(u1.key, v1.key, "lab"))
     }
 
     it ("should not match edges with the same vertices but different label") {
-      WeightedEdge(u, v, "lab") should not equal(WeightedEdge(u, v, "lab2"))
-      WeightedEdge(u, v, "lab") should not equal(WeightedEdge(u1, v1, "lab3"))
+      WeightedEdge(u.key, v.key, "lab") should not equal(WeightedEdge(u.key, v.key, "lab2"))
+      WeightedEdge(u.key, v.key, "lab") should not equal(WeightedEdge(u1.key, v1.key, "lab3"))
     }
 
     it ("vertices order should matter") {
-      WeightedEdge(u, v, "lab") should not equal(WeightedEdge(v, u, "lab2"))
-      WeightedEdge(u, v, "lab") should not equal(WeightedEdge(v1, u1, "lab3"))
+      WeightedEdge(u.key, v.key, "lab") should not equal(WeightedEdge(v.key, u.key, "lab2"))
+      WeightedEdge(u.key, v.key, "lab") should not equal(WeightedEdge(v1.key, u1.key, "lab3"))
     }
 
     it ("should match edges despite weight") {
-      WeightedEdge(u, v, "lab") should equal(new WeightedEdge(u, v, "lab", 1))
-      new WeightedEdge(u, v, "lab", 23) should equal(new WeightedEdge(u1, v1, "lab", 3.0))
+      WeightedEdge(u.key, v.key, "lab") should equal(new WeightedEdge(u.key, v.key, "lab", 1))
+      new WeightedEdge(u.key, v.key, "lab", 23) should equal(new WeightedEdge(u1.key, v1.key, "lab", 3.0))
     }
 
     it ("should match with LabeledEdges despite weights") {
-      (new LabeledEdge(u, v, "lab"): WeightedEdge[Char, String]) should equal(new WeightedEdge(u, v, "lab", 1))
-      (new LabeledEdge(u, v, "lab"): WeightedEdge[Char, String]) should equal(new WeightedEdge(u, v, "lab", 0))
+      (new LabeledEdge(u.key, v.key, "lab"): WeightedEdge[Char, String]) should equal(new WeightedEdge(u.key, v.key, "lab", 1))
+      (new LabeledEdge(u.key, v.key, "lab"): WeightedEdge[Char, String]) should equal(new WeightedEdge(u.key, v.key, "lab", 0))
     }
   }
 }
