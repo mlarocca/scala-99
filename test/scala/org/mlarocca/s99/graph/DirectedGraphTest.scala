@@ -81,19 +81,19 @@ class DirectedGraphTest extends FunSpec with Matchers {
       val G1 = new DirectedGraph[String, String]().addVertex(vX).addVertex(vY).addVertex(vZ)
       var G2 = G1.addEdge(e1)
       G2.edges should be(Set(e1))
-      G2.getVertex(vX.key).get.adj should equal(Seq(e1))
-      G2.getVertex(vY.key).get.adj should equal(Nil)
-      G2.getVertex(vZ.key).get.adj should equal(Nil)
+      G2.getVertex(vX.key).adj should equal(Seq(e1))
+      G2.getVertex(vY.key).adj should equal(Nil)
+      G2.getVertex(vZ.key).adj should equal(Nil)
       var G3 = G2.addEdge(e2)
       G3.edges should be(Set(e1, e2))
-      G3.getVertex(vX.key).get.adj should equal(Seq(e1))
-      G3.getVertex(vY.key).get.adj should equal(Seq(e2))
-      G3.getVertex(vZ.key).get.adj should equal(Nil)
+      G3.getVertex(vX.key).adj should equal(Seq(e1))
+      G3.getVertex(vY.key).adj should equal(Seq(e2))
+      G3.getVertex(vZ.key).adj should equal(Nil)
       var G4 = G3.addEdge(e3)
       G4.edges should be(Set(e1, e2, e3))
-      G4.getVertex(vX.key).get.adj should equal(Seq(e3, e1))
-      G4.getVertex(vY.key).get.adj should equal(Seq(e2))
-      G4.getVertex(vZ.key).get.adj should equal(Nil)
+      G4.getVertex(vX.key).adj should equal(Seq(e3, e1))
+      G4.getVertex(vY.key).adj should equal(Seq(e2))
+      G4.getVertex(vZ.key).adj should equal(Nil)
     }
 
   }
@@ -182,43 +182,43 @@ class DirectedGraphTest extends FunSpec with Matchers {
   }
 
   describe("reconstructPath") {
-    val v1 = new SimpleVertex[String, String]("v1")
-    val v2 = new SimpleVertex[String, String]("v2")
-    val v3 = new SimpleVertex[String, String]("v3")
-    val v4 = new SimpleVertex[String, String]("v4")
-    val v5 = new SimpleVertex[String, String]("v5")
+    val v1 = "v1"
+    val v2 = "v2"
+    val v3 = "v3"
+    val v4 = "v4"
+    val v5 = "v5"
 
     it("should return a singleton if source and goal match") {
-      val predecessors = Map.empty[SimpleVertex[String, String], SimpleVertex[String, String]]
-      DirectedGraph.reconstructPath(v3, v3, predecessors) should be (Some(Seq(v3)))
+      val predecessors = Map.empty[String, String]
+      DirectedGraph.reconstructPath(predecessors)(v3, v3) should be (Some(Seq(v3)))
     }
 
     it("should reconstruct correct paths") {
-      val predecessors = Map(v5 -> v4, v4->v2, v3->v2, v2 -> v1, v1 -> null)
-      Set[Option[Seq[SimpleVertex[String, String]]]](Some(Seq(v1, v2, v3, v5)), Some(Seq(v1, v2, v4, v5)))
-          .contains(DirectedGraph.reconstructPath(v1, v5, predecessors)) should be(right = true)
-      DirectedGraph.reconstructPath(v1, v4, predecessors) should be (Some(Seq(v1, v2, v4)))
-      DirectedGraph.reconstructPath(v1, v3, predecessors) should be (Some(Seq(v1, v2, v3)))
-      DirectedGraph.reconstructPath(v1, v2, predecessors) should be (Some(Seq(v1, v2)))
-      DirectedGraph.reconstructPath(v4, v5, predecessors) should be (Some(Seq(v4, v5)))
+      val predecessors = Map(v5 -> v4, v4 -> v2, v3 -> v2, v2 -> v1, v1 -> v1)
+      Set[Option[Seq[String]]](Some(Seq(v1, v2, v3, v5)), Some(Seq(v1, v2, v4, v5)))
+          .contains(DirectedGraph.reconstructPath(predecessors)(v1, v5)) should be(right = true)
+      DirectedGraph.reconstructPath(predecessors)(v1, v4) should be (Some(Seq(v1, v2, v4)))
+      DirectedGraph.reconstructPath(predecessors)(v1, v3) should be (Some(Seq(v1, v2, v3)))
+      DirectedGraph.reconstructPath(predecessors)(v1, v2) should be (Some(Seq(v1, v2)))
+      DirectedGraph.reconstructPath(predecessors)(v4, v5) should be (Some(Seq(v4, v5)))
       val predecessors2 = Map(v5 -> v4, v4->v2, v2 -> v1, v1 -> null)
-      DirectedGraph.reconstructPath(v1, v4, predecessors2) should be (Some(Seq(v1, v2, v4)))
+      DirectedGraph.reconstructPath(predecessors)(v1, v4) should be (Some(Seq(v1, v2, v4)))
     }
 
     it("should return None if there is no path") {
       val predecessors = Map(v5 -> v4, v4->v2, v2 -> v1, v1 -> null)
-      DirectedGraph.reconstructPath(v1, v3, predecessors) should be (None)
+      DirectedGraph.reconstructPath(predecessors)(v1, v3) should be (None)
     }
   }
 
   describe("bfs") {
     val G1 = "[a - b, b - c, b - d, c - e, d - e]": DirectedGraph[String, String]
     val G2 = "[a > b, b > c, b > d, c > e, d > e]": DirectedGraph[String, String]
-    val vA = G1.getVertex("a").get
-    val vB = G1.getVertex("b").get
-    val vC = G1.getVertex("c").get
-    val vD = G1.getVertex("d").get
-    val vE = G1.getVertex("e").get
+    val vA = G1.getVertex("a")
+    val vB = G1.getVertex("b")
+    val vC = G1.getVertex("c")
+    val vD = G1.getVertex("d")
+    val vE = G1.getVertex("e")
 
     describe("single source, all destinations") {
       it ("should throw IllegalArgumentException if source vertex is not in the Graph") {
@@ -231,16 +231,17 @@ class DirectedGraphTest extends FunSpec with Matchers {
         }
       }
 
-      it("should compute the correct distances") {
+      it("should compute the correct distances and predecessors") {
         val SearchResult(distances, predecessors, _) = G2.bfs(vA.key)
-        println(G2.edges.foreach(println(_)))
         distances should equal(Map(vA -> 0, vB -> 1, vC -> 2, vD -> 2, vE -> 3).map {
           case (k, v) => k.key -> v
         })
-        Set(Map(vA -> null, vB -> vA, vC -> vB, vD -> vB, vE -> vD),
-          Map(vA -> null, vB -> vA, vC -> vB, vD -> vB, vE -> vC).map {
-            case (u,v) => u.key -> v.key
-          }) should contain(predecessors)
+        Set(Map(vA -> vA, vB -> vA, vC -> vB, vD -> vB, vE -> vD),
+          Map(vA -> vA, vB -> vA, vC -> vB, vD -> vB, vE -> vC)).map {
+          _.map {
+            case (u, v) => u.key -> v.key
+          }
+        } should contain(predecessors)
       }
     }
 
@@ -256,11 +257,32 @@ class DirectedGraphTest extends FunSpec with Matchers {
       }
 
       it ("should throw IllegalArgumentException if goal vertex is not in the Graph") {
-        val v1 = G1.getVertex("a").get.asInstanceOf[SimpleVertex[String, String]]
+        val v1 = G1.getVertex("a").asInstanceOf[SimpleVertex[String, String]]
         a[IllegalArgumentException] should be thrownBy {
           G1.bfs(v1.key, "not here")
         }
       }
+
+      it("should compute the correct distances, predecessors and path") {
+        val SearchResult(distances, predecessors, path) = G2.bfs(vA.key, vE.key)
+
+        distances should equal(Map(vA -> 0, vB -> 1, vC -> 2, vD -> 2, vE -> 3).map {
+          case (k, v) => k.key -> v
+        })
+
+        Set(Map(vA -> vA, vB -> vA, vC -> vB, vD -> vB, vE -> vD),
+          Map(vA -> vA, vB -> vA, vC -> vB, vD -> vB, vE -> vC)).map {
+          _.map {
+            case (u, v) => u.key -> v.key
+          }
+        } should contain(predecessors)
+
+        Set(Seq(vA, vB, vC, vE),
+          Seq(vA, vB, vD, vE)).map {
+          _.map(_.key)
+        } should contain(path.get)
+      }
+
     }
   }
 

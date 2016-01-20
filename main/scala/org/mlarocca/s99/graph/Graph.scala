@@ -20,16 +20,17 @@ abstract class Graph[K, T](_vertices: Seq[Vertex[K, T]] = Nil, _edges: Seq[Edge[
 
   def hasVertex(v: Vertex[K, T]): Boolean = vertices.contains(v)
   def hasVertex(key: K): Boolean = verticesMap.contains(key)
-  def getVertex(key: K): Option[Vertex[K, T]] = verticesMap.get(key)
+  def getVertex(key: K): Vertex[K, T] = verticesMap(key)
+  def getVertexOption(key: K): Option[Vertex[K, T]] = verticesMap.get(key)
 
   def hasEdge(e: Edge[K, T]): Boolean = edges.contains(e)
   def hasEdge(u: K, v: K): Boolean = edges.exists{ e =>
     e.source == u && e.destination == v
   }
 
-  def edgesFrom(label: K): Set[Edge[K, T]] = getVertex(label).map(_.adj).getOrElse(Nil).toSet
+  def edgesFrom(label: K): Set[Edge[K, T]] = getVertexOption(label).map(_.adj).getOrElse(Nil).toSet
   def edgesTo(label: K): Set[Edge[K, T]] = {
-    getVertex(label).map { v =>
+    getVertexOption(label).map { v =>
       edges.filter(_.destination == v)
     }.getOrElse(Set.empty)
   }

@@ -10,7 +10,8 @@ class DirectedGraph[K <% Ordered[K], T](
     _edges: Seq[WeightedEdge[K, T]] = Nil) extends Graph[K, T](_vertices, _edges) {
   import graph.DirectedGraph._
 
-  override def getVertex(key: K): Option[SimpleVertex[K, T]] = super.getVertex(key).asInstanceOf[Option[SimpleVertex[K,T]]]
+  override def getVertex(key: K): SimpleVertex[K, T] = super.getVertex(key).asInstanceOf[SimpleVertex[K,T]]
+  override def getVertexOption(key: K): Option[SimpleVertex[K, T]] = super.getVertexOption(key).asInstanceOf[Option[SimpleVertex[K,T]]]
 
 
   @throws[IllegalArgumentException]
@@ -47,7 +48,7 @@ class DirectedGraph[K <% Ordered[K], T](
       if (!hasVertex(eK.source) || !hasVertex(eK.destination) || hasEdge(eK)) {
         None
       } else {
-        val source = getVertex(eK.source).get.asInstanceOf[SimpleVertex[K, T]]
+        val source = getVertex(eK.source).asInstanceOf[SimpleVertex[K, T]]
         val newSource = new SimpleVertex[J, U](source.key, eK +: source.adj)
         val newVerticesSeq = newSource +: _vertices.filter(_ != source)
         Some(new DirectedGraph(newVerticesSeq, e +: _edges))
@@ -121,7 +122,7 @@ class DirectedGraph[K <% Ordered[K], T](
     val distances = mutable.Map[K, Double]().withDefaultValue(Double.MaxValue)
 
     def doDfs(v: K, entryTime: Int): Int = {
-      val exitTime: Int = 1 + getVertex(v).get.neighbors.foldLeft(entryTime) { (dist: Int, u: K) =>
+      val exitTime: Int = 1 + getVertex(v).neighbors.foldLeft(entryTime) { (dist: Int, u: K) =>
         doDfs(u, dist + 1)
       }
       distances.+(v -> exitTime)
@@ -149,9 +150,10 @@ class DirectedGraph[K <% Ordered[K], T](
         predecessors: mutable.Map[K, K],
         distances: mutable.Map[K, Double])
         (v: K, predecessor: K, distance: Double) {
-      queue.enqueue(VertexWithDistance(getVertex(v).get, distance))
-      predecessors.+(v -> predecessor)
-      distances.+(v -> distance)
+      queue.enqueue(VertexWithDistance(getVertex(v), distance))
+      predecessors.put(v, predecessor)
+      distances.put(v, distance)
+      println("XXXXXXXXXXXXXX")
       println(distances, queue)
     }
 
@@ -180,8 +182,9 @@ class DirectedGraph[K <% Ordered[K], T](
       }
       println("**********")
       println(queue, predecessors.size, n)
+      println(distances)
     } while (queue.nonEmpty && predecessors.size < n)
-
+println(distances)
     //Converts to immutable maps
     SearchResult(distances.toMap, predecessors.toMap)
   }
@@ -205,9 +208,9 @@ class DirectedGraph[K <% Ordered[K], T](
         predecessors: mutable.Map[K, K],
         distances: mutable.Map[K, Double])
         (v: K, predecessor: K, distance: Double) {
-      queue.enqueue(VertexWithDistance(getVertex(v).get, distance))
-      predecessors.+(v -> predecessor)
-      distances.+(v -> distance)
+      queue.enqueue(VertexWithDistance(getVertex(v), distance))
+      predecessors.put(v, predecessor)
+      distances.put(v, distance)
     }
 
     if (!hasVertex(source)) {
@@ -242,7 +245,9 @@ class DirectedGraph[K <% Ordered[K], T](
     } while (queue.nonEmpty)
 
     //Converts to immutable maps
-    SearchResult(distances.toMap, predecessors.toMap)
+    val predecessorsIM = predecessors.toMap
+    println(predecessorsIM)
+    SearchResult(distances.toMap, predecessorsIM, reconstructPath[K](predecessorsIM)(source, goal))
   }
 
 }
@@ -290,14 +295,10 @@ object DirectedGraph {
       throw new IllegalArgumentException(UnParsableStringExceptionMessage.format(s))
   }
 
-  private[graph] def reconstructPath[K, T](
-      source: SimpleVertex[K, T],
-      goal: SimpleVertex[K,T],
-      predecessors: Map[SimpleVertex[K,T], SimpleVertex[K,T]]): Option[Seq[SimpleVertex[K,T]]] = {
+  private[graph] def reconstructPath[K](predecessors: Map[K, K])(source: K, goal: K): Option[Seq[K]] = {
     val n = predecessors.size
-    def recursivePath(current: Option[SimpleVertex[K,T]], counter: Int): Option[Seq[SimpleVertex[K,T]]] = current match {
+    def recursivePath(current: Option[K], counter: Int): Option[Seq[K]] = current match {
       case None => None
-      case Some(null) => Some(Nil)
       case Some(`source`) => Some(Seq(source))
       case _ if counter >= n => None //the path would be longer than the number of vertices
       case Some(v) =>
@@ -316,7 +317,7 @@ object DirectedGraph {
   case class SearchResult[K <% Ordered[K]](
       distances: Map[K, Double],
       predecessors: Map[K, K],
-      path: Seq[K] = Nil)
+      path: Option[Seq[K]] = None)
 
   private[graph] val EdgesListSeparator = ", "
   private[graph] lazy val ValidGraphString = """\[((?:(?:[^\[\]]+)(?:,\s[^\[\],\s]+)*)?)\]""".r
