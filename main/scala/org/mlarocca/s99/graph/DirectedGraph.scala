@@ -118,18 +118,34 @@ class DirectedGraph[K <% Ordered[K], T](
 
   @throws[IllegalArgumentException]
   override def dfs(source: K): SearchResult[K]  = {
+    val notVisited = mutable.Set.empty[K] ++ vertices.map(_.key)
     val predecessors = mutable.Map[K, K]()
     val distances = mutable.Map[K, Double]().withDefaultValue(Double.MaxValue)
 
-    def doDfs(v: K, entryTime: Int): Int = {
+    if (!hasVertex(source)) {
+      throw new IllegalArgumentException(IllegalVertexExceptionMessage.format(source))
+    }
+
+    def doDfs(v: K, pred: K, entryTime: Int): Int = {
+      notVisited.remove(v)
+      predecessors.put(v, pred)
       val exitTime: Int = 1 + getVertex(v).neighbors.foldLeft(entryTime) { (dist: Int, u: K) =>
-        doDfs(u, dist + 1)
+        if (notVisited.contains(u))
+          doDfs(u, v, dist + 1)
+        else
+          dist
       }
-      distances.+(v -> exitTime)
+      distances.put(v, exitTime)
       exitTime
     }
 
-    doDfs(source, 0)
+    doDfs(source, source, 0)
+
+    while (notVisited.nonEmpty) {
+      val u = notVisited.head
+      doDfs(u, u, distances.values.max.toInt + 1)
+    }
+
     //Converts to immutable maps
     SearchResult(distances.toMap, predecessors.toMap)
   }
@@ -253,6 +269,8 @@ object DirectedGraph {
         .map(_.trim)
         .filter(!_.isEmpty)
         .map {
+          case ValidWeightedEdgeString(src, verse, dst, weight) =>
+            EdgeDecomposition(src, verse, dst, Some(weight.toDouble))
           case ValidEdgeString(src, verse, dst) =>
             EdgeDecomposition(src, verse, dst)
           case _ =>
@@ -260,12 +278,20 @@ object DirectedGraph {
         }
 
       val newVertices = edgesDec.flatMap {
-        case EdgeDecomposition(src, verse, dst) =>
+        case EdgeDecomposition(src, _, dst, _) =>
           Set(src, dst)
       }.toSet[String]
 
       val newEdges = edgesDec.flatMap {
-        case EdgeDecomposition(src, verse, dst) => verse match {
+        case EdgeDecomposition(src, verse, dst, Some(weight)) => verse match {
+          case ">" =>
+            Seq(WeightedEdge[String](src, dst, weight = weight))
+          case "-" if src != dst =>
+            Seq(WeightedEdge[String](src, dst, weight = weight), WeightedEdge[String](dst, src, weight = weight))
+          case "-" =>
+            Seq(WeightedEdge[String](src, dst, weight = weight))
+        }
+        case EdgeDecomposition(src, verse, dst, None) => verse match {
           case ">" =>
             Seq(WeightedEdge[String](src, dst))
           case "-" if src != dst =>
@@ -311,11 +337,14 @@ object DirectedGraph {
 
   private[graph] val EdgesListSeparator = ", "
   private[graph] lazy val ValidGraphString = """\[((?:(?:[^\[\]]+)(?:,\s[^\[\],\s]+)*)?)\]""".r
-  private[graph] lazy val ValidEdgeString = """([^\[\]\->,]+)\s(\-|>)\s([^\[\]\->,]+)""".r
+  //Note: Greedy quantifiers in the groups below
+  private[graph] lazy val ValidEdgeString = """([^\[\]\(\)\->,]+?)\s(\-|>)\s([^\[\]\(\)\->,]+?)""".r
+  private[graph] lazy val ValidWeightedEdgeString = """([^\[\]\(\)\->,]+?)\s(\-|>)\s([^\[\]\(\)\->,]+?)\s+\((\d+(?:\.\d+)*)\)""".r
+
   private[graph] val UnParsableStringExceptionMessage = "String %s is not a valid Graph"
   private[graph] val IllegalVertexExceptionMessage = "Vertex %s is not part of this Graph"
 
-  private case class EdgeDecomposition(src: String, verse: String, dst: String)
+  private case class EdgeDecomposition(src: String, verse: String, dst: String, weight: Option[Double] = None)
   private case class VertexWithDistance(vertex: SimpleVertex[_, _], distance: Double)
 
   private final val VertexWithDistanceOrdering = new Ordering[VertexWithDistance] {

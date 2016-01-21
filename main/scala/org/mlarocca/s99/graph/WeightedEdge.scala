@@ -15,6 +15,7 @@ class WeightedEdge[+K <% Ordered[K], +T](
 
 object WeightedEdge {
   def apply[K <% Ordered[K]](source: K, dest: K) = new WeightedEdge[K, String](source, dest, "", 0)
+  def apply[K <% Ordered[K]](source: K, dest: K, weight: Double) = new WeightedEdge[K, String](source, dest, "", weight)
   def apply[K <% Ordered[K], T](source: K, dest: K, label: T) = new WeightedEdge[K, T](source, dest, label, 0)
 
   implicit def labeled2WeightedEdge[K <% Ordered[K], T](e: LabeledEdge[K, T]): WeightedEdge[K, T] = WeightedEdge(e.source, e.destination, e.label)
