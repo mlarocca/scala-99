@@ -21,5 +21,7 @@ Binary Trees Layout (X)
 MultiTrees (X)
 
 Graphs (O)
+
     Search (BFS, DFS, Dijkstra, A*) (X) 
+    
     Minimum Spanning Trees ()
