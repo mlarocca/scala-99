@@ -13,7 +13,6 @@ class DirectedGraph[K <% Ordered[K], T](
   override def getVertex(key: K): SimpleVertex[K, T] = super.getVertex(key).asInstanceOf[SimpleVertex[K,T]]
   override def getVertexOption(key: K): Option[SimpleVertex[K, T]] = super.getVertexOption(key).asInstanceOf[Option[SimpleVertex[K,T]]]
 
-
   @throws[IllegalArgumentException]
   override def addVertex[J >: K <% Ordered[J], U >: T](label: J): DirectedGraph[J, U] = {
     catching(classOf[ArithmeticException]).opt {
@@ -160,24 +159,33 @@ class DirectedGraph[K <% Ordered[K], T](
    */
   @throws[NoSuchElementException]
   def allAcyclicPaths(start: K, end: K): Set[Seq[SimpleVertex[K, T]]] = {
-    val visited = mutable.Set[K]()
     val endVertex = getVertex(end)
 
-    def dfsPath(current: K, path: Seq[SimpleVertex[K, T]]): Set[Seq[SimpleVertex[K, T]]] = {
-      visited.+(current)
+    def dfsPath(current: K, path: Seq[SimpleVertex[K, T]], visited: Set[K]): Set[Seq[SimpleVertex[K, T]]] = {
       getVertex(current).neighbors[K].flatMap {
         _ match {
           case `end` =>
             Set(endVertex +: path)
           case v if !visited.contains(v) =>
-            dfsPath(v, getVertex(v) +: path)
+            dfsPath(v, getVertex(v) +: path, visited.+(v))
           case _ =>
             Nil
         }
       }
     }
+    dfsPath(start, Seq(getVertex(start)), Set(start)).map(_.reverse)
+  }
 
-    dfsPath(start, Seq(getVertex(start))).map(_.reverse)
+  /**
+   * Return all the simple cyclic paths starting and ending on one vertex.
+   *
+   * @param start The starting point for the path.
+   * @throws NoSuchElementException if the vertices does not belong to the graph
+   * @return
+   */
+  @throws[NoSuchElementException]
+  def allSimpleCycles(start: K): Set[Seq[SimpleVertex[K, T]]] = {
+    allAcyclicPaths(start, start)
   }
 
   @throws[IllegalArgumentException]

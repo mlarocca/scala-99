@@ -477,10 +477,6 @@ class DirectedGraphTest extends FunSpec with Matchers {
   describe("allAcyclicPaths") {
     val G1 = "[p > q (9), m > q (7), k, p > m (5)]": DirectedGraph[String, String]
 
-    val vP = G1.getVertex("p")
-    val vQ = G1.getVertex("q")
-    val vM = G1.getVertex("m")
-
     it ("should throw IllegalArgumentException if source vertex is not in the Graph") {
       a[NoSuchElementException] should be thrownBy {
         G1.allAcyclicPaths("fa", "q")
@@ -494,8 +490,28 @@ class DirectedGraphTest extends FunSpec with Matchers {
     }
 
     it("should return the set of all acyclic paths") {
-      G1.allAcyclicPaths("p", "q") should be(Set(Seq("p", "q").map(G1.getVertex), Seq("p", "m", "q")map(G1.getVertex)))
+      G1.allAcyclicPaths("p", "q") should be(Set(Seq("p", "q").map(G1.getVertex), Seq("p", "m", "q").map(G1.getVertex)))
       G1.allAcyclicPaths("p", "k") should be(Set.empty)
+    }
+  }
+
+  describe("allSimpleCycles") {
+    val G1 = "[b - c, c - f, g > h, d, f - b, k > f, h > g]": DirectedGraph[String, String]
+    val G2 = "[b - c, f - c, g - h, d, f - b, k - f]": DirectedGraph[String, String]
+
+    it ("should throw IllegalArgumentException if source vertex is not in the Graph") {
+      a[NoSuchElementException] should be thrownBy {
+        G1.allSimpleCycles("fa")
+      }
+    }
+
+    it("should return the set of all acyclic paths") {
+      G1.allSimpleCycles("f") should be(Set(
+        Seq("f", "c", "b", "f"), Seq("f", "b", "c", "f"), Seq("f", "c", "f"), Seq("f", "b", "f")
+      ).map(_.map(G1.getVertex)))
+      G2.allSimpleCycles("f") should be(Set(
+        Seq("f", "c", "b", "f"), Seq("f", "b", "c", "f"), Seq("f", "c", "f"), Seq("f", "b", "f"), Seq("f", "k", "f")
+      ).map(_.map(G1.getVertex)))
     }
   }
 }
