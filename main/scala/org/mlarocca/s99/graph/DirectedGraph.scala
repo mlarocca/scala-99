@@ -150,6 +150,36 @@ class DirectedGraph[K <% Ordered[K], T](
     SearchResult(distances.toMap, predecessors.toMap)
   }
 
+  /**
+   * Return all the acyclic paths between two vertices.
+   *
+   * @param start The starting point for the path.
+   * @param end The destination in the path.
+   * @throws NoSuchElementException if the vertices does not belong to the graph
+   * @return
+   */
+  @throws[NoSuchElementException]
+  def allAcyclicPaths(start: K, end: K): Set[Seq[SimpleVertex[K, T]]] = {
+    val visited = mutable.Set[K]()
+    val endVertex = getVertex(end)
+
+    def dfsPath(current: K, path: Seq[SimpleVertex[K, T]]): Set[Seq[SimpleVertex[K, T]]] = {
+      visited.+(current)
+      getVertex(current).neighbors[K].flatMap {
+        _ match {
+          case `end` =>
+            Set(endVertex +: path)
+          case v if !visited.contains(v) =>
+            dfsPath(v, getVertex(v) +: path)
+          case _ =>
+            Nil
+        }
+      }
+    }
+
+    dfsPath(start, Seq(getVertex(start))).map(_.reverse)
+  }
+
   @throws[IllegalArgumentException]
   private[graph] def singleSourceSearchTemplate(
       distanceFunction: (WeightedEdge[K,T]) => Double)(
@@ -273,16 +303,22 @@ object DirectedGraph {
             EdgeDecomposition(src, verse, dst, Some(weight.toDouble))
           case ValidEdgeString(src, verse, dst) =>
             EdgeDecomposition(src, verse, dst)
+          case ValidVertexString(v) =>
+            EdgeDecomposition(v, null, null)
           case _ =>
             throw new IllegalArgumentException(UnParsableStringExceptionMessage.format(s))
         }
 
       val newVertices = edgesDec.flatMap {
+        case EdgeDecomposition(v, null, null, _) =>
+          Set(v)
         case EdgeDecomposition(src, _, dst, _) =>
           Set(src, dst)
       }.toSet[String]
 
       val newEdges = edgesDec.flatMap {
+        case EdgeDecomposition(v, null, null, _) =>
+          Nil
         case EdgeDecomposition(src, verse, dst, Some(weight)) => verse match {
           case ">" =>
             Seq(WeightedEdge[String](src, dst, weight = weight))
@@ -340,6 +376,7 @@ object DirectedGraph {
   //Note: Greedy quantifiers in the groups below
   private[graph] lazy val ValidEdgeString = """([^\[\]\(\)\->,]+?)\s(\-|>)\s([^\[\]\(\)\->,]+?)""".r
   private[graph] lazy val ValidWeightedEdgeString = """([^\[\]\(\)\->,]+?)\s(\-|>)\s([^\[\]\(\)\->,]+?)\s+\((\d+(?:\.\d+)*)\)""".r
+  private[graph] lazy val ValidVertexString = """([^\[\]\(\)\->,]+?)""".r
 
   private[graph] val UnParsableStringExceptionMessage = "String %s is not a valid Graph"
   private[graph] val IllegalVertexExceptionMessage = "Vertex %s is not part of this Graph"

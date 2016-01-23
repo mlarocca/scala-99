@@ -133,14 +133,6 @@ class DirectedGraphTest extends FunSpec with Matchers {
       }
 
       a[IllegalArgumentException] should be thrownBy {
-        DirectedGraph.fromString("[a < b]")
-      }
-
-      a[IllegalArgumentException] should be thrownBy {
-        DirectedGraph.fromString("[a]")
-      }
-
-      a[IllegalArgumentException] should be thrownBy {
         DirectedGraph.fromString("[a- b]")
       }
 
@@ -191,6 +183,11 @@ class DirectedGraphTest extends FunSpec with Matchers {
       DirectedGraph.fromString("[  ]") should equal(new DirectedGraph[String, String]())
     }
 
+    it("should parse single vertices") {
+      DirectedGraph.fromString("[uS]") should equal(new DirectedGraph[String, String](Seq(uS), Nil))
+      DirectedGraph.fromString("[ uS, vS ]") should equal(new DirectedGraph[String, String](Seq(uS, vS)))
+    }
+
     it("should parse any ordered sequence of edges into a DirectedGraph") {
       DirectedGraph.fromString("[uS - uS]") should equal(new DirectedGraph[String, String](Seq(uS), Seq(e1S)))
       DirectedGraph.fromString("[uS - uS, uS > vS, vS > 2]") should equal(DirectedGraph(Seq(uS, vS, v2S), Seq(e1S, e2S, e3S)))
@@ -208,6 +205,7 @@ class DirectedGraphTest extends FunSpec with Matchers {
     it("should be tolerant to redundant spaces") {
       DirectedGraph.fromString("[ uS - uS ]") should equal(new DirectedGraph[String, String](Seq(uS), Seq(e1S)))
       DirectedGraph.fromString("[uS - uS ]") should equal(new DirectedGraph[String, String](Seq(uS), Seq(e1S)))
+      DirectedGraph.fromString("[uS - uS ,  vS  ]") should equal(new DirectedGraph[String, String](Seq(uS, vS), Seq(e1S)))
       DirectedGraph.fromString("[uS - uS,  uS > vS , vS > 2 ]") should equal(DirectedGraph(Seq(uS, vS, v2S), Seq(e1S, e2S, e3S)))
       DirectedGraph.fromString("[ uS - uS   (5), ]") should equal(new DirectedGraph[String, String](Seq(uS), Seq(e1W)))
     }
@@ -473,6 +471,31 @@ class DirectedGraphTest extends FunSpec with Matchers {
 
         predecessors should equal(Map("e" -> "i", "f" -> "d", "a" -> "c", "i" -> "g", "b" -> "c", "g" -> "f", "c" -> "f", "h" -> "c", "d" -> "d"))
       }
+    }
+  }
+
+  describe("allAcyclicPaths") {
+    val G1 = "[p > q (9), m > q (7), k, p > m (5)]": DirectedGraph[String, String]
+
+    val vP = G1.getVertex("p")
+    val vQ = G1.getVertex("q")
+    val vM = G1.getVertex("m")
+
+    it ("should throw IllegalArgumentException if source vertex is not in the Graph") {
+      a[NoSuchElementException] should be thrownBy {
+        G1.allAcyclicPaths("fa", "q")
+      }
+    }
+
+    it ("should throw IllegalArgumentException if destination vertex is not in the Graph") {
+      a[NoSuchElementException] should be thrownBy {
+        G1.allAcyclicPaths("q", "RER")
+      }
+    }
+
+    it("should return the set of all acyclic paths") {
+      G1.allAcyclicPaths("p", "q") should be(Set(Seq("p", "q").map(G1.getVertex), Seq("p", "m", "q")map(G1.getVertex)))
+      G1.allAcyclicPaths("p", "k") should be(Set.empty)
     }
   }
 }
