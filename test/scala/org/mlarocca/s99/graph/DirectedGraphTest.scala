@@ -1,9 +1,17 @@
 package org.mlarocca.s99.graph
 
 import org.scalatest._
-import DirectedGraph.{EmptyGraph, SearchResult}
+import org.mlarocca.s99.graph.DirectedGraph.{DfsSearchResult, EmptyGraph, SearchResult}
 
 class DirectedGraphTest extends FunSpec with Matchers {
+
+  val GraphUndirectedPath = "[a - b (2.2), b - c (4.8), c - d (9.8), d - e (8)]": DirectedGraph[String, String]
+  val GraphDirectedPath = "[a > b (2.2), b > c (4.8), c > d (9.8), d > e (8)]": DirectedGraph[String, String]
+  val GraphExample1 = "[c > a, c > b, c > d, f > c, c > h, d > e, d > f, i > e, f > g, g > i, h > i]": DirectedGraph[String, String]
+  val GraphSimpleCycle = "[a > b, b > c, c > d, d > e, e > a]": DirectedGraph[String, String]
+  val GraphDisconnected = "[a > c, c > b, c > d, e > f, f > g, g > e]": DirectedGraph[String, String]
+  val GraphDisconnectedAcyclic = "[a > c, c > b, c > d, e > f, f > g]": DirectedGraph[String, String]
+
   val u = new SimpleVertex[Char, String]('u')
   val v = SimpleVertex('v')
   val uTwin = SimpleVertex('u')
@@ -422,55 +430,112 @@ class DirectedGraphTest extends FunSpec with Matchers {
   }
 
   describe("dfs") {
-    val G1 = "[a - b (2.2), b - c (4.8), c - d (9.8), d - e (8)]": DirectedGraph[String, String]
-    val G2 = "[a > b (2.2), b > c (4.8), c > d (9.8), d > e (8)]": DirectedGraph[String, String]
-    val G3 = "[c > a, c > b, c > d, f > c, c > h, d > e, d > f, i > e, f > g, g > i, h > i]": DirectedGraph[String, String]
 
-    val vA = G1.getVertex("a")
-    val vB = G1.getVertex("b")
-    val vC = G1.getVertex("c")
-    val vD = G1.getVertex("d")
-    val vE = G1.getVertex("e")
-
-    it ("should throw IllegalArgumentException if source vertex is not in the Graph") {
-      a[IllegalArgumentException] should be thrownBy {
-        G1.dfs("fa")
-      }
-
-      a[IllegalArgumentException] should be thrownBy {
-        G2.dfs("fa")
-      }
-    }
+    val vA = GraphUndirectedPath.getVertex("a")
+    val vB = GraphUndirectedPath.getVertex("b")
+    val vC = GraphUndirectedPath.getVertex("c")
+    val vD = GraphUndirectedPath.getVertex("d")
+    val vE = GraphUndirectedPath.getVertex("e")
 
     describe("on a path graph") {
       it("should mark the visiting time correctly for starting from the real source ") {
-        val SearchResult(distances, predecessors, _) = G1.dfs(vA.key)
-        distances should equal(Map(vA -> 9, vB -> 8, vC -> 7, vD -> 6, vE -> 5).map {
+        val DfsSearchResult(exitTimes, predecessors, isAcyclic, connectedComponents) = GraphUndirectedPath.dfs(Some("a"))
+        exitTimes should equal(Map(vA -> 5, vB -> 4, vC -> 3, vD -> 2, vE -> 1).map {
           case (k, v) => k.key -> v
         })
         predecessors should equal(Map(vA -> vA, vB -> vA, vC -> vB, vD -> vC, vE -> vD).map {
           case (k, v) => k.key -> v.key
         })
+        isAcyclic should be(false)
+        connectedComponents should be(1)
       }
 
-      it("should mark the visiting time correctly for starting from an intermediate vertex ") {
-        val SearchResult(distances, predecessors, _) = G2.dfs(vC.key)
-        distances should equal(Map(vA -> 9, vB -> 8, vC -> 5, vD -> 4, vE -> 3).map {
+      it("should mark the visiting time correctly for starting from an intermediate vertex") {
+        val DfsSearchResult(exitTimes, predecessors, isAcyclic, connectedComponents) = GraphDirectedPath.dfs(Some("c"))
+        exitTimes should equal(Map(vA -> 5, vB -> 4, vC -> 3, vD -> 2, vE -> 1).map {
           case (k, v) => k.key -> v
         })
         predecessors should equal(Map(vA -> vA, vB -> vA, vC -> vC, vD -> vC, vE -> vD).map {
           case (k, v) => k.key -> v.key
         })
+        isAcyclic should be(true)
+        connectedComponents should be(2)
       }
     }
 
-    describe("on a more complex graph") {
-      it("should mark vertices' exit time correctly") {
-        val SearchResult(distances, predecessors, _) = G3.dfs(vD.key)
-        distances should equal(Map("e" -> 5.0, "f" -> 16.0, "a" -> 14.0, "i" -> 6.0, "b" -> 12.0, "g" -> 7.0, "c" -> 15.0, "h" -> 10.0, "d" -> 17.0))
+    describe("on a cycle") {
+      it("should mark vertices' exit time correctly, recognize cycle") {
+        val DfsSearchResult(distances, predecessors, isAcyclic, connectedComponents) = GraphSimpleCycle.dfs(Some("c"))
+        distances should equal(Map("b" -> 1.0, "a" -> 2.0, "e" -> 3.0, "d" -> 4.0, "c" -> 5.0))
 
-        predecessors should equal(Map("e" -> "i", "f" -> "d", "a" -> "c", "i" -> "g", "b" -> "c", "g" -> "f", "c" -> "f", "h" -> "c", "d" -> "d"))
+        predecessors should equal(Map("e" -> "d", "d" -> "c", "c" -> "c", "b" -> "a", "a" -> "e"))
+        isAcyclic should be(false)
+        connectedComponents should be(1)
       }
+    }
+
+    describe("on more complex graphs") {
+      it("should mark vertices' exit time correctly") {
+        val DfsSearchResult(distances, predecessors, isAcyclic, connectedComponents) = GraphExample1.dfs()
+        distances should equal(Map("e" -> 1.0, "f" -> 9.0, "a" -> 7.0, "i" -> 2.0, "b" -> 6.0, "g" -> 3.0, "c" -> 8.0, "h" -> 4.0, "d" -> 5.0))
+
+        predecessors should equal(Map("e" -> "i", "f" -> "f", "a" -> "c", "i" -> "g", "b" -> "c", "g" -> "f", "c" -> "f", "h" -> "c", "d" -> "c"))
+        isAcyclic should be(true)
+        connectedComponents should be(1)
+      }
+      it("should count 2 different connected components") {
+        val DfsSearchResult(distances, predecessors, isAcyclic, connectedComponents) = GraphDisconnected.dfs(Some("a"))
+        isAcyclic should be(false)
+        connectedComponents should be(2)
+      }
+    }
+  }
+
+  describe("isConnected") {
+    it("should return true for connected graphs") {
+      GraphUndirectedPath.isConnected() should be(true)
+      GraphDirectedPath.isConnected() should be(true)
+      GraphSimpleCycle.isConnected() should be(true)
+      GraphExample1.isConnected() should be(true)
+    }
+
+    it("should return false for a disconnected graphs") {
+      GraphDisconnected.isConnected() should be(false)
+    }
+
+    it("should return false for the empty graph") {
+      new DirectedGraph[Int, Int]().isConnected() should be(false)
+    }
+  }
+
+  describe("isAcyclic") {
+    it("should return true for paths and acyclic graphs") {
+      GraphDirectedPath.isAcyclic() should be(true)
+      GraphExample1.isAcyclic() should be(true)
+    }
+
+    it("should return false for a disconnected graphs") {
+      GraphUndirectedPath.isAcyclic() should be(false)
+      GraphSimpleCycle.isAcyclic() should be(false)
+      GraphDisconnected.isAcyclic() should be(false)
+    }
+  }
+
+  describe("isTree") {
+    it("should return false for the empty graph") {
+      new DirectedGraph[Int, Int]().isTree() should be(false)
+    }
+
+    it("should return true for connected acyclic graphs") {
+      GraphDirectedPath.isTree() should be(true)
+      GraphExample1.isTree() should be(true)
+    }
+
+    it("should return false otherwise") {
+      GraphUndirectedPath.isTree() should be(false)
+      GraphSimpleCycle.isTree() should be(false)
+      GraphDisconnected.isTree() should be(false)
+      GraphDisconnectedAcyclic.isTree() should be(false)
     }
   }
 

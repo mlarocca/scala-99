@@ -72,6 +72,29 @@ class DirectedGraph[K <% Ordered[K], T](
   }
 
   /**
+   * Is the graph connected?
+   * To ascertain it, we run a dfs starting from the largest vertex in the topological order:
+   * the graph is connected iff it is possible to reach every other vertex from it.
+   * An empty graph is considered not connected.
+   *
+   * @return
+   */
+  def isConnected(): Boolean = {
+    //empty graph will be considered not connected
+    topologicalSort().headOption.exists { v =>
+      val DfsSearchResult(_, _, _, connectedComponents) = dfs(Some(v.key))
+      connectedComponents == 1
+    }
+  }
+
+  def isAcyclic(): Boolean = {
+    val DfsSearchResult(_, _, acyclic, _) = dfs()
+    acyclic
+  }
+
+  def isTree(): Boolean = isConnected() && isAcyclic()
+
+  /**
    * Single source all destinations bfs search.
    *
    * @return
@@ -115,38 +138,71 @@ class DirectedGraph[K <% Ordered[K], T](
     aStarTemplate(_.weight, (_, _) => 0)(source, goal)
   }
 
-  @throws[IllegalArgumentException]
-  override def dfs(source: K): SearchResult[K]  = {
+  /**
+   * Computes the DFS for the graph, either starting from a random vertex or from the one passed as optinal argument.
+   * If the graph is not connected, performs several DFS searches until all the vertices are visited.
+   *
+   * @param start Optionally a starting point can be provided.
+   * @throws NoSuchElementException If start is passed and it's not a valid vertex.
+   * @return It returns a complex result with:
+   *         1. The exit times for each and all vertices (used for topological sort).
+   *         2. The predecessors for each vertex. Start vertices for each DFSCycle are predecessors of themselves.
+   *         3. A boolean showing if the graph is acyclic.
+   *         4. The number of connected components in the graph.
+   */
+  @throws[NoSuchElementException]
+  override def dfs(start: Option[K] = None): DfsSearchResult[K]  = {
     val notVisited = mutable.Set.empty[K] ++ vertices.map(_.key)
     val predecessors = mutable.Map[K, K]()
-    val distances = mutable.Map[K, Double]().withDefaultValue(Double.MaxValue)
+    val exitTimes = mutable.Map[K, Double]().withDefaultValue(Double.MaxValue)
 
-    if (!hasVertex(source)) {
-      throw new IllegalArgumentException(IllegalVertexExceptionMessage.format(source))
-    }
-
-    def doDfs(v: K, pred: K, entryTime: Int): Int = {
+    def doDfs(v: K, pred: K, entryTime: Int, notVisited: mutable.Set[K]): (Int, Boolean) = {
       notVisited.remove(v)
       predecessors.put(v, pred)
-      val exitTime: Int = 1 + getVertex(v).neighbors.foldLeft(entryTime) { (dist: Int, u: K) =>
-        if (notVisited.contains(u))
-          doDfs(u, v, dist + 1)
-        else
-          dist
+      val (exitTime, isAcyclic) = getVertex(v).neighbors.foldLeft((entryTime, true)) { (accum: (Int, Boolean), u: K) =>
+        val (time, acyclic) = accum
+        if (notVisited.contains(u)) {
+          val (eTimeR, acyclicR) = doDfs(u, v, time, notVisited)
+          (eTimeR, acyclicR && acyclic)
+        } else {
+          //It's acyclic iff the vertex is "Black", i.e. it was visited in a prev call to dfsCycle and form u it was
+          //not possible to reach v. If u is "Gray", then we arrived to v from u, and there is a cycle.
+          (time, exitTimes.contains(u))
+        }
       }
-      distances.put(v, exitTime)
-      exitTime
+      exitTimes.put(v, 1 + exitTime)
+      (1 + exitTime, isAcyclic)
     }
 
-    doDfs(source, source, 0)
-
-    while (notVisited.nonEmpty) {
-      val u = notVisited.head
-      doDfs(u, u, distances.values.max.toInt + 1)
+    def dfsCycle(notVisited: mutable.Set[K], time: Int, next: Option[K] = None): (Int, Boolean) = {
+      if (notVisited.isEmpty) {
+        (0, true)
+      } else {
+        val u = next.getOrElse(notVisited.head)
+        val (exitTime, isAcyclicComponent) = doDfs(u, u, time, notVisited)
+        val (components, isAcyclic) = dfsCycle(notVisited, exitTime)
+        (1 + components, isAcyclic && isAcyclicComponent)
+      }
     }
+
+    val (components, isAcyclic) = dfsCycle(notVisited, 0, start)
 
     //Converts to immutable maps
-    SearchResult(distances.toMap, predecessors.toMap)
+    DfsSearchResult(exitTimes.toMap, predecessors.toMap, isAcyclic, components)
+  }
+
+  /**
+   * Topological order of the vertices.
+   * The order is well defined only for a subset of all graphs.
+   * For most graphs, the order may vary on execution.
+   * For acyclic graphs, if v -> u then it will be u < v, but if there is no edge between u and v, they can
+   * appear in any order.
+   *
+   * @return
+   */
+  def topologicalSort(): Seq[SimpleVertex[K, T]] = {
+    val DfsSearchResult(exitTimes, _ , _, _) = dfs()
+    _vertices.sortBy(v => exitTimes(v.key)).reverse
   }
 
   /**
@@ -308,26 +364,26 @@ object DirectedGraph {
         .filter(!_.isEmpty)
         .map {
           case ValidWeightedEdgeString(src, verse, dst, weight) =>
-            EdgeDecomposition(src, verse, dst, Some(weight.toDouble))
+            EdgeStringDecomposition(src, verse, dst, Some(weight.toDouble))
           case ValidEdgeString(src, verse, dst) =>
-            EdgeDecomposition(src, verse, dst)
+            EdgeStringDecomposition(src, verse, dst)
           case ValidVertexString(v) =>
-            EdgeDecomposition(v, null, null)
+            EdgeStringDecomposition(v, null, null)
           case _ =>
             throw new IllegalArgumentException(UnParsableStringExceptionMessage.format(s))
         }
 
       val newVertices = edgesDec.flatMap {
-        case EdgeDecomposition(v, null, null, _) =>
+        case EdgeStringDecomposition(v, null, null, _) =>
           Set(v)
-        case EdgeDecomposition(src, _, dst, _) =>
+        case EdgeStringDecomposition(src, _, dst, _) =>
           Set(src, dst)
       }.toSet[String]
 
       val newEdges = edgesDec.flatMap {
-        case EdgeDecomposition(v, null, null, _) =>
+        case EdgeStringDecomposition(v, null, null, _) =>
           Nil
-        case EdgeDecomposition(src, verse, dst, Some(weight)) => verse match {
+        case EdgeStringDecomposition(src, verse, dst, Some(weight)) => verse match {
           case ">" =>
             Seq(WeightedEdge[String](src, dst, weight = weight))
           case "-" if src != dst =>
@@ -335,7 +391,7 @@ object DirectedGraph {
           case "-" =>
             Seq(WeightedEdge[String](src, dst, weight = weight))
         }
-        case EdgeDecomposition(src, verse, dst, None) => verse match {
+        case EdgeStringDecomposition(src, verse, dst, None) => verse match {
           case ">" =>
             Seq(WeightedEdge[String](src, dst))
           case "-" if src != dst =>
@@ -379,6 +435,13 @@ object DirectedGraph {
       predecessors: Map[K, K],
       path: Option[Seq[K]] = None)
 
+  case class DfsSearchResult[K <% Ordered[K]](
+      exitTimes: Map[K, Double],
+      predecessors: Map[K, K],
+      isAcyclic: Boolean,
+      connectedComponents: Int)
+
+
   private[graph] val EdgesListSeparator = ", "
   private[graph] lazy val ValidGraphString = """\[((?:(?:[^\[\]]+)(?:,\s[^\[\],\s]+)*)?)\]""".r
   //Note: Greedy quantifiers in the groups below
@@ -389,7 +452,7 @@ object DirectedGraph {
   private[graph] val UnParsableStringExceptionMessage = "String %s is not a valid Graph"
   private[graph] val IllegalVertexExceptionMessage = "Vertex %s is not part of this Graph"
 
-  private case class EdgeDecomposition(src: String, verse: String, dst: String, weight: Option[Double] = None)
+  private case class EdgeStringDecomposition(src: String, verse: String, dst: String, weight: Option[Double] = None)
   private case class VertexWithDistance(vertex: SimpleVertex[_, _], distance: Double)
 
   private final val VertexWithDistanceOrdering = new Ordering[VertexWithDistance] {

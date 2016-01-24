@@ -59,7 +59,7 @@ abstract class Graph[K, T](_vertices: Seq[Vertex[K, T]] = Nil, _edges: Seq[Edge[
   def dijkstra(source: K, goal: K): AnyRef = ???
 
   @throws[IllegalArgumentException]
-  def dfs(source: K): AnyRef = ???
+  def dfs(start: Option[K] = None): AnyRef = ???
 }
 
 object Graph {
