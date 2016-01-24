@@ -232,6 +232,34 @@ class DirectedGraph[K <% Ordered[K], T](
     dfsPath(start, Seq(getVertex(start)), Set(start)).map(_.reverse)
   }
 
+  def allMST():Set[Set[WeightedEdge[K, T]]] = {
+    val n = _vertices.size
+    def buildMST(
+        maybeTree: Seq[WeightedEdge[K, T]],
+        remainingEdges: Seq[WeightedEdge[K, T]]): Set[Set[WeightedEdge[K, T]]] = {
+      lazy val G = new DirectedGraph[K, T](_vertices, maybeTree)
+      lazy val acyclic = G.isAcyclic()
+      lazy val connected = G.isConnected()
+      (acyclic, connected, remainingEdges) match {
+        case (false, _, _) =>
+          //A cyclic graph can't be a tree.
+          Set.empty
+        case (true, false, _) if (maybeTree.size >= n) =>
+          //Too many edges to be a tree, ever
+          Set.empty
+        case (true, true, _) if (maybeTree.size > n) =>
+          //Too many edges to be a tree, ever
+          Set.empty
+        case (true, true, _) if (maybeTree.size == n) =>
+          //If the graph is acyclic and connected with n edges, then it's a tree. Adding more edges would make it cyclic.
+          Set(maybeTree.toSet)
+        case (true, true, e :: rest) =>
+          buildMST(e +: maybeTree, rest) ++ buildMST(maybeTree, rest)
+      }
+    }
+    buildMST(Nil, _edges)
+  }
+
   /**
    * Return all the simple cyclic paths starting and ending on one vertex.
    *
@@ -349,7 +377,6 @@ class DirectedGraph[K <% Ordered[K], T](
     val predecessorsIM = predecessors.toMap
     SearchResult(distances.toMap, predecessorsIM, reconstructPath[K](predecessorsIM)(source, goal))
   }
-
 }
 
 object DirectedGraph {
