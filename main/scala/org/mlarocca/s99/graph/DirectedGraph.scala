@@ -47,7 +47,7 @@ class DirectedGraph[K <% Ordered[K], T](
       if (!hasVertex(eK.source) || !hasVertex(eK.destination) || hasEdge(eK)) {
         None
       } else {
-        val source = getVertex(eK.source).asInstanceOf[SimpleVertex[K, T]]
+        val source = getVertex(eK.source)
         val newSource = new SimpleVertex[J, U](source.key, eK +: source.adj)
         val newVerticesSeq = newSource +: _vertices.filter(_ != source)
         Some(new DirectedGraph(newVerticesSeq, e +: _edges))
@@ -58,7 +58,7 @@ class DirectedGraph[K <% Ordered[K], T](
   }
 
   override def toString(): String = {
-    val edgesStr = edges.filter { e =>
+    val edgesStrSet = edges.filter { e =>
       val Edge(u, v) = e
       !this.hasEdge(v, u) || u.compare(v) <= 0
     }.map { e =>
@@ -68,7 +68,14 @@ class DirectedGraph[K <% Ordered[K], T](
       else
         s"$u > $v"
     }
-    s"[${edgesStr.toSeq.sorted mkString EdgesListSeparator}]"
+    val uncoveredVertices = vertices.map(_.key) -- edges.flatMap { e =>
+      Set(e.source, e.destination)
+    }
+
+    val verticesStr = s"${uncoveredVertices.toSeq.sorted mkString EdgesListSeparator}"
+    val middleSeparatorStr = if (uncoveredVertices.nonEmpty) EdgesListSeparator else ""
+    val edgesStr = s"${edgesStrSet.toSeq.sorted mkString EdgesListSeparator}"
+    s"[$verticesStr$middleSeparatorStr$edgesStr]"
   }
 
   /**
@@ -92,7 +99,7 @@ class DirectedGraph[K <% Ordered[K], T](
     acyclic
   }
 
-  def isTree(): Boolean = isConnected() && isAcyclic()
+  def isTree(): Boolean = _edges.size == (_vertices.size - 1) && isConnected() && isAcyclic()
 
   /**
    * Single source all destinations bfs search.
@@ -155,7 +162,6 @@ class DirectedGraph[K <% Ordered[K], T](
     val notVisited = mutable.Set.empty[K] ++ vertices.map(_.key)
     val predecessors = mutable.Map[K, K]()
     val exitTimes = mutable.Map[K, Double]().withDefaultValue(Double.MaxValue)
-
     def doDfs(v: K, pred: K, entryTime: Int, notVisited: mutable.Set[K]): (Int, Boolean) = {
       notVisited.remove(v)
       predecessors.put(v, pred)
@@ -232,12 +238,14 @@ class DirectedGraph[K <% Ordered[K], T](
     dfsPath(start, Seq(getVertex(start)), Set(start)).map(_.reverse)
   }
 
-  def allMST():Set[Set[WeightedEdge[K, T]]] = {
-    val n = _vertices.size
+  def allMSTs():Set[DirectedGraph[K, T]] = {
+    val verticesKeys = _vertices.map(_.key).toSet
+    val n = verticesKeys.size
+
     def buildMST(
         maybeTree: Seq[WeightedEdge[K, T]],
-        remainingEdges: Seq[WeightedEdge[K, T]]): Set[Set[WeightedEdge[K, T]]] = {
-      lazy val G = new DirectedGraph[K, T](_vertices, maybeTree)
+        remainingEdges: Seq[WeightedEdge[K, T]]): Set[DirectedGraph[K, T]] = {
+      lazy val G = DirectedGraph[K, T](verticesKeys, maybeTree)
       lazy val acyclic = G.isAcyclic()
       lazy val connected = G.isConnected()
       (acyclic, connected, remainingEdges) match {
@@ -247,13 +255,16 @@ class DirectedGraph[K <% Ordered[K], T](
         case (true, false, _) if (maybeTree.size >= n) =>
           //Too many edges to be a tree, ever
           Set.empty
-        case (true, true, _) if (maybeTree.size > n) =>
+        case (true, true, _) if (maybeTree.size >= n) =>
           //Too many edges to be a tree, ever
           Set.empty
-        case (true, true, _) if (maybeTree.size == n) =>
-          //If the graph is acyclic and connected with n edges, then it's a tree. Adding more edges would make it cyclic.
-          Set(maybeTree.toSet)
-        case (true, true, e :: rest) =>
+        case (true, true, _) if (maybeTree.size == n - 1) =>
+          //If the graph is acyclic and connected with n-1 edges, then it's a tree. Adding more edges would make it cyclic.
+          Set(G)
+        case (true, false, Nil) =>
+          //No more edge to add, and the tree is not yet connected
+          Set.empty
+        case (true, _, e :: rest) =>
           buildMST(e +: maybeTree, rest) ++ buildMST(maybeTree, rest)
       }
     }
@@ -382,6 +393,12 @@ class DirectedGraph[K <% Ordered[K], T](
 object DirectedGraph {
   def apply[K <% Ordered[K], T](vertices: Seq[SimpleVertex[K, T]]) = new DirectedGraph[K, T](vertices, Nil)
   def apply[K <% Ordered[K], T](vertices: Seq[SimpleVertex[K, T]], edges: Seq[WeightedEdge[K, T]]) = new DirectedGraph[K, T](vertices, edges)
+  def apply[K <% Ordered[K], T](vertices: Set[K], edges: Seq[WeightedEdge[K, T]]) = {
+    val baseGraph = new DirectedGraph[K, T](vertices.map(new SimpleVertex[K, T](_)).toSeq, Nil)
+    edges.foldLeft(baseGraph) {(G, e) =>
+      G.addEdge(e)
+    }
+  }
 
   @throws[IllegalArgumentException]
   implicit def fromString(s: String): DirectedGraph[String, String] = s match {

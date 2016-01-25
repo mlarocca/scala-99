@@ -1,7 +1,7 @@
 package org.mlarocca.s99.graph
 
 import org.scalatest._
-import org.mlarocca.s99.graph.DirectedGraph.{DfsSearchResult, EmptyGraph, SearchResult}
+import org.mlarocca.s99.graph.DirectedGraph.{fromString, DfsSearchResult, EmptyGraph, SearchResult}
 
 class DirectedGraphTest extends FunSpec with Matchers {
 
@@ -124,7 +124,7 @@ class DirectedGraphTest extends FunSpec with Matchers {
 
     it("should display a symmetric couple of directed edges as an undirected one") {
       new DirectedGraph[Char, String](Seq(u, v), Seq(e1)).toString should
-          equal(DirectedGraph[Char, String](Seq(u), Seq(e1)).toString())
+          equal("[v, u - u]")
     }
 
     it("should only depend on the Graph's edges") {
@@ -501,6 +501,8 @@ class DirectedGraphTest extends FunSpec with Matchers {
 
     it("should return false for a disconnected graphs") {
       GraphDisconnected.isConnected() should be(false)
+      DirectedGraph.fromString("[a, b - c]").isConnected() should be(false)
+      DirectedGraph.fromString("[a > b, b > c, d > c]").isConnected() should be(false)
     }
 
     it("should return false for the empty graph") {
@@ -512,9 +514,11 @@ class DirectedGraphTest extends FunSpec with Matchers {
     it("should return true for paths and acyclic graphs") {
       GraphDirectedPath.isAcyclic() should be(true)
       GraphExample1.isAcyclic() should be(true)
+      DirectedGraph.fromString("[a > b, b > c, d > c]").isAcyclic() should be(true)
     }
 
     it("should return false for a disconnected graphs") {
+      DirectedGraph.fromString("[a, b - c]").isAcyclic() should be(false)
       GraphUndirectedPath.isAcyclic() should be(false)
       GraphSimpleCycle.isAcyclic() should be(false)
       GraphDisconnected.isAcyclic() should be(false)
@@ -528,10 +532,14 @@ class DirectedGraphTest extends FunSpec with Matchers {
 
     it("should return true for connected acyclic graphs") {
       GraphDirectedPath.isTree() should be(true)
-      GraphExample1.isTree() should be(true)
+      ("[a > b, a > c, b > d]": DirectedGraph[String, String]).isTree() should be(true)
     }
 
     it("should return false otherwise") {
+      DirectedGraph.fromString("[a, b - c]").isTree() should be(false)
+      ("[a > b, a > c, b > d, c > d]": DirectedGraph[String, String]).isTree() should be(false)
+      ("[a > b, a > c, b > d, c > d, e]": DirectedGraph[String, String]).isTree() should be(false)
+      GraphExample1.isTree() should be(false)
       GraphUndirectedPath.isTree() should be(false)
       GraphSimpleCycle.isTree() should be(false)
       GraphDisconnected.isTree() should be(false)
@@ -577,6 +585,21 @@ class DirectedGraphTest extends FunSpec with Matchers {
       G2.allSimpleCycles("f") should be(Set(
         Seq("f", "c", "b", "f"), Seq("f", "b", "c", "f"), Seq("f", "c", "f"), Seq("f", "b", "f"), Seq("f", "k", "f")
       ).map(_.map(G1.getVertex)))
+    }
+  }
+
+  describe("allMST") {
+    it("should return all and only the MSTs") {
+      DirectedGraph.fromString("[a - b, b - c, a - c]").allMSTs().map(_.toString) should equal(
+        Set("[a > c, b > a]", "[a > b, c > a]", "[a > c, c > b]", "[c > a, c > b]", "[a > b, a > c]",
+          "[a > b, b > c]", "[b > c, c > a]", "[b > a, c > b]", "[b > a, b > c]"))
+
+      DirectedGraph.fromString("[a > b, b > c, a > c]").allMSTs().map(_.toString) should equal(
+        Set("[a > b, a > c]", "[a > b, b > c]"))
+
+      DirectedGraph.fromString("[a > b, b > c, c > d]").allMSTs().map(_.toString) should equal(Set("[a > b, b > c, c > d]"))
+
+      DirectedGraph.fromString("[a > b, b > c, d > c]").allMSTs().map(_.toString) should equal(Set())
     }
   }
 }
