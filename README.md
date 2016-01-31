@@ -23,5 +23,5 @@ MultiTrees (X)
 Graphs (O)
 
     Search (BFS, DFS, Dijkstra, A*) (X) 
-    
+    Generate All Spanning Trees (X) 
     Minimum Spanning Trees ()
