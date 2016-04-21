@@ -174,39 +174,45 @@ class BinaryTreeTest extends FunSpec with Matchers {
 
   describe("hBalanced") {
     it ("should return a Leaf for height 0") {
-      BinaryTree.hBalanced(0, "A") should equal(Seq(Leaf))
-      BinaryTree.hBalanced(0, 1) should equal(Seq(Leaf))
+      BinaryTree.hBalanced(0, "A") should equal(Set(Leaf))
+      BinaryTree.hBalanced(0, 1) should equal(Set(Leaf))
     }
 
     it ("should return a singleton for height 1") {
-      BinaryTree.hBalanced(1, "A") should equal(Seq(BinaryNode("A")))
-      BinaryTree.hBalanced(1, 1) should equal(Seq(BinaryNode(1)))
+      BinaryTree.hBalanced(1, "A") should equal(Set(BinaryNode("A")))
+      BinaryTree.hBalanced(1, 1) should equal(Set(BinaryNode(1)))
     }
 
     it ("should return 3 trees with height 2, for h == 2") {
-      BinaryTree.hBalanced(2, "A") should equal(Seq(
+      BinaryTree.hBalanced(2, "A") should equal(Set(
         new BinaryNode("A", BinaryNode("A"), BinaryNode("A")),
         new BinaryNode("A", Leaf, BinaryNode("A")),
         new BinaryNode("A", BinaryNode("A"), Leaf)
       ))
     }
 
-    it ("should return 9 trees with height 3, for h == 3") {
-      BinaryTree.hBalanced(3, "A") should equal(Seq(
-        new BinaryNode("A", new BinaryNode("A", BinaryNode("A"), BinaryNode("A")), new BinaryNode("A", BinaryNode("A"), BinaryNode("A"))),
-        new BinaryNode("A", BinaryNode("A"), new BinaryNode("A", BinaryNode("A"), BinaryNode("A"))),
-        new BinaryNode("A", new BinaryNode("A", BinaryNode("A"), BinaryNode("A")), BinaryNode("A")),
-        new BinaryNode("A", new BinaryNode("A", Leaf, BinaryNode("A")), new BinaryNode("A", Leaf, BinaryNode("A"))),
-        new BinaryNode("A", BinaryNode("A"), new BinaryNode("A", Leaf, BinaryNode("A"))),
-        new BinaryNode("A", new BinaryNode("A", Leaf, BinaryNode("A")), BinaryNode("A")),
-        new BinaryNode("A", new BinaryNode("A", BinaryNode("A"), Leaf), new BinaryNode("A", BinaryNode("A"), Leaf)),
-        new BinaryNode("A", BinaryNode("A"), new BinaryNode("A", BinaryNode("A"), Leaf)),
-        new BinaryNode("A", new BinaryNode("A", BinaryNode("A"), Leaf), BinaryNode("A"))
+    it ("should return 15 trees with height 3, for h == 3") {
+      BinaryTree.hBalanced(3, "A") should equal(Set(
+        BinaryTree.fromString("A(A(A,A),A(A,A))"),
+        BinaryTree.fromString("A(A(A,A),A(,A))"),
+        BinaryTree.fromString("A(A(A,A),A(A))"),
+        BinaryTree.fromString("A(A(A,A),A)"),
+        BinaryTree.fromString("A(A(,A),A(A,A))"),
+        BinaryTree.fromString("A(A(,A),A(,A))"),
+        BinaryTree.fromString("A(A(,A),A(A))"),
+        BinaryTree.fromString("A(A(,A),A)"),
+        BinaryTree.fromString("A(A(A),A(A,A))"),
+        BinaryTree.fromString("A(A(A),A(,A))"),
+        BinaryTree.fromString("A(A(A),A(A))"),
+        BinaryTree.fromString("A(A(A),A)"),
+        BinaryTree.fromString("A(A,A(A,A))"),
+        BinaryTree.fromString("A(A,A(,A))"),
+        BinaryTree.fromString("A(A,A(A))")
       ))
     }
 
-    it ("should return 63 trees for height 4") {
-      BinaryTree.hBalanced(4, "A").size should be(63)
+    it ("should return 315 trees for height 4") {
+      BinaryTree.hBalanced(4, "A").size should be(315)
     }
   }
 
@@ -283,30 +289,30 @@ class BinaryTreeTest extends FunSpec with Matchers {
 
   describe("hBalancedWithNodes") {
     it ("should return a Leaf for n == 0") {
-      BinaryTree.hBalancedWithNodes(0, "A") should equal(Seq(Leaf))
-      BinaryTree.hBalancedWithNodes(0, 1) should equal(Seq(Leaf))
+      BinaryTree.hBalancedWithNodes(0, "A") should equal(Set(Leaf))
+      BinaryTree.hBalancedWithNodes(0, 1) should equal(Set(Leaf))
     }
 
     it ("should return a singleton for n == 1") {
-      BinaryTree.hBalancedWithNodes(1, "A") should equal(Seq(BinaryNode("A")))
-      BinaryTree.hBalancedWithNodes(1, 1) should equal(Seq(BinaryNode(1)))
+      BinaryTree.hBalancedWithNodes(1, "A") should equal(Set(BinaryNode("A")))
+      BinaryTree.hBalancedWithNodes(1, 1) should equal(Set(BinaryNode(1)))
     }
 
     it ("should return 2 trees with height 2, for n == 2") {
-      BinaryTree.hBalancedWithNodes(2, "A") should equal(Seq(
+      BinaryTree.hBalancedWithNodes(2, "A") should equal(Set(
         new BinaryNode("A", Leaf, BinaryNode("A")),
         new BinaryNode("A", BinaryNode("A"), Leaf)
       ))
     }
 
     it ("should return 1 trees with height 2, for n == 3") {
-      BinaryTree.hBalancedWithNodes(3, "A") should equal(Seq(
+      BinaryTree.hBalancedWithNodes(3, "A") should equal(Set(
         new BinaryNode("A", BinaryNode("A"), BinaryNode("A"))
       ))
     }
 
     it ("should return 4 trees with height 3, for n == 4") {
-      BinaryTree.hBalancedWithNodes(4, "A") should equal(Seq(
+      BinaryTree.hBalancedWithNodes(4, "A") should equal(Set(
         new BinaryNode("A", BinaryNode("A"), new BinaryNode("A", Leaf, BinaryNode("A"))),
         new BinaryNode("A", new BinaryNode("A", Leaf, BinaryNode("A")), BinaryNode("A")),
         new BinaryNode("A", BinaryNode("A"), new BinaryNode("A", BinaryNode("A"), Leaf)),
@@ -314,8 +320,8 @@ class BinaryTreeTest extends FunSpec with Matchers {
       ))
     }
 
-    it ("should return 63 trees for n == 15") {
-      BinaryTree.hBalancedWithNodes(15, "B").size should be(177)
+    it ("should return 1553 trees for n == 15") {
+      BinaryTree.hBalancedWithNodes(15, "B").size should be(1553)
     }
   }
   

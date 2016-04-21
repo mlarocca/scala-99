@@ -65,15 +65,19 @@ object BinaryTree {
    * @return
    */
   @throws[IllegalArgumentException]
-  def hBalanced[K](height: Int, key: K): Seq[BinaryTree[K, Nothing]] = height match {
+  def hBalanced[K](height: Int, key: K): Set[BinaryTree[K, Nothing]] = height match {
     case _ if height < 0 => throw new IllegalArgumentException(NegativeValueErrorMessage)
-    case 0 => Seq(Leaf)
-    case 1 => Seq(BinaryNode(key))
+    case 0 => Set(Leaf)
+    case 1 => Set(BinaryNode(key))
     case _ =>
-      hBalanced(height - 1, key).flatMap { t1 =>
-        BinaryNode(key, t1, t1) +: hBalanced(height - 2, key).flatMap { t2 =>
-          Seq(BinaryNode(key, t2, t1), BinaryNode(key, t1, t2))
-        }
+      val tallerSubTrees = hBalanced(height - 1, key)
+      val smallerSubTrees = hBalanced(height - 2, key)
+      tallerSubTrees.flatMap { t1 =>
+        smallerSubTrees.flatMap { t2 =>
+            Set(BinaryNode(key, t2, t1), BinaryNode(key, t1, t2))
+        } | (tallerSubTrees.flatMap { t2 =>
+          if (t1 != t2) Set(BinaryNode(key, t2, t1), BinaryNode(key, t1, t2)) else Nil
+        } + BinaryNode(key, t1, t1))
       }
   }
 
@@ -134,14 +138,14 @@ object BinaryTree {
    * @return
    */
   @throws[IllegalArgumentException]
-  def hBalancedWithNodes[K](n: Int, key: K): Seq[BinaryTree[K, Nothing]] = n match {
+  def hBalancedWithNodes[K](n: Int, key: K): Set[BinaryTree[K, Nothing]] = n match {
     case _ if n < 0 => throw new IllegalArgumentException(NegativeValueErrorMessage)
-    case 0 => Seq(Leaf)
-    case 1 => Seq(BinaryNode(key))
+    case 0 => Set(Leaf)
+    case 1 => Set(BinaryNode(key))
     case _ =>
       (minHbalHeight(n) to maxHbalHeight(n)).toSeq.flatMap {
         BinaryTree.hBalanced(_, key).filter(_.size == n)
-      }
+      }.toSet
   }
 
   /**
