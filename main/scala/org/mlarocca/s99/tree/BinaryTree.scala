@@ -105,10 +105,8 @@ object BinaryTree {
    * @return
    */
   @throws[IllegalArgumentException]
-  def minHbalHeight(n: Int): Int = n match {
-    case _ if n < 0 => throw new IllegalArgumentException(NegativeValueErrorMessage)
-    case 0 => 0
-    case _ => log2(n).toInt
+  def minHbalHeight(n: Int): Int = {
+    if (n < 0) throw new IllegalArgumentException(NegativeValueErrorMessage) else log2(n + 1).toInt
   }
       /**
    * Compute the maximum height an hBalanced tree with n nodes could have.
